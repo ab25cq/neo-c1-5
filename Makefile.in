@@ -1,0 +1,101 @@
+#########################################
+# installed directories
+#########################################
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datadir=@datadir@
+mandir=@mandir@
+sharedstatedir=@sharedstatedir@
+sysconfdir=@sysconfdir@/neo-c2
+includedir=@includedir@/neo-c2
+datarootdir=@datarootdir@/neo-c2
+docdir=@datadir@/doc
+libdir=@libdir@
+
+
+#########################################
+# environmnet variables
+#########################################
+CC=@CC@
+CXX=@CXX@
+INSTALL=@INSTALL@
+CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
+LIBS=@LIBS@
+OS=@OS@
+DESTDIR=@DESTDIR@
+OBJS=@OBJS@
+RUNTIME_OBJS=@RUNTIME_OBJS@
+COMMON_OBJS=@COMMON_OBJS@
+
+#########################################
+# main
+#########################################
+all: neo-c2 
+	if which ctags > /dev/null; then if test $(OS) = DARWIN; then ctags src/*.c > /dev/null 2>&1; else ctags -R; fi; fi
+
+neo-c2: config.h src/main.o $(COMMON_OBJS) $(OBJS) memalloc-stdc.o
+	$(CXX) -o neo-c2 src/main.o $(COMMON_OBJS) $(OBJS) $(CFLAGS) $(LIBS) $(CXXFLAGS)
+
+memalloc-stdc.o: src/memalloc-stdc.c
+	$(CC) -c -o memalloc-stdc.o src/memalloc-stdc.c $(CFLAGS)
+
+#########################################
+# Object files
+#########################################
+$(OBJS): src/*.h Makefile configure
+
+$(COMMON_OBJS): src/*.h Makefile configure
+
+$(RUNTIME_OBJS): src/*.h Makefile configure
+
+#########################################
+# install
+#########################################
+install:
+	mkdir -p $(DESTDIR)/lib
+	$(INSTALL) -m 644 ./memalloc-stdc.o $(DESTDIR)/lib
+
+	mkdir -p $(DESTDIR)/include
+	$(INSTALL) -m 644 ./neo-c2.h $(DESTDIR)/include
+	$(INSTALL) -m 644 ./pre-neo-c2.h $(DESTDIR)/include
+
+	mkdir -p "$(DESTDIR)/bin"
+	$(INSTALL) -m 755 ./neo-c2 "$(DESTDIR)/bin"
+
+#########################################
+# permission
+#########################################
+permission:
+	chmod 644 *
+	chmod 755 .git man src configure
+	chmod 644 src/*.c src/*.cpp
+	chmod 644 src/*.h
+	chmod 755 update_neo-c2.sh
+
+#########################################
+# clean
+#########################################
+clean:
+	rm -fR memleak_debug.txt neo-c2 neo-c2.dSYM src/*.o config.log config.status *.stackdump autom3te.cache .DS_Store core.* core a.out *.bc *.s *.o code/*.o *.ll *.so.1.0.0 *.so src/config.h moveVarDecls.hi moveVarDecls.o moveVarDecls *.so.1 src/*.dwo code/*.out code/*.nc.tmp *.nc.tmp *.out memalloc-stdc.o memalloc.o src/*.out
+
+distclean: clean
+	rm -fR  config.h Makefile autom4te.cache 
+
+#########################################
+# test
+#########################################
+test: 
+	@echo "Compile to test code..."
+
+#########################################
+# uninstall
+#########################################
+uninstall:
+	rm -f "$(DESTDIR)"/bin/neo-c2
+	rm -rf "$(DESTDIR)"/share/doc/neo-c2/
+	rm -f "$(DESTDIR)"/include/neo-c2.h
+	rm -f "$(DESTDIR)"/include/pre-neo-c2.h
+	rm -f "$(DESTDIR)"/share/man/man1/neo-c2.1.gz
+	rm -f "$(DESTDIR)/lib/memalloc-stdc.o"
