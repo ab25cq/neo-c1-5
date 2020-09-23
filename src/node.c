@@ -228,6 +228,22 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
     gNodes[function_params].uValue.sFunctionParams.mNumParams++;
 }
 
+unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeReturn;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {
@@ -305,6 +321,14 @@ void show_node(unsigned int node)
 
             puts("right");
             show_node(gNodes[node].mRight);
+            break;
+
+        case kNodeTypeReturn:
+            puts("return");
+
+            puts("left");
+            show_node(gNodes[node].mLeft);
+
             break;
 
         default:

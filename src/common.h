@@ -268,7 +268,7 @@ extern int gErrNum;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeFunctionParams };
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeFunctionParams , kNodeTypeReturn };
 
 struct sNodeTreeStruct 
 {
@@ -335,12 +335,22 @@ struct sCompileInfoStruct
     int err_num;
     int stack_num;
     sNodeType* type;
+    void* current_block;
+
+    void* andand_result_var;
+    void* oror_result_var;
+    void* function_lvtable;
+    char current_fun_name[VAR_NAME_MAX];
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;
 
 void dec_stack_ptr(int value, sCompileInfo* info);
 BOOL compile(unsigned int node, sCompileInfo* info);
+void llvm_init();
+void llvm_final();
+
+extern BOOL gNCDebug;
 
 #endif
 

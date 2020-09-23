@@ -18,9 +18,6 @@
     gSLine++;
     return yytext[0];
 }
-void {
-    return(VOID); 
-}
 
 [a-zA-Z_$]+ {
     strncpy(yylval.cval, yytext, 128);
@@ -32,3 +29,14 @@ void {
 }
 
 %%
+/*
+void {
+    strncpy(yylval.cval, yytext, 128);
+    return(VOID); 
+}
+
+return {
+    strncpy(yylval.cval, yytext, 128);
+    return(RETURN);
+}
+*/
