@@ -45,8 +45,7 @@
 //////////////////////////////
 /// progressive declaration
 //////////////////////////////
-struct sParserInfoStruct;
-struct sNodeBlockStruct;
+struct sNodeTypeStruct;
 struct sCompileInfoStruct;
 
 //////////////////////////////
@@ -72,6 +71,7 @@ struct sCLClassStruct {
     int mMethodGenericsNum;
     
     struct sNodeTypeStruct* mFields[STRUCT_FIELD_MAX];
+    char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     int mNumFields;
 
     void* mUndefinedStructType;
@@ -92,7 +92,6 @@ struct sClassTableStruct
 typedef struct sClassTableStruct sClassTable;
 
 extern sClassTable* gHeadClassTable;
-
 
 void class_init();
 void class_final();
@@ -162,15 +161,14 @@ sNodeType* create_node_type_with_class_pointer(sCLClass* klass);
 BOOL cast_posibility(sNodeType* left_type, sNodeType* right_type);
 BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type);
 
-struct sCompileInfoStruct;
-BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, struct sCompileInfoStruct* info);
+BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, BOOL no_output);
 BOOL type_identify(sNodeType* left, sNodeType* right);
 BOOL type_identify_with_class_name(sNodeType* left, char* right_class_name);
 BOOL is_number_type(sNodeType* node_type);
 void show_node_type(sNodeType* node_type);
 BOOL solve_generics(sNodeType** node_type, sNodeType* generics_type, BOOL* success_solve);
 BOOL solve_method_generics(sNodeType** node_type, int num_method_generics_types, sNodeType* method_generics_types[GENERICS_TYPES_MAX]);
-BOOL solve_typeof(sNodeType** node_type, struct sCompileInfoStruct* info);
+BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, BOOL no_output);
 BOOL is_typeof_type(sNodeType* node_type);
 BOOL included_generics_type(sNodeType* node_type, sCLClass* checked_class[], int* num_checked_class);
 BOOL get_type_of_method_generics(sNodeType* method_generics_types[GENERICS_TYPES_MAX], sNodeType* fun_param_type, sNodeType* param_type);
@@ -222,10 +220,10 @@ void set_max_block_var_num(sVarTable* new_table, sVarTable* lv_table);
 
 int get_variable_index(sVarTable* table, char* name, BOOL* parent);
 
-void check_already_added_variable(sVarTable* table, char* name, struct sParserInfoStruct* info);
+void check_already_added_variable(sVarTable* table, char* name);
 
 // result: (true) success (false) overflow the table or a variable which has the same name exists
-BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, BOOL readonly, void* llvm_value, int index, BOOL global, BOOL constant);
+BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, void* llvm_value, int index, BOOL global, BOOL constant);
 
 // result: (null) not found (sVar*) found
 sVar* get_variable_from_table(sVarTable* table, char* name);
@@ -244,8 +242,6 @@ void free_objects(sVarTable* table, struct sCompileInfoStruct* info);
 // result: (null) not found (sVar*) found
 sVar* get_variable_from_this_table_only(sVarTable* table, char* name);
 
-void free_block_variables_on_break(struct sNodeBlockStruct* current_node_block, struct sCompileInfoStruct* info, BOOL top_block);
-
 /////////////////////////////// 
 // typedef.c
 /////////////////////////////// 
@@ -253,6 +249,98 @@ void init_typedef();
 
 void add_typedef(char* name, sNodeType* node_type);
 sNodeType* get_typedef(char* name);
+
+/////////////////////////////// 
+// parser.c
+/////////////////////////////// 
+struct sParserParamStruct 
+{
+    char mName[VAR_NAME_MAX];
+    sNodeType* mType;
+};
+
+typedef struct sParserParamStruct sParserParam;
+
+extern char gSName[PATH_MAX];
+extern int gSLine;
+extern int gErrNum;
+
+/////////////////////////////// 
+// node.c
+/////////////////////////////// 
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeFunctionParams };
+
+struct sNodeTreeStruct 
+{
+    enum eNodeType mNodeType;
+
+    unsigned int mLeft;
+    unsigned int mRight;
+    unsigned int mMiddle;
+
+    char mSName[PATH_MAX];
+    int mLine;
+
+    union {
+        int mIntValue;
+
+        struct {
+            unsigned int* mNodes;
+            unsigned int mSizeNodes;
+            unsigned int mNumNodes;
+
+            sVarTable* mLVTable;
+
+            sBuf mSource;
+        } sBlock;
+        struct {
+            char mName[VAR_NAME_MAX];
+            sParserParam mParams[PARAMS_MAX];
+            int mNumParams;
+            sNodeType* mResultType;
+            unsigned int mNodeBlock;
+        } sFunction;
+
+        struct {
+            int mNumParams;
+            sParserParam mParams[PARAMS_MAX];
+        } sFunctionParams;
+    } uValue;
+};
+
+typedef struct sNodeTreeStruct sNodeTree;
+
+extern sNodeTree* gNodes;
+
+void append_node_to_node_block(unsigned int node_block, unsigned int node);
+void append_param_to_function_params(unsigned int function_params, char* type_name, char* name);
+void show_node(unsigned int node);
+void init_nodes();
+void free_nodes();
+
+unsigned int sNodeTree_create_int_value(int value, char* sname, int sline);
+unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
+unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
+unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
+unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, sNodeType* result_type, unsigned int node_block, char* sname, int sline);
+unsigned int sNodeTree_create_function_params(char* sname, int sline);
+
+//////////////////////////////////
+// compile.cpp
+//////////////////////////////////
+struct sCompileInfoStruct
+{
+    BOOL no_output;
+    int err_num;
+    int stack_num;
+    sNodeType* type;
+};
+
+typedef struct sCompileInfoStruct sCompileInfo;
+
+void dec_stack_ptr(int value, sCompileInfo* info);
+BOOL compile(unsigned int node, sCompileInfo* info);
 
 #endif
 

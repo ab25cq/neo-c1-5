@@ -627,7 +627,6 @@ OBJS
 CXXFLAGS
 CXX
 DESTDIR
-CFFI
 OS
 EGREP
 GREP
@@ -2109,6 +2108,36 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
+ac_aux_dir=
+for ac_dir in sub "$srcdir"/sub; do
+  if test -f "$ac_dir/install-sh"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/install-sh -c"
+    break
+  elif test -f "$ac_dir/install.sh"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/install.sh -c"
+    break
+  elif test -f "$ac_dir/shtool"; then
+    ac_aux_dir=$ac_dir
+    ac_install_sh="$ac_aux_dir/shtool install -c"
+    break
+  fi
+done
+if test -z "$ac_aux_dir"; then
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in sub \"$srcdir\"/sub" "$LINENO" 5
+fi
+
+# These three variables are undocumented and unsupported,
+# and are intended to be withdrawn in a future Autoconf release.
+# They can cause serious problems if a builder's source tree is in a directory
+# whose full name contains unusual characters.
+ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
+ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
+ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
+
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2897,35 +2926,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
-  if test -f "$ac_dir/install-sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install-sh -c"
-    break
-  elif test -f "$ac_dir/install.sh"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/install.sh -c"
-    break
-  elif test -f "$ac_dir/shtool"; then
-    ac_aux_dir=$ac_dir
-    ac_install_sh="$ac_aux_dir/shtool install -c"
-    break
-  fi
-done
-if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
-fi
-
-# These three variables are undocumented and unsupported,
-# and are intended to be withdrawn in a future Autoconf release.
-# They can cause serious problems if a builder's source tree is in a directory
-# whose full name contains unusual characters.
-ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
-ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
-ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
-
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -4065,21 +4065,13 @@ else
 fi
 ac_cv_lib_pcre=ac_cv_lib_pcre_main
 
-
-ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
-if test "x$ac_cv_header_pthread_h" = xyes; then :
-  $as_echo "#define HAVE_PTHREAD_H 1" >>confdefs.h
-
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lpthread" >&5
-$as_echo_n "checking for main in -lpthread... " >&6; }
-if ${ac_cv_lib_pthread_main+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -ly" >&5
+$as_echo_n "checking for main in -ly... " >&6; }
+if ${ac_cv_lib_y_main+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpthread  $LIBS"
+LIBS="-ly  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4093,20 +4085,59 @@ return main ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_pthread_main=yes
+  ac_cv_lib_y_main=yes
 else
-  ac_cv_lib_pthread_main=no
+  ac_cv_lib_y_main=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_main" >&5
-$as_echo "$ac_cv_lib_pthread_main" >&6; }
-if test "x$ac_cv_lib_pthread_main" = xyes; then :
-   LIBS="$LIBS -lpthread";
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_y_main" >&5
+$as_echo "$ac_cv_lib_y_main" >&6; }
+if test "x$ac_cv_lib_y_main" = xyes; then :
+   LIBS="$LIBS -ly";
+else
+   eixt
 fi
-ac_cv_lib_pthread=ac_cv_lib_pthread_main
+ac_cv_lib_y=ac_cv_lib_y_main
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lfl" >&5
+$as_echo_n "checking for main in -lfl... " >&6; }
+if ${ac_cv_lib_fl_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fl_main=yes
+else
+  ac_cv_lib_fl_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fl_main" >&5
+$as_echo "$ac_cv_lib_fl_main" >&6; }
+if test "x$ac_cv_lib_fl_main" = xyes; then :
+   LIBS="$LIBS -lfl";
+else
+   LIBS="$LIBS -lfl"
+fi
+ac_cv_lib_fl=ac_cv_lib_fl_main
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lrt" >&5
@@ -4147,8 +4178,6 @@ ac_cv_lib_rt=ac_cv_lib_rt_main
 
 
 
-
-
 if which clang > /dev/null
 then
     CC=clang
@@ -4178,6 +4207,11 @@ CXXFLAGS="-I . -I src $CXXFLAGS"
 if which clang++ > /dev/null
 then
     CXX=g++
+
+    if which ccache > /dev/null
+    then
+        CXX="ccache g++"
+    fi
 else
     echo "Require g++"
     exit 2
@@ -4190,24 +4224,13 @@ else
     CXXFLAGS='`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3'" $CXXFLAGS"
 fi
 
-CLANG=clang
-
-LLVM_DIS=llvm-dis
-
-LLC=llc
-
-CLANGPLUSPLUS=clang++
-
 LIBS="$LIBS"
 
 
 
-#CFLAGS="$CFLAGS -Qunused-arguments"
-#CFLAGS="$CFLAGS -Qunused-arguments -Wunused-variable"
-
 COMMON_OBJS="src/buffer.o src/xfunc.o src/alignment.o"
 
-OBJS="src/parser.o src/klass.o src/node_type.o src/typedef.o src/vtable.o"
+OBJS="src/klass.o src/node_type.o src/typedef.o src/vtable.o src/node.o"
 
 RUNTIME_OBJS=""
 

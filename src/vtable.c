@@ -52,7 +52,7 @@ sVarTable* clone_var_table(sVarTable* lv_table)
 
     while(1) {
         if(p->mName[0] != 0) {
-            if(!add_variable_to_table(result, p->mName, p->mType, p->mReadOnly, p->mLLVMValue, p->mIndex, p->mGlobal, p->mConstant))
+            if(!add_variable_to_table(result, p->mName, p->mType, p->mLLVMValue, p->mIndex, p->mGlobal, p->mConstant))
             {
                 fprintf(stderr, "overflow variable table\n");
                 exit(2);
@@ -117,7 +117,7 @@ void restore_var_table(sVarTable* left, sVarTable* right)
 // local variable table
 //////////////////////////////////////////////////
 // result: (true) success (false) overflow the table or a variable which has the same name exists
-BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, BOOL readonly, void* llvm_value, int index, BOOL global, BOOL constant)
+BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, void* llvm_value, int index, BOOL global, BOOL constant)
 {
     int hash_value;
     sVar* p;
@@ -142,7 +142,6 @@ BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, BOOL 
                 p->mType = NULL;
             }
             p->mBlockLevel = table->mBlockLevel;
-            p->mReadOnly = readonly;
             p->mLLVMValue = llvm_value;
             p->mGlobal = global;
             p->mConstant = constant;
@@ -169,7 +168,6 @@ BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, BOOL 
                     }
 
                     p->mBlockLevel = table->mBlockLevel;
-                    p->mReadOnly = readonly;
                     p->mLLVMValue = llvm_value;
 
                     if(table->mVarNum >= LOCAL_VARIABLE_MAX) {
@@ -269,17 +267,15 @@ BOOL is_included_var_from_this_table_only(sVarTable* table, sVar* var_)
     }
 }
 
-
-
-void check_already_added_variable(sVarTable* table, char* name, struct sParserInfoStruct* info)
+void check_already_added_variable(sVarTable* table, char* name)
 {
     sVar* var_ = get_variable_from_this_table_only(table, name);
     
     if(var_ != NULL && !var_->mGlobal) {
         char msg[1024];
         snprintf(msg, 1024, "Variable (%s) has already_added in this variable table", name);
-        parser_err_msg(info, msg);
-        info->err_num++;
+        parser_err_msg(msg);
+        gErrNum++;
     }
 }
 
@@ -385,11 +381,11 @@ void show_vtable_current_only(sVarTable* table)
 
         while(1) {
             if(p->mName[0] != 0) {
-                printf("name %s index %d block level %d readonly %d constant %d value %p global %d\n", p->mName, p->mIndex, p->mBlockLevel, p->mReadOnly, p->mConstant, p->mLLVMValue, p->mGlobal);
+                printf("name %s index %d block level %d constant %d value %p global %d\n", p->mName, p->mIndex, p->mBlockLevel, p->mConstant, p->mLLVMValue, p->mGlobal);
 
                 if(p->mType && p->mType->mClass) 
                 {
-                    printf("%s\n", CLASS_NAME(p->mType->mClass));
+                    printf("%s\n", p->mType->mClass->mName);
                 }
             }
 
@@ -412,11 +408,11 @@ void show_vtable(sVarTable* table)
 
         while(1) {
             if(p->mName[0] != 0) {
-                printf("name %s index %d block level %d readonly %d constant %d value %p global %d\n", p->mName, p->mIndex, p->mBlockLevel, p->mReadOnly, p->mConstant, p->mLLVMValue, p->mGlobal);
+                printf("name %s index %d block level %d constant %d value %p global %d\n", p->mName, p->mIndex, p->mBlockLevel, p->mConstant, p->mLLVMValue, p->mGlobal);
 
                 if(p->mType && p->mType->mClass) 
                 {
-                    printf("%s\n", CLASS_NAME(p->mType->mClass));
+                    printf("%s\n", p->mType->mClass->mName);
                 }
             }
 
@@ -431,97 +427,6 @@ void show_vtable(sVarTable* table)
     }
 }
 
-void free_objects(sVarTable* table, sCompileInfo* info)
-{
-    if(!info->no_output) {
-        sVar* p = table->mLocalVariables;
-
-        while(1) {
-            if(p->mName[0] != 0) {
-                sNodeType* node_type = p->mType;
-                sCLClass* klass = node_type->mClass;
-
-                if(node_type->mHeap)
-                {
-                    if(p->mLLVMValue)
-                    {
-#ifdef MDEBUG
-    printf("free %s %s in vtable. address %p\n", p->mName, CLASS_NAME(node_type->mClass), p);
-#endif
-                    free_object(p->mType, p->mLLVMValue, FALSE, info);
-#ifdef MDEBUG
-    printf("end free %s %s in vtable. address %p\n", p->mName, CLASS_NAME(node_type->mClass), p);
-#endif
-                        p->mLLVMValue = NULL;
-                    }
-                }
-            }
-
-            p++;
-
-            if(p == table->mLocalVariables + LOCAL_VARIABLE_MAX) {
-                break;
-            }
-        }
-    }
-}
-
-void free_objects_on_break(sVarTable* table, sCompileInfo* info)
-{
-    sVar* p = table->mLocalVariables;
-
-    while(1) {
-        if(p->mName[0] != 0) {
-            sNodeType* node_type = p->mType;
-
-            if(node_type) {
-                sCLClass* klass = node_type->mClass;
-                if(node_type->mHeap)
-                {
-                    if(p->mLLVMValue)
-                    {
-#ifdef MDEBUG
-    printf("free %s %s in vtable. address %p\n", p->mName, CLASS_NAME(node_type->mClass), p);
-#endif
-                    free_object(p->mType, p->mLLVMValue, FALSE, info);
-                    }
-                }
-            }
-        }
-
-        p++;
-
-        if(p == table->mLocalVariables + LOCAL_VARIABLE_MAX) {
-            break;
-        }
-    }
-}
-
-void free_block_variables_on_break(struct sNodeBlockStruct* current_node_block, struct sCompileInfoStruct* info, BOOL top_block)
-{
-    if(info && info->pinfo && current_node_block && !info->no_output) {
-        sVarTable* current_lv_table = info->pinfo->lv_table;
-
-        sVarTable* current_block_lv_table = current_node_block->mLVTable;
 
 
-        sVarTable* it = current_lv_table;
-
-        if(current_lv_table->mID == current_block_lv_table->mID) {
-            free_objects_on_break(it, info);
-        }
-        else {
-            while(it->mID != current_block_lv_table->mID && it != NULL) 
-            {
-                free_objects_on_break(it, info);
-
-                it = it->mParent;
-            }
-
-            if(top_block && it != NULL) {
-                free_objects_on_break(it, info);
-            }
-        }
-    }
-}
 

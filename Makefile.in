@@ -29,14 +29,24 @@ OBJS=@OBJS@
 RUNTIME_OBJS=@RUNTIME_OBJS@
 COMMON_OBJS=@COMMON_OBJS@
 
-#########################################
+######################################
 # main
-#########################################
+#####################################
 all: neo-c2 
 	if which ctags > /dev/null; then if test $(OS) = DARWIN; then ctags src/*.c > /dev/null 2>&1; else ctags -R; fi; fi
 
-neo-c2: config.h src/main.o $(COMMON_OBJS) $(OBJS) memalloc-stdc.o
-	$(CXX) -o neo-c2 src/main.o $(COMMON_OBJS) $(OBJS) $(CFLAGS) $(LIBS) $(CXXFLAGS)
+neo-c2: config.h src/main.o src/compile.o $(COMMON_OBJS) $(OBJS) memalloc-stdc.o lex.yy.o parser.tab.o
+	$(CXX) -o neo-c2 src/main.o parser.tab.o lex.yy.o src/compile.o $(COMMON_OBJS) $(OBJS) $(CFLAGS) $(LIBS) $(CXXFLAGS)
+
+src/compile.o: src/compile.cpp
+	$(CXX) -o src/compile.o -c src/compile.cpp $(CFLAGS) $(CXXFLAGS)
+
+parser.tab.o: parser.tab.c
+	$(CC) -c parser.tab.c $(CFLAGS)
+
+lex.yy.c: src/parser.l src/parser.y
+	flex src/parser.l
+	bison -d src/parser.y
 
 memalloc-stdc.o: src/memalloc-stdc.c
 	$(CC) -c -o memalloc-stdc.o src/memalloc-stdc.c $(CFLAGS)
@@ -78,7 +88,7 @@ permission:
 # clean
 #########################################
 clean:
-	rm -fR memleak_debug.txt neo-c2 neo-c2.dSYM src/*.o config.log config.status *.stackdump autom3te.cache .DS_Store core.* core a.out *.bc *.s *.o code/*.o *.ll *.so.1.0.0 *.so src/config.h moveVarDecls.hi moveVarDecls.o moveVarDecls *.so.1 src/*.dwo code/*.out code/*.nc.tmp *.nc.tmp *.out memalloc-stdc.o memalloc.o src/*.out
+	rm -fR parser* lex* mini-lang memleak_debug.txt neo-c2 neo-c2.dSYM src/*.o config.log config.status *.stackdump autom3te.cache .DS_Store core.* core a.out *.bc *.s *.o code/*.o *.ll *.so.1.0.0 *.so src/config.h moveVarDecls.hi moveVarDecls.o moveVarDecls *.so.1 src/*.dwo code/*.out code/*.nc.tmp *.nc.tmp *.out memalloc-stdc.o memalloc.o src/*.out
 
 distclean: clean
 	rm -fR  config.h Makefile autom4te.cache 
@@ -88,6 +98,7 @@ distclean: clean
 #########################################
 test: 
 	@echo "Compile to test code..."
+	./neo-c2
 
 #########################################
 # uninstall

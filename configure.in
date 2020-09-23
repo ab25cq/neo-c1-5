@@ -2,6 +2,8 @@ AC_INIT(src/compiler.c)
 
 AC_CONFIG_HEADER(config.h)
 
+AC_CONFIG_AUX_DIR(sub)
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_C_BIGENDIAN
@@ -207,13 +209,10 @@ fi
 
 AC_CHECK_HEADER(pcre.h, [AC_DEFINE(HAVE_PCRE_H,1)], [])
 AC_HAVE_LIBRARY(pcre, [ LIBS="$LIBS -lpcre"; ], [ eixt ])
-
-AC_CHECK_HEADER(pthread.h, [AC_DEFINE(HAVE_PTHREAD_H, 1)], [])
-AC_HAVE_LIBRARY(pthread, [ LIBS="$LIBS -lpthread"; ], [])
+AC_HAVE_LIBRARY(y, [ LIBS="$LIBS -ly"; ], [ eixt ])
+AC_HAVE_LIBRARY(fl, [ LIBS="$LIBS -lfl"; ], [ LIBS="$LIBS -lfl" ])
 
 AC_HAVE_LIBRARY(rt, [ LIBS="$LIBS -lrt"; ], [])
-
-AC_SUBST(CFFI)
 
 AC_SUBST(LIBS)
 
@@ -246,6 +245,11 @@ CXXFLAGS="-I . -I src $CXXFLAGS"
 if which clang++ > /dev/null
 then
     CXX=g++
+
+    if which ccache > /dev/null
+    then
+        CXX="ccache g++"
+    fi
 else
     echo "Require g++"
     exit 2
@@ -258,24 +262,13 @@ else
     CXXFLAGS='`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3'" $CXXFLAGS"
 fi
 
-CLANG=clang
-
-LLVM_DIS=llvm-dis
-
-LLC=llc
-
-CLANGPLUSPLUS=clang++
-
 LIBS="$LIBS"
 
 AC_SUBST(CXX)
 
-#CFLAGS="$CFLAGS -Qunused-arguments"
-#CFLAGS="$CFLAGS -Qunused-arguments -Wunused-variable"
-
 COMMON_OBJS="src/buffer.o src/xfunc.o src/alignment.o"
 
-OBJS="src/compiler.o src/parser.o src/klass.o src/node_type.o src/typedef.o src/vtable.o"
+OBJS="src/klass.o src/node_type.o src/typedef.o src/vtable.o src/node.o"
 
 RUNTIME_OBJS=""
 

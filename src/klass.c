@@ -17,7 +17,6 @@ unsigned int get_hash_key(char* name, unsigned int max)
 
 static void free_class(sCLClass* klass)
 {
-    free(klass->mConst.mConst);
     free(klass);
 }
 
@@ -108,163 +107,6 @@ static BOOL put_class_to_table(char* class_name_, sCLClass* klass)
     return TRUE;
 }
 
-static BOOL search_for_class_file(char* class_name_, char* class_file_name, size_t class_file_name_size, int version)
-{
-    char extname[PATH_MAX];
-
-    snprintf(extname, PATH_MAX, ".ncl");
-
-    if(version == 0) {
-        /// current working directory ///
-        char* cwd = getenv("PWD");
-
-        if(cwd) {
-            snprintf(class_file_name, class_file_name_size, "%s/%s%s", cwd, class_name_, extname);
-
-            if(access(class_file_name, F_OK) == 0) {
-                return TRUE;
-            }
-        }
-
-        /// system shared directory ///
-        snprintf(class_file_name, class_file_name_size, "%s/share/neo-c/%s%s", PREFIX, class_name_, extname);
-
-        if(access(class_file_name, F_OK) == 0) {
-            return TRUE;
-        }
-    }
-    else {
-        /// current working directory ///
-        char* cwd = getenv("PWD");
-
-        if(cwd) {
-            snprintf(class_file_name, class_file_name_size, "%s/%s@%d%s", cwd, class_name_, version, extname);
-
-            if(access(class_file_name, F_OK) == 0) {
-                return TRUE;
-            }
-        }
-
-        /// system shared directory ///
-        snprintf(class_file_name, class_file_name_size, "%s/share/neo-c/%s@%d%s", PREFIX, class_name_, version, extname);
-
-        if(access(class_file_name, F_OK) == 0) {
-            return TRUE;
-        }
-    }
-
-    return FALSE;
-}
-
-void read_from_file(char** p, void* buf, size_t size, char* head)
-{
-    memcpy(buf, *p, size);
-
-    (*p) += size;
-
-    alignment_pointer(p, head);
-}
-
-void read_char_from_file(char** p, char* c)
-{
-    *c = **p;
-    (*p)++;
-}
-
-void read_int_from_file(char** p, int* n)
-{
-    *n = *(int*)(*p);
-    (*p) += sizeof(int);
-}
-
-void read_long_from_file(char** p, clint64* n)
-{
-    *n = *(clint64*)(*p);
-    (*p) +=sizeof(clint64);
-}
-
-void read_const_from_file(char** p, sConst* constant, char* head)
-{
-    int len;
-    read_int_from_file(p, &len);
-
-    sConst_init_with_size(constant, len+1);
-    constant->mLen = len;
-
-    read_from_file(p, constant->mConst, len, head);
-}
-
-static sCLClass* read_class_from_file(char* class_name_, char** p, char* head)
-{
-    sCLClass* klass = xcalloc(1, sizeof(sCLClass));
-
-    read_const_from_file(p, &klass->mConst, head);
-
-    int n;
-    read_int_from_file(p, &n);
-    klass->mClassNameOffset = n;
-
-    return klass;
-}
-
-static sCLClass* load_class_from_class_file(char* class_name_, char* class_file_name)
-{
-    sBuf buf;
-    if(!read_source(class_file_name, &buf)) {
-        return NULL;
-    }
-
-    char* p = buf.mBuf;
-
-    /// check magic number. Is this Clover object file? ///
-    char c;
-
-    if(*p != 11) { return NULL; }
-    p++;
-    if(*p != 12) { return NULL; }
-    p++;
-    if(*p != 34) { return NULL; }
-    p++;
-    if(*p != 55) { return NULL; }
-    p++;
-    if(*p != 'N') { return NULL; }
-    p++;
-    if(*p != 'E') { return NULL; }
-    p++;
-    if(*p != 'O') { return NULL; }
-    p++;
-    if(*p != 'C') { return NULL; }
-    p++;
-
-    alignment_pointer(&p, buf.mBuf);
-
-    sCLClass* klass = read_class_from_file(class_name_, &p, buf.mBuf);
-
-    if(klass == NULL) {
-        fprintf(stderr, "Clover2 can't load class %s because of class file\n", class_name_);
-        return NULL;
-    }
-
-    if(!put_class_to_table(class_name_, klass)) {
-        fprintf(stderr, "overflow class number\n");
-        exit(1);
-    }
-
-    return klass;
-}
-
-static sCLClass* load_class(char* class_name_, int version)
-{
-    char class_file_name[PATH_MAX+1];
-    if(!search_for_class_file(class_name_, class_file_name, PATH_MAX, version)) {
-        return NULL;
-    }
-
-    sCLClass* result = load_class_from_class_file(class_name_, class_file_name);
-
-    return result;
-}
-
 sCLClass* get_class(char* class_name_)
 {
     unsigned int hash_key = get_hash_key(class_name_, CLASS_NUM_MAX);
@@ -293,14 +135,12 @@ sCLClass* get_class(char* class_name_)
         }
     }
 
-    return load_class(class_name_, 0);
+    return NULL;
 }
 
 static sCLClass* alloc_class(char* class_name_, BOOL primitive_, BOOL struct_, BOOL number_type, BOOL unsigned_number, int generics_number, int method_generics_number, BOOL union_, BOOL anonymous, BOOL enum_, BOOL anonymous_var_name)
 {
     sCLClass* klass = xcalloc(1, sizeof(sCLClass));
-
-    sConst_init(&klass->mConst);
 
     klass->mFlags |= (primitive_ ? CLASS_FLAGS_PRIMITIVE:0) | (struct_ ? CLASS_FLAGS_STRUCT:0) | (number_type ? CLASS_FLAGS_NUMBER:0) | (unsigned_number ? CLASS_FLAGS_UNSIGNED_NUMBER:0) | (union_ ? CLASS_FLAGS_UNION:0) | (anonymous ? CLASS_FLAGS_ANONYMOUS:0) | (enum_ ? CLASS_FLAGS_ENUM:0) | (anonymous_var_name ? CLASS_FLAGS_ANONYMOUS_VAR_NAME:0);
 
@@ -311,13 +151,11 @@ static sCLClass* alloc_class(char* class_name_, BOOL primitive_, BOOL struct_, B
         klass->mFlags |= CLASS_FLAGS_METHOD_GENERICS;
     }
 
-    klass->mClassNameOffset = append_str_to_constant_pool(&klass->mConst, class_name_, FALSE);
+    xstrncpy(klass->mName, class_name_, VAR_NAME_MAX);
 
     klass->mGenericsNum = generics_number;
     klass->mMethodGenericsNum = method_generics_number;
     klass->mUndefinedStructType = NULL;
-
-    klass->mVersion = 0;
 
     if(!put_class_to_table(class_name_, klass)) {
         fprintf(stderr, "overflow class number\n");
@@ -331,13 +169,11 @@ sCLClass* clone_class(sCLClass* klass)
 {
     sCLClass* klass2 = xcalloc(1, sizeof(sCLClass));
 
-    sConst_init(&klass2->mConst);
-
     klass2->mFlags = klass->mFlags;
 
-    char* class_name_ = CLASS_NAME(klass);
+    char* class_name_ = klass->mName;
 
-    klass2->mClassNameOffset = append_str_to_constant_pool(&klass2->mConst, class_name_, FALSE);
+    xstrncpy(klass2->mName, klass->mName, VAR_NAME_MAX);
 
     klass2->mGenericsNum = klass->mGenericsNum;
     klass2->mMethodGenericsNum = klass->mMethodGenericsNum;
@@ -346,8 +182,8 @@ sCLClass* clone_class(sCLClass* klass)
 
     int i;
     for(i=0; i<klass->mNumFields; i++) {
-        char* field_name = CONS_str(&klass->mConst, klass->mFieldNameOffsets[i]);
-        klass2->mFieldNameOffsets[i] = append_str_to_constant_pool(&klass2->mConst, field_name, FALSE);
+        char* field_name = klass->mNameFields[i];
+        xstrncpy(klass2->mNameFields[i], field_name, VAR_NAME_MAX);
         klass2->mFields[i] = clone_node_type(klass->mFields[i]);
     }
 
@@ -371,14 +207,13 @@ sCLClass* alloc_enum(char* class_name_)
 void add_fields_to_struct(sCLClass* klass, int num_fields, char** field_name, struct sNodeTypeStruct* fields[STRUCT_FIELD_MAX])
 {
     if(klass->mNumFields + num_fields >= STRUCT_FIELD_MAX) {
-        fprintf(stderr, "overflow field number of %s\n", CLASS_NAME(klass));
+        fprintf(stderr, "overflow field number of %s\n", klass->mName);
         exit(0);
     }
 
     int i;
     for(i=0; i<num_fields; i++) {
-        unsigned int offset = append_str_to_constant_pool(&klass->mConst, field_name[i], FALSE);
-        klass->mFieldNameOffsets[klass->mNumFields+i] = offset;
+        xstrncpy(klass->mNameFields[klass->mNumFields+i], field_name[i], VAR_NAME_MAX);
         klass->mFields[klass->mNumFields+i] = clone_node_type(fields[i]);
     }
 
@@ -397,14 +232,14 @@ void add_fields_to_union(sCLClass* klass, int num_fields, char** field_name, str
     klass->mNumFields = num_fields;
 
     if(klass->mNumFields >= STRUCT_FIELD_MAX) {
-        fprintf(stderr, "overflow field number of %s\n", CLASS_NAME(klass));
+        fprintf(stderr, "overflow field number of %s\n", klass->mName);
         exit(0);
     }
 
 
     int i;
     for(i=0; i<num_fields; i++) {
-        klass->mFieldNameOffsets[i] = append_str_to_constant_pool(&klass->mConst, field_name[i], FALSE);
+        xstrncpy(klass->mNameFields[i], field_name[i], VAR_NAME_MAX);
         klass->mFields[i] = clone_node_type(fields[i]);
     }
 }
@@ -509,7 +344,7 @@ int get_field_index(sCLClass* klass, char* var_name, int* parent_field_index)
                 }
             }
 
-            char* field_name = CONS_str(&klass->mConst, klass->mFieldNameOffsets[i]);
+            char* field_name = klass->mNameFields[i];
 
             if(strcmp(field_name, var_name) == 0) {
                 return i;

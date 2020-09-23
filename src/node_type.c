@@ -115,7 +115,7 @@ sNodeType* clone_node_type(sNodeType* node_type)
 
 void show_type_core(sNodeType* type) 
 {
-    printf("class %s", CLASS_NAME(type->mClass));
+    printf("%s", type->mClass->mName);
     int i;
     for(i=0; i<type->mPointerNum; i++) {
         printf("*");
@@ -124,7 +124,7 @@ void show_type_core(sNodeType* type)
         printf("[%d]", type->mArrayNum[i]);
     }
     if(type->mHeap) {
-        printf("%");
+        printf("%%");
     }
     if(type->mNumGenericsTypes > 0) {
         printf("<");
@@ -415,7 +415,7 @@ BOOL cast_posibility(sNodeType* left_type, sNodeType* right_type)
     //return FALSE;
 }
 
-BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, sCompileInfo* info)
+BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, BOOL no_output)
 {
     sCLClass* left_class = left_type->mClass;
     sCLClass* right_class = right_type->mClass; 
@@ -423,7 +423,7 @@ BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, sCompi
     if(type_identify_with_class_name(left_type, "any")) {
         return TRUE;
     }
-    else if(info->no_output && left_class->mFlags & CLASS_FLAGS_METHOD_GENERICS)
+    else if(no_output && left_class->mFlags & CLASS_FLAGS_METHOD_GENERICS)
     {
         return TRUE;
     }
@@ -451,7 +451,7 @@ BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, sCompi
         int i;
         for(i=0; i<left_type->mNumGenericsTypes; i++)
         {
-            if(!substitution_posibility(left_type->mGenericsTypes[i], right_type->mGenericsTypes[i], info))
+            if(!substitution_posibility(left_type->mGenericsTypes[i], right_type->mGenericsTypes[i], no_output))
             {
                 return FALSE;
             }
@@ -514,7 +514,7 @@ BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, sCompi
 
 BOOL type_identify(sNodeType* left, sNodeType* right)
 {
-    return strcmp(CLASS_NAME(left->mClass), CLASS_NAME(right->mClass)) == 0;
+    return strcmp(left->mClass->mName, right->mClass->mName) == 0;
 }
 
 BOOL type_identify_with_class_name(sNodeType* left, char* right_class_name)
@@ -732,9 +732,8 @@ BOOL is_typeof_type(sNodeType* node_type)
     return result;
 }
 
-BOOL solve_typeof(sNodeType** node_type, sCompileInfo* info)
+BOOL solve_typeof(sNodeType** node_type, struct sCompileInfoStruct* info)
 {
-
     int i;
     for(i=0; i<(*node_type)->mNumGenericsTypes; i++)
     {
@@ -747,19 +746,17 @@ BOOL solve_typeof(sNodeType** node_type, sCompileInfo* info)
     unsigned int node = (*node_type)->mTypeOfExpression;
 
     if(node) {
-        BOOL no_output = info->no_output;
-        info->no_output = TRUE;
-        if(!compile(node, info)) {
-            compile_err_msg(info, "can't get type from typedef");
-            info->err_num++;
-            info->no_output = no_output;
+        sCompileInfo info;
+        info.no_output = TRUE;
+        if(!compile(node, &info)) {
+            parser_err_msg("can't get type from typedef");
+            gErrNum++;
             return TRUE;
         }
-        info->no_output = no_output;
 
-        dec_stack_ptr(1, info);
+        dec_stack_ptr(1, &info);
 
-        *node_type = clone_node_type(info->type);
+        *node_type = clone_node_type(info.type);
     }
 
     return TRUE;
@@ -890,7 +887,7 @@ void create_type_name_from_node_type(char* type_name, int type_name_max, sNodeTy
 {
     sCLClass* klass = node_type->mClass;
 
-    xstrncat(type_name, CLASS_NAME(klass), type_name_max);
+    xstrncat(type_name, klass->mName, type_name_max);
 
     if(node_type->mNumParams > 0) {
         xstrncat(type_name, "(", type_name_max);
