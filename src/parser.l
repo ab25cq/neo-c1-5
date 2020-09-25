@@ -7,7 +7,7 @@
 
 %%
 [ \t]+
-[+\-\*\/;\(\)\{\}] { 
+[=+\-\*\/;\(\)\{\}] { 
     return(yytext[0]); 
 }
 [0-9]+ { 
@@ -17,6 +17,16 @@
 \n {
     gSLine++;
     return yytext[0];
+}
+
+void {
+    strncpy(yylval.cval, yytext, 128);
+    return(VOID); 
+}
+
+return {
+    strncpy(yylval.cval, yytext, 128);
+    return(RETURN);
 }
 
 [a-zA-Z_$]+ {
@@ -29,14 +39,3 @@
 }
 
 %%
-/*
-void {
-    strncpy(yylval.cval, yytext, 128);
-    return(VOID); 
-}
-
-return {
-    strncpy(yylval.cval, yytext, 128);
-    return(RETURN);
-}
-*/

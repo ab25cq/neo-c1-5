@@ -11,10 +11,12 @@ static void compiler_init()
     init_typedef();
     init_nodes();
     class_init();
+    llvm_init();
 }
 
 static void compiler_final()
 {
+    llvm_final();
     class_final();
     final_vtable();
     free_nodes();

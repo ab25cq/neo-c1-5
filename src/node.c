@@ -244,6 +244,26 @@ unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeStoreVariable;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sStoreVariable.mVarName, var_name, VAR_NAME_MAX);
+    xstrncpy(gNodes[node].uValue.sStoreVariable.mTypeName, type_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sStoreVariable.mAlloc = alloc;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {
@@ -280,6 +300,7 @@ void show_node(unsigned int node)
 
             puts("block");
             show_node(gNodes[node].uValue.sFunction.mNodeBlock);
+            puts("block end");
             }
             break;
 
@@ -329,6 +350,10 @@ void show_node(unsigned int node)
             puts("left");
             show_node(gNodes[node].mLeft);
 
+            break;
+
+        case kNodeTypeStoreVariable:
+            puts("store variable");
             break;
 
         default:

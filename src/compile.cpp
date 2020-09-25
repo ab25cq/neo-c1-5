@@ -649,10 +649,32 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX];
+    char type_name[VAR_NAME_MAX];
+
+    xstrncpy(var_name, gNodes[node].uValue.sStoreVariable.mVarName, VAR_NAME_MAX);
+    xstrncpy(type_name, gNodes[node].uValue.sStoreVariable.mTypeName, VAR_NAME_MAX);
+    BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    info->type = right_type;
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 show_node(node);
-
     switch(gNodes[node].mNodeType) {
         case kNodeTypeFunction:
             if(!compile_function(node, info)) {
@@ -688,6 +710,12 @@ show_node(node);
             break;
 
         case kNodeTypeBlock:
+            break;
+
+        case kNodeTypeStoreVariable:
+            if(!compile_store_varialbe(node, info)) {
+                return FALSE;
+            }
             break;
     }
     

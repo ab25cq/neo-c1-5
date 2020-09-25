@@ -25,7 +25,7 @@ sCompileInfo cinfo;
 %token <cval> VOID
 %token <cval> RETURN
 %type <rval> program 
-%type <node> function block add_sub return_op mult_div node params
+%type <node> function block add_sub return_op mult_div node params var
 
 %start program
 
@@ -67,19 +67,27 @@ params :       { params = sNodeTree_create_function_params(gSName, gSLine); $$ =
         | params ',' IDENTIFIER IDENTIFIER { $$ = params; append_param_to_function_params(params, $3, $4); }
         ;
 
-block:                           
+block:  return_op                  { block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block; } 
         | return_op ';'            { block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block;  }
         | return_op ';' '\n'       { block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block;  }
         | block ';' return_op ';'      { $$ = block; append_node_to_node_block(block, $3); }
         | block ';' return_op ';' '\n' { $$ = block; append_node_to_node_block(block, $3); }
         ;
 
-return_op: add_sub                  { $$ = $1; }
-    | RETURN '(' add_sub ')' ';' '\n' { $$ = sNodeTree_create_return($3, gSName, gSLine); }
-    | RETURN '(' add_sub ')' ';' { $$ = sNodeTree_create_return($3, gSName, gSLine); }
-    | RETURN add_sub ';' '\n' { $$ = sNodeTree_create_return($2, gSName, gSLine); }
-    | RETURN add_sub ';'  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
+return_op: var                  { $$ = $1; }
+    | RETURN '(' var ')' ';' '\n' { $$ = sNodeTree_create_return($3, gSName, gSLine); }
+    | RETURN '(' var ')' ';' { $$ = sNodeTree_create_return($3, gSName, gSLine); }
+    | RETURN var ';' '\n' { $$ = sNodeTree_create_return($2, gSName, gSLine); }
+    | RETURN var ';'  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
     ;
+
+
+var:  add_sub                  { $$ = $1; }
+     | IDENTIFIER IDENTIFIER '=' add_sub ';'  { $$ = sNodeTree_create_store_variable($2, $1, $4, TRUE, gSName, gSLine); }
+     | IDENTIFIER IDENTIFIER '=' add_sub ';' '\n'  { $$ = sNodeTree_create_store_variable($2, $1, $4, TRUE, gSName, gSLine); }
+     | IDENTIFIER '=' add_sub ';' { $$ = sNodeTree_create_store_variable($1, "", $3, FALSE, gSName, gSLine); }
+     | IDENTIFIER '=' add_sub ';' '\n' { $$ = sNodeTree_create_store_variable($1, "", $3, FALSE, gSName, gSLine); }
+     ;
 
 add_sub:  mult_div                  { $$ = $1; }
         | add_sub '+' mult_div      { $$ = it = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
