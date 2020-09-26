@@ -40,6 +40,8 @@ Module* TheModule;
 std::unique_ptr<FunctionPassManager> TheFPM;
 FunctionAnalysisManager TheFAM(false);
 
+GlobalVariable* gLVTableValue;
+
 //DebugInfo KSDbgInfo;
 
 //DIBuilder* DBuilder;
@@ -68,6 +70,23 @@ struct sFunctionStruct {
 typedef sFunctionStruct sFunction;
 
 std::map<std::string, sFunction> gFuncs;
+
+void compile_err_msg(sCompileInfo* info, const char* msg, ...)
+{
+    char msg2[1024];
+
+    va_list args;
+    va_start(args, msg);
+    vsnprintf(msg2, 1024, msg, args);
+    va_end(args);
+
+    static int output_num = 0;
+
+    if(output_num < COMPILE_ERR_MSG_MAX) {
+        fprintf(stderr, "%s:%d: %s\n", info->sname, info->sline, msg2);
+    }
+    output_num++;
+}
 
 void start_to_make_native_code(char* sname)
 {
@@ -311,50 +330,6 @@ void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
 }
 */
 
-void llvm_init()
-{
-    InitializeNativeTarget();
-    InitializeNativeTargetAsmPrinter();
-    InitializeNativeTargetAsmParser();
-    start_to_make_native_code(gSName);
-}
-
-void llvm_final()
-{
-    //output_native_code(gSName, false, "");
-}
-
-void dec_stack_ptr(int value, sCompileInfo* info)
-{
-    gLLVMStack -= value;
-
-    info->stack_num -= value;
-}
-
-void push_value_to_stack_ptr(LVALUE* value, sCompileInfo* info)
-{
-    *gLLVMStack= *value;
-    gLLVMStack++;
-
-    info->stack_num++;
-}
-
-void arrange_stack(sCompileInfo* info, int top)
-{
-    if(info->stack_num > top) {
-        dec_stack_ptr(info->stack_num-top, info);
-    }
-    if(info->stack_num < top) {
-        fprintf(stderr, "%s %d: unexpected stack value. The stack num is %d. top is %d\n", gSName, gSLine, info->stack_num, top);
-        exit(2);
-    }
-}
-
-LVALUE* get_value_from_stack(int offset)
-{
-    return gLLVMStack + offset;
-}
-
 BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
@@ -432,6 +407,78 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
     return TRUE;
 }
 
+static Type* get_lvtable_type()
+{
+    char buf[128];
+
+    snprintf(buf, 128, "char*[%d]", LOCAL_VARIABLE_MAX);
+
+    sNodeType* lvtable_node_type = create_node_type_with_class_name(buf);
+
+    Type* lvtable_type;
+    if(!create_llvm_type_from_node_type(&lvtable_type, lvtable_node_type, lvtable_node_type, NULL))
+    {
+        fprintf(stderr, "unexpected err\n");
+        exit(2);
+    }
+
+    return lvtable_type;
+}
+
+void llvm_init()
+{
+    InitializeNativeTarget();
+    InitializeNativeTargetAsmPrinter();
+    InitializeNativeTargetAsmParser();
+    start_to_make_native_code(gSName);
+
+    Type* lvtable_type = get_lvtable_type();
+
+    gLVTableValue = new GlobalVariable(*TheModule, lvtable_type, false, GlobalValue::InternalLinkage, 0, "gLVTable");
+    gLVTableValue->setAlignment(8);
+
+    ConstantAggregateZero* initializer = ConstantAggregateZero::get(lvtable_type);
+
+    gLVTableValue->setInitializer(initializer);
+}
+
+void llvm_final()
+{
+    //output_native_code(gSName, false, "");
+}
+
+void dec_stack_ptr(int value, sCompileInfo* info)
+{
+    gLLVMStack -= value;
+
+    info->stack_num -= value;
+}
+
+void push_value_to_stack_ptr(LVALUE* value, sCompileInfo* info)
+{
+    *gLLVMStack= *value;
+    gLLVMStack++;
+
+    info->stack_num++;
+}
+
+void arrange_stack(sCompileInfo* info, int top)
+{
+    if(info->stack_num > top) {
+        dec_stack_ptr(info->stack_num-top, info);
+    }
+    if(info->stack_num < top) {
+        fprintf(stderr, "%s %d: unexpected stack value. The stack num is %d. top is %d\n", gSName, gSLine, info->stack_num, top);
+        exit(2);
+    }
+}
+
+LVALUE* get_value_from_stack(int offset)
+{
+    return gLLVMStack + offset;
+}
+
+
 void llvm_change_block(BasicBlock* current_block, BasicBlock** current_block_before, sCompileInfo* info, BOOL no_free_right_objects)
 {
 /*
@@ -446,6 +493,27 @@ void llvm_change_block(BasicBlock* current_block, BasicBlock** current_block_bef
     info->current_block = current_block;
 }
 
+BOOL compile_block(unsigned int node_block, sCompileInfo* info)
+{
+    int num_nodes = gNodes[node_block].uValue.sBlock.mNumNodes;
+    unsigned int* nodes = gNodes[node_block].uValue.sBlock.mNodes;
+
+    sVarTable* lv_table = info->lv_table;
+    info->lv_table = init_var_table();
+
+    int i;
+    for(i=0; i<num_nodes; i++) {
+        unsigned int node = nodes[i];
+        if(!compile(node, info)) {
+            return FALSE;
+        }
+    }
+
+    info->lv_table= lv_table;
+
+    return TRUE;
+}
+
 BOOL compile_function(unsigned int node, sCompileInfo* info)
 {
     char fun_name[VAR_NAME_MAX];
@@ -458,10 +526,11 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     for(i=0; i<num_params; i++) {
         sParserParam* param = gNodes[node].uValue.sFunction.mParams + i;
         xstrncpy(params[i].mName, param->mName, VAR_NAME_MAX);
-        params[i].mType = clone_node_type(param->mType);
+        xstrncpy(params[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
+        params[i].mType = create_node_type_with_class_name(param->mTypeName);
     }
 
-    sNodeType* result_type = clone_node_type(gNodes[node].uValue.sFunction.mResultType);
+    sNodeType* result_type = create_node_type_with_class_name(gNodes[node].uValue.sFunction.mResultTypeName);
 
     unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
 
@@ -494,7 +563,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
 
     gFuncs[fun_name] = fun;
 
-    xstrncpy(info->current_fun_name, fun_name, VAR_NAME_MAX);
+//    xstrncpy(info->current_fun_name, fun_name, VAR_NAME_MAX);
 
     int n = 0;
     std::vector<Value *> llvm_params;
@@ -547,14 +616,8 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         store_address_to_lvtable(index, address);
     }
 */
-    int num_nodes = gNodes[node_block].uValue.sBlock.mNumNodes;
-    unsigned int* nodes = gNodes[node_block].uValue.sBlock.mNodes;
-
-    for(i=0; i<num_nodes; i++) {
-        unsigned int node = nodes[i];
-        if(!compile(node, info)) {
-            return FALSE;
-        }
+    if(!compile_block(node_block, info)) {
+        return FALSE;
     }
 
 llvm_fun->print(llvm::errs(), nullptr);
@@ -649,6 +712,57 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+void store_address_to_lvtable(int index, Value* address)
+{
+    Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, gLVTableValue, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
+
+    Value* lvalue = lvtable_value2;
+    Value* rvalue = ConstantInt::get(TheContext, llvm::APInt(32, index));
+    Value* element_address_value = Builder.CreateGEP(lvalue, rvalue);
+    Value* address2 = Builder.CreateCast(Instruction::BitCast, address, PointerType::get(IntegerType::get(TheContext, 8), 0));
+
+    Builder.CreateAlignedStore(address2, element_address_value, 8);
+}
+
+int get_llvm_alignment_from_node_type(sNodeType* node_type)
+{
+    int result = 0;
+
+    sCLClass* klass = node_type->mClass;
+
+    if(klass->mFlags & CLASS_FLAGS_STRUCT) {
+        result = 8;
+    }
+    else if(klass->mFlags & CLASS_FLAGS_UNION) {
+        result = 8;
+    }
+    else if(node_type->mPointerNum > 0) {
+        result = 8;
+    }
+    else if(type_identify_with_class_name(node_type, "char"))
+    {
+        result = 1;
+    }
+    else if(type_identify_with_class_name(node_type, "short"))
+    {
+        result = 2;
+    }
+    else if(type_identify_with_class_name(node_type, "int"))
+    {
+        result = 4;
+    }
+    else if(type_identify_with_class_name(node_type, "bool"))
+    {
+        result = 1;
+    }
+    else if(type_identify_with_class_name(node_type, "lambda"))
+    {
+        result = 8;
+    }
+
+    return result;
+}
+
 static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 {
     char var_name[VAR_NAME_MAX];
@@ -667,6 +781,65 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
+    if(alloc) {
+        if(!info->no_output) {
+            sNodeType* var_type = create_node_type_with_class_name(type_name);
+
+            BOOL readonly = FALSE;
+            BOOL constant = FALSE;
+            BOOL global = FALSE;
+            int index = -1;
+            void* llvm_value = NULL;
+            if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+            {
+                compile_err_msg(info, "overflow variable table");
+                return FALSE;
+            }
+
+            sVar* var = get_variable_from_table(info->lv_table, var_name);
+
+            Type* llvm_var_type;
+            if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
+            {
+                return TRUE;
+            }
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+            
+            Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
+
+            var->mLLVMValue = address;
+
+            BOOL parent = FALSE;
+            int index2 = get_variable_index(info->lv_table, var_name, &parent);
+
+            store_address_to_lvtable(index2, address);
+
+            Value* var_address;
+            if(parent && !var->mGlobal) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
+
+            if(var_address == nullptr) {
+                compile_err_msg(info, "Invalid storing variable %s\n", var_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
+
+            //std_move(var_address, var->mType, &rvalue, alloc, info);
+
+            Builder.CreateAlignedStore(rvalue2, var_address, alignment);
+        }
+    }
+
     info->type = right_type;
 
     return TRUE;
@@ -674,7 +847,11 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
-show_node(node);
+//show_node(node);
+    
+    xstrncpy(info->sname, gNodes[node].mSName, PATH_MAX);
+    info->sline = gNodes[node].mLine;
+
     switch(gNodes[node].mNodeType) {
         case kNodeTypeFunction:
             if(!compile_function(node, info)) {

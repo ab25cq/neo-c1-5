@@ -43,21 +43,17 @@ program : {
         ;
 
 function : 
-/*
         VOID IDENTIFIER '(' params ')' '{' block '}' '\n' {
             char* fun_name = $2;
             unsigned int function_params = $4;
-            sNodeType* result_type = create_node_type_with_class_name("void");
             unsigned int node_block = $7;
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, "void", node_block, gSName, gSLine);
         }
-*/
-        IDENTIFIER IDENTIFIER '(' params ')' '{' block '}' '\n' {
+        | IDENTIFIER IDENTIFIER '(' params ')' '{' block '}' '\n' {
             char* fun_name = $2;
             unsigned int function_params = $4;
-            sNodeType* result_type = create_node_type_with_class_name($1);
             unsigned int node_block = $7;
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, $1, node_block, gSName, gSLine);
         }
         ;
 

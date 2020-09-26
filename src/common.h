@@ -256,6 +256,7 @@ sNodeType* get_typedef(char* name);
 struct sParserParamStruct 
 {
     char mName[VAR_NAME_MAX];
+    char mTypeName[VAR_NAME_MAX];
     sNodeType* mType;
 };
 
@@ -302,7 +303,7 @@ struct sNodeTreeStruct
             char mName[VAR_NAME_MAX];
             sParserParam mParams[PARAMS_MAX];
             int mNumParams;
-            sNodeType* mResultType;
+            char mResultTypeName[VAR_NAME_MAX];
             unsigned int mNodeBlock;
         } sFunction;
 
@@ -328,7 +329,7 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, sNodeType* result_type, unsigned int node_block, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
 
@@ -345,8 +346,11 @@ struct sCompileInfoStruct
 
     void* andand_result_var;
     void* oror_result_var;
-    void* function_lvtable;
-    char current_fun_name[VAR_NAME_MAX];
+
+    sVarTable* lv_table;
+
+    char sname[PATH_MAX];
+    int sline;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

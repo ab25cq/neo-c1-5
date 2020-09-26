@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, sNodeType* result_type, unsigned int node_block, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -155,10 +155,10 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     for(i=0; i<gNodes[function_params].uValue.sFunctionParams.mNumParams; i++) {
         sParserParam* param = gNodes[function_params].uValue.sFunctionParams.mParams + i;
         xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mName, param->mName, VAR_NAME_MAX);
-        gNodes[node].uValue.sFunction.mParams[i].mType = clone_node_type(param->mType);
+        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
     }
 
-    gNodes[node].uValue.sFunction.mResultType = clone_node_type(result_type);
+    xstrncpy(gNodes[node].uValue.sFunction.mResultTypeName, result_type_name, VAR_NAME_MAX);
     gNodes[node].uValue.sFunction.mNodeBlock = node_block;
 
     return node;
@@ -223,7 +223,7 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
 {
     int num_params = gNodes[function_params].uValue.sFunctionParams.mNumParams;
     xstrncpy(gNodes[function_params].uValue.sFunctionParams.mParams[num_params].mName, name, VAR_NAME_MAX);
-    gNodes[function_params].uValue.sFunctionParams.mParams[num_params].mType = create_node_type_with_class_name(type_name);
+    xstrncpy(gNodes[function_params].uValue.sFunctionParams.mParams[num_params].mTypeName, type_name, VAR_NAME_MAX);
 
     gNodes[function_params].uValue.sFunctionParams.mNumParams++;
 }
@@ -284,7 +284,7 @@ void show_node(unsigned int node)
             printf("function name %s num_params %d\n", gNodes[node].uValue.sFunction.mName, gNodes[node].uValue.sFunction.mNumParams);
 
             puts("result_type");
-            show_node_type(gNodes[node].uValue.sFunction.mResultType);
+            puts(gNodes[node].uValue.sFunction.mResultTypeName);
 
             puts("params");
             printf("num_params %d\n", gNodes[node].uValue.sFunction.mNumParams);
@@ -295,7 +295,7 @@ void show_node(unsigned int node)
 
                 printf("param #%d\n", i);
                 puts(param->mName);
-                show_node_type(param->mType);
+                puts(param->mTypeName);
             }
 
             puts("block");
