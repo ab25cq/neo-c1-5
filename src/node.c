@@ -228,6 +228,36 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
     gNodes[function_params].uValue.sFunctionParams.mNumParams++;
 }
 
+unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeExternalFunction;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
+
+    gNodes[node].uValue.sFunction.mNumParams = gNodes[function_params].uValue.sFunctionParams.mNumParams;
+
+    int i;
+    for(i=0; i<gNodes[function_params].uValue.sFunctionParams.mNumParams; i++) {
+        sParserParam* param = gNodes[function_params].uValue.sFunctionParams.mParams + i;
+        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mName, param->mName, VAR_NAME_MAX);
+        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
+    }
+
+    xstrncpy(gNodes[node].uValue.sFunction.mResultTypeName, result_type_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sFunction.mNodeBlock = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline)
 {
     unsigned node = alloc_node();
@@ -260,6 +290,55 @@ unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, un
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = right;
     gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_params(char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeParams;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    gNodes[node].uValue.sParams.mNumParams = 0;
+    memset(&gNodes[node].uValue.sParams.mParams, 0, sizeof(unsigned int)*PARAMS_MAX);
+
+    return node;
+}
+
+void append_param_to_params(unsigned int params, unsigned int param)
+{
+    int num_params = gNodes[params].uValue.sParams.mNumParams;
+    gNodes[params].uValue.sParams.mParams[num_params] = param;
+    gNodes[params].uValue.sParams.mNumParams++;
+}
+
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeFunctionCall;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, fun_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sFunctionCall.mNumParams = gNodes[params].uValue.sParams.mNumParams;
+    int i;
+    for(i=0; i<gNodes[params].uValue.sParams.mNumParams; i++) {
+        gNodes[node].uValue.sFunctionCall.mParams[i] = gNodes[params].uValue.sParams.mParams[i];
+    }
 
     return node;
 }

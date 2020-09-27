@@ -269,7 +269,7 @@ extern int gErrNum;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable };
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction };
 
 struct sNodeTreeStruct 
 {
@@ -306,11 +306,21 @@ struct sNodeTreeStruct
             char mResultTypeName[VAR_NAME_MAX];
             unsigned int mNodeBlock;
         } sFunction;
+        struct {
+            char mFunName[VAR_NAME_MAX];
+            int mNumParams;
+            unsigned mParams[PARAMS_MAX];
+        } sFunctionCall;
 
         struct {
             int mNumParams;
             sParserParam mParams[PARAMS_MAX];
         } sFunctionParams;
+
+        struct {
+            int mNumParams;
+            unsigned int mParams[PARAMS_MAX];
+        } sParams;
     } uValue;
 };
 
@@ -331,7 +341,10 @@ unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsign
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
+unsigned int sNodeTree_create_params(char* sname, int sline);
+void append_param_to_params(unsigned int params, unsigned int param);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
+unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

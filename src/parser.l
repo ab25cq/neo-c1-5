@@ -7,7 +7,7 @@
 
 %%
 [ \t]+
-[=+\-\*\/;\(\)\{\}] { 
+[=+\-\*\/;\(\)\{\},] { 
     return(yytext[0]); 
 }
 [0-9]+ { 
@@ -22,6 +22,11 @@
 void {
     strncpy(yylval.cval, yytext, 128);
     return(VOID); 
+}
+
+extern {
+    strncpy(yylval.cval, yytext, 128);
+    return(EXTERN); 
 }
 
 return {

@@ -65,11 +65,130 @@ LVALUE* gLLVMStackHead;
 struct sFunctionStruct {
     char mName[VAR_NAME_MAX];
     Function* mLLVMFunction;
+    sNodeType* mResultType;
+    int mNumParams;
+    sNodeType* mParamTypes[PARAMS_MAX];
 };
 
 typedef sFunctionStruct sFunction;
 
 std::map<std::string, sFunction> gFuncs;
+
+BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
+{
+    sCLClass* klass = node_type->mClass;
+
+    if(klass->mFlags & CLASS_FLAGS_ENUM) 
+    {
+        *result_type = IntegerType::get(TheContext, 32);
+    }
+    else if(node_type->mSizeNum > 0) {
+        *result_type = IntegerType::get(TheContext, node_type->mSizeNum*8);
+    }
+    else if(type_identify_with_class_name(node_type, "char"))
+    {
+        *result_type = IntegerType::get(TheContext, 8);
+    }
+    else if(type_identify_with_class_name(node_type, "short"))
+    {
+        *result_type = IntegerType::get(TheContext, 16);
+    }
+    else if(type_identify_with_class_name(node_type, "int"))
+    {
+        *result_type = IntegerType::get(TheContext, 32);
+    }
+    else if(type_identify_with_class_name(node_type, "long"))
+    {
+        *result_type = IntegerType::get(TheContext, 64);
+    }
+    else if(type_identify_with_class_name(node_type, "__uint128_t"))
+    {
+        *result_type = IntegerType::get(TheContext, 128);
+    }
+    else if(type_identify_with_class_name(node_type, "float"))
+    {
+        *result_type = Type::getFloatTy(TheContext);
+    }
+    else if(type_identify_with_class_name(node_type, "double"))
+    {
+        *result_type = Type::getDoubleTy(TheContext);
+    }
+    else if(type_identify_with_class_name(node_type, "long_double"))
+    {
+        *result_type = Type::getFP128Ty(TheContext);
+    }
+    else if(type_identify_with_class_name(node_type, "any"))
+    {
+        *result_type = IntegerType::get(TheContext, 64);
+    }
+    else if(type_identify_with_class_name(node_type, "bool"))
+    {
+        *result_type = IntegerType::get(TheContext, 1);
+    }
+    else if(type_identify_with_class_name(node_type, "void"))
+    {
+        if(node_type->mPointerNum > 0) {
+            *result_type = IntegerType::get(TheContext, 8);
+        }
+        else {
+            *result_type = Type::getVoidTy(TheContext);
+        }
+    }
+
+    int i;
+    for(i=0; i<node_type->mPointerNum; i++) {
+        *result_type = PointerType::get(*result_type, 0);
+    }
+
+    if(node_type->mArrayDimentionNum == -1) {
+        *result_type = PointerType::get(*result_type, 0);
+    }
+
+    for(i=0; i<node_type->mArrayDimentionNum; i++) {
+        *result_type = ArrayType::get(*result_type, node_type->mArrayNum[i]);
+    }
+
+    return TRUE;
+}
+
+BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, sCompileInfo* info)
+{
+    sFunction fun;
+
+    xstrncpy(fun.mName, fun_name, VAR_NAME_MAX);
+    fun.mResultType = clone_node_type(result_type);
+    fun.mNumParams = num_params;
+
+    Type* llvm_result_type;
+    if(!create_llvm_type_from_node_type(&llvm_result_type, result_type, result_type, info))
+    {
+        return TRUE;
+    }
+
+    std::vector<Type *> llvm_param_types;
+
+    int i;
+    for(i=0; i<num_params; i++) {
+        sNodeType* param_type = param_types[i];
+
+        Type* llvm_param_type;
+        if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
+        {
+            return FALSE;
+        }
+        llvm_param_types.push_back(llvm_param_type);
+
+        fun.mParamTypes[i] = clone_node_type(param_types[i]);
+    }
+
+    FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, false);
+    Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
+    fun.mLLVMFunction = llvm_fun;
+
+    gFuncs[fun_name] = fun;
+
+    return TRUE;
+}
 
 void compile_err_msg(sCompileInfo* info, const char* msg, ...)
 {
@@ -330,82 +449,6 @@ void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
 }
 */
 
-BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
-{
-    sCLClass* klass = node_type->mClass;
-
-    if(klass->mFlags & CLASS_FLAGS_ENUM) 
-    {
-        *result_type = IntegerType::get(TheContext, 32);
-    }
-    else if(node_type->mSizeNum > 0) {
-        *result_type = IntegerType::get(TheContext, node_type->mSizeNum*8);
-    }
-    else if(type_identify_with_class_name(node_type, "char"))
-    {
-        *result_type = IntegerType::get(TheContext, 8);
-    }
-    else if(type_identify_with_class_name(node_type, "short"))
-    {
-        *result_type = IntegerType::get(TheContext, 16);
-    }
-    else if(type_identify_with_class_name(node_type, "int"))
-    {
-        *result_type = IntegerType::get(TheContext, 32);
-    }
-    else if(type_identify_with_class_name(node_type, "long"))
-    {
-        *result_type = IntegerType::get(TheContext, 64);
-    }
-    else if(type_identify_with_class_name(node_type, "__uint128_t"))
-    {
-        *result_type = IntegerType::get(TheContext, 128);
-    }
-    else if(type_identify_with_class_name(node_type, "float"))
-    {
-        *result_type = Type::getFloatTy(TheContext);
-    }
-    else if(type_identify_with_class_name(node_type, "double"))
-    {
-        *result_type = Type::getDoubleTy(TheContext);
-    }
-    else if(type_identify_with_class_name(node_type, "long_double"))
-    {
-        *result_type = Type::getFP128Ty(TheContext);
-    }
-    else if(type_identify_with_class_name(node_type, "any"))
-    {
-        *result_type = IntegerType::get(TheContext, 64);
-    }
-    else if(type_identify_with_class_name(node_type, "bool"))
-    {
-        *result_type = IntegerType::get(TheContext, 1);
-    }
-    else if(type_identify_with_class_name(node_type, "void"))
-    {
-        if(node_type->mPointerNum > 0) {
-            *result_type = IntegerType::get(TheContext, 8);
-        }
-        else {
-            *result_type = Type::getVoidTy(TheContext);
-        }
-    }
-
-    int i;
-    for(i=0; i<node_type->mPointerNum; i++) {
-        *result_type = PointerType::get(*result_type, 0);
-    }
-
-    if(node_type->mArrayDimentionNum == -1) {
-        *result_type = PointerType::get(*result_type, 0);
-    }
-
-    for(i=0; i<node_type->mArrayDimentionNum; i++) {
-        *result_type = ArrayType::get(*result_type, node_type->mArrayNum[i]);
-    }
-
-    return TRUE;
-}
 
 static Type* get_lvtable_type()
 {
@@ -534,36 +577,19 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
 
     unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
 
-    Type* llvm_result_type;
-    if(!create_llvm_type_from_node_type(&llvm_result_type, result_type, result_type, info))
-    {
-        return TRUE;
-    }
-
-    std::vector<Type *> llvm_param_types;
+    sNodeType* param_types[PARAMS_MAX];
 
     for(i=0; i<num_params; i++) {
-        sNodeType* param_type = params[i].mType;
-
-        Type* llvm_param_type;
-        if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
-        {
-            return TRUE;
-        }
-        llvm_param_types.push_back(llvm_param_type);
+        param_types[i] = params[i].mType;
     }
 
-    sFunction fun;
+    if(!add_function(fun_name, result_type, num_params, param_types, info)) {
+        return FALSE;
+    }
 
-    xstrncpy(fun.mName, fun_name, VAR_NAME_MAX);
+    sFunction fun = gFuncs[fun_name];
 
-    FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, false);
-    Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
-    fun.mLLVMFunction = llvm_fun;
-
-    gFuncs[fun_name] = fun;
-
-//    xstrncpy(info->current_fun_name, fun_name, VAR_NAME_MAX);
+    Function* llvm_fun = fun.mLLVMFunction;
 
     int n = 0;
     std::vector<Value *> llvm_params;
@@ -631,6 +657,37 @@ llvm_fun->print(llvm::errs(), nullptr);
 
     if(info->no_output) {
         llvm_fun->eraseFromParent();
+    }
+
+    return TRUE;
+}
+
+BOOL compile_external_function(unsigned int node, sCompileInfo* info)
+{
+    char fun_name[VAR_NAME_MAX];
+    xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+    int num_params = gNodes[node].uValue.sFunction.mNumParams;
+
+    sParserParam params[PARAMS_MAX];
+
+    int i;
+    for(i=0; i<num_params; i++) {
+        sParserParam* param = gNodes[node].uValue.sFunction.mParams + i;
+        xstrncpy(params[i].mName, param->mName, VAR_NAME_MAX);
+        xstrncpy(params[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
+        params[i].mType = create_node_type_with_class_name(param->mTypeName);
+    }
+
+    sNodeType* result_type = create_node_type_with_class_name(gNodes[node].uValue.sFunction.mResultTypeName);
+
+    sNodeType* param_types[PARAMS_MAX];
+
+    for(i=0; i<num_params; i++) {
+        param_types[i] = params[i].mType;
+    }
+
+    if(!add_function(fun_name, result_type, num_params, param_types, info)) {
+        return FALSE;
     }
 
     return TRUE;
@@ -866,6 +923,90 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+Value* get_dummy_value(sNodeType* node_type, sCompileInfo* info)
+{
+    Type* llvm_type;
+    if(!create_llvm_type_from_node_type(&llvm_type, node_type, node_type, info))
+    {
+        return FALSE;
+    }
+
+    Value* address = Builder.CreateAlloca(llvm_type, 0, "dummy");
+
+    int alignment = get_llvm_alignment_from_node_type(node_type);
+
+    return Builder.CreateAlignedLoad(address, alignment, "dummy_value");
+}
+
+BOOL compile_function_call(unsigned int node, sCompileInfo* info)
+{
+    char fun_name[VAR_NAME_MAX];
+    xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
+    int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
+
+    unsigned int params[PARAMS_MAX];
+    int i;
+    for(i=0; i<num_params; i++) {
+        params[i] = gNodes[node].uValue.sFunctionCall.mParams[i];
+    }
+
+    sFunction fun = gFuncs[fun_name];
+
+    /// compile parametors ///
+    sNodeType* param_types[PARAMS_MAX];
+    std::vector<Value*> llvm_params;
+    for(i=0; i<num_params; i++) {
+        if(!compile(params[i], info)) {
+            return FALSE;
+        }
+
+        param_types[i] = clone_node_type(info->type);
+
+        //remove_from_right_value_object(param.value, info);
+
+        LVALUE* param = get_value_from_stack(-1);
+
+        llvm_params.push_back(param->value);
+    }
+
+    sNodeType* result_type = clone_node_type(fun.mResultType);
+
+    if(!info->no_output) {
+        Function* llvm_fun = fun.mLLVMFunction;
+
+        if(llvm_fun == nullptr) {
+            return TRUE;
+        }
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateCall(llvm_fun, llvm_params);
+        llvm_value.type = clone_node_type(result_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = clone_node_type(result_type);
+    }
+    else {
+        LVALUE llvm_value;
+        llvm_value.value = get_dummy_value(result_type, info);
+        llvm_value.type = clone_node_type(result_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = clone_node_type(result_type);
+    }
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -912,6 +1053,18 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeStoreVariable:
             if(!compile_store_varialbe(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeFunctionCall:
+            if(!compile_function_call(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeExternalFunction:
+            if(!compile_external_function(node, info)) {
                 return FALSE;
             }
             break;
