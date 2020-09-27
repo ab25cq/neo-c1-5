@@ -1,4 +1,4 @@
-AC_INIT(src/compiler.c)
+AC_INIT(src/main.c)
 
 AC_CONFIG_HEADER(config.h)
 

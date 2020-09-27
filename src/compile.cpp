@@ -139,7 +139,7 @@ void start_to_make_native_code(char* sname)
 #if LLVM_VERSION_MAJOR <= 9
     TheFPM = llvm::make_unique<FunctionPassManager>(TheModule);
 #else
-    TheFPM = make_unique<FunctionPassManager>(TheModule);
+    TheFPM = std::make_unique<FunctionPassManager>(TheModule);
 #endif
 
     //create_internal_functions();
@@ -625,7 +625,7 @@ llvm_fun->print(llvm::errs(), nullptr);
     verifyFunction(*llvm_fun);
 
     // Run the optimizer on the function.
-    TheFPM->run(*llvm_fun, TheFAM);
+    //TheFPM->run(*llvm_fun, TheFAM);
 
     info->type = create_node_type_with_class_name("void");
 
@@ -762,6 +762,27 @@ int get_llvm_alignment_from_node_type(sNodeType* node_type)
 
     return result;
 }
+
+Value* load_address_to_lvtable(int index, sNodeType* var_type, sCompileInfo* info)
+{
+    Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, gLVTableValue, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
+
+    Value* lvalue = lvtable_value2;
+    Value* rvalue = ConstantInt::get(TheContext, llvm::APInt(32, index));
+    Value* element_address_value = Builder.CreateGEP(lvalue, rvalue);
+
+    Value* pointer_value = Builder.CreateAlignedLoad(element_address_value, 8);
+
+    int alignment = get_llvm_alignment_from_node_type(var_type);
+
+    Type* llvm_type;
+    (void)create_llvm_type_from_node_type(&llvm_type, var_type, var_type, info);
+
+    Value* pointer_value2 = Builder.CreateCast(Instruction::BitCast, pointer_value, PointerType::get(llvm_type, 0));
+
+    return pointer_value2;
+}
+
 
 static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 {
