@@ -940,7 +940,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
     xstrncpy(var_name, gNodes[node].uValue.sLoadVariable.mVarName, VAR_NAME_MAX);
 
-    sVar* var = get_variable_from_table(info->pinfo->lv_table, var_name);
+    sVar* var = get_variable_from_table(info->lv_table, var_name);
 
     if(var == NULL || var->mType == NULL) {
         compile_err_msg(info, "undeclared variable %s(3) var %p type %p", var_name, var, var->mType);
@@ -966,7 +966,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     }
     else {
         BOOL parent = FALSE;
-        int index = get_variable_index(info->pinfo->lv_table, var_name, &parent);
+        int index = get_variable_index(info->lv_table, var_name, &parent);
 
         Value* var_address;
         if(parent && !var->mGlobal) {
@@ -977,7 +977,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
         }
 
         if(var_address == nullptr && !info->no_output) {
-            compile_err_msg(info, "Invalid variable. %s. load variable(3)", var_name);
+            compile_err_msg(info, "Invalid variable. %s. load variable", var_name);
             info->err_num++;
 
             info->type = create_node_type_with_class_name("int"); // dummy
@@ -989,12 +989,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
         LVALUE llvm_value;
 
-        if(var_type->mArrayDimentionNum >= 1) {
-            llvm_value.value = var_address;
-        }
-        else {
-            llvm_value.value = Builder.CreateAlignedLoad(var_address, alignment, var_name);
-        }
+        llvm_value.value = Builder.CreateAlignedLoad(var_address, alignment, var_name);
 
         llvm_value.type = var_type;
         llvm_value.address = var_address;
