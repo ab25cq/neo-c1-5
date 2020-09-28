@@ -264,7 +264,6 @@ typedef struct sParserParamStruct sParserParam;
 
 extern char gSName[PATH_MAX];
 extern int gSLine;
-extern int gErrNum;
 
 /////////////////////////////// 
 // node.c

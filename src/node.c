@@ -226,6 +226,12 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
     xstrncpy(gNodes[function_params].uValue.sFunctionParams.mParams[num_params].mTypeName, type_name, VAR_NAME_MAX);
 
     gNodes[function_params].uValue.sFunctionParams.mNumParams++;
+
+    if(gNodes[function_params].uValue.sFunctionParams.mNumParams >= PARAMS_MAX)
+    {
+        fprintf(stderr, "overflow parametor number\n");
+        exit(2);
+    }
 }
 
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline)
@@ -318,6 +324,12 @@ void append_param_to_params(unsigned int params, unsigned int param)
     int num_params = gNodes[params].uValue.sParams.mNumParams;
     gNodes[params].uValue.sParams.mParams[num_params] = param;
     gNodes[params].uValue.sParams.mNumParams++;
+
+    if(gNodes[params].uValue.sParams.mNumParams >= PARAMS_MAX)
+    {
+        fprintf(stderr, "overflow parametor number\n");
+        exit(2);
+    }
 }
 
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, char* sname, int sline)
@@ -366,7 +378,6 @@ unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sli
 
     return node;
 }
-
 
 void show_node(unsigned int node)
 {

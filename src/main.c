@@ -27,7 +27,8 @@ char* gVersion = "0.0.1";
 
 char gSName[PATH_MAX];
 int gSLine;
-int gErrNum;
+
+extern FILE *yyin, *yyout;
 
 void parser_err_msg(char* msg)
 {
@@ -44,10 +45,32 @@ int main(int argc, char** argv)
 {
     compiler_init();
 
-    xstrncpy(gSName, "main", PATH_MAX);
+    gSName[0] = '\0';
+
+    int i;
+    for(i=1; i<argc; i++) {
+        /// options ///
+        if(argv[i][0] == '-') {
+        }
+        else {
+            xstrncpy(gSName, argv[i], PATH_MAX);
+        }
+    }
+
     gSLine = 1;
-    gErrNum = 0;
-    yyparse();
+
+    if(gSName[0] == '\0') {
+        yyparse();
+    }
+    else {
+        yyin = fopen(gSName, "r");
+        if(yyin == NULL) {
+            fprintf(stderr, "can't open a input file\n");
+            return 1;
+        }
+
+        yyparse();
+    }
 
     compiler_final();
 

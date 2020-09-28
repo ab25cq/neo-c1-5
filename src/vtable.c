@@ -275,7 +275,7 @@ void check_already_added_variable(sVarTable* table, char* name)
         char msg[1024];
         snprintf(msg, 1024, "Variable (%s) has already_added in this variable table", name);
         parser_err_msg(msg);
-        gErrNum++;
+        exit(2);
     }
 }
 

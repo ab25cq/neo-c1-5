@@ -750,8 +750,7 @@ BOOL solve_typeof(sNodeType** node_type, struct sCompileInfoStruct* info)
         info.no_output = TRUE;
         if(!compile(node, &info)) {
             parser_err_msg("can't get type from typedef");
-            gErrNum++;
-            return TRUE;
+            exit(2);
         }
 
         dec_stack_ptr(1, &info);

@@ -542,7 +542,7 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info)
     unsigned int* nodes = gNodes[node_block].uValue.sBlock.mNodes;
 
     sVarTable* lv_table = info->lv_table;
-    info->lv_table = init_var_table();
+    info->lv_table = init_block_vtable(lv_table, FALSE);
 
     int i;
     for(i=0; i<num_nodes; i++) {
@@ -550,11 +550,64 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info)
         if(!compile(node, info)) {
             return FALSE;
         }
+
+        dec_stack_ptr(info->stack_num, info);
     }
 
     info->lv_table= lv_table;
 
     return TRUE;
+}
+
+int get_llvm_alignment_from_node_type(sNodeType* node_type)
+{
+    int result = 0;
+
+    sCLClass* klass = node_type->mClass;
+
+    if(klass->mFlags & CLASS_FLAGS_STRUCT) {
+        result = 8;
+    }
+    else if(klass->mFlags & CLASS_FLAGS_UNION) {
+        result = 8;
+    }
+    else if(node_type->mPointerNum > 0) {
+        result = 8;
+    }
+    else if(type_identify_with_class_name(node_type, "char"))
+    {
+        result = 1;
+    }
+    else if(type_identify_with_class_name(node_type, "short"))
+    {
+        result = 2;
+    }
+    else if(type_identify_with_class_name(node_type, "int"))
+    {
+        result = 4;
+    }
+    else if(type_identify_with_class_name(node_type, "bool"))
+    {
+        result = 1;
+    }
+    else if(type_identify_with_class_name(node_type, "lambda"))
+    {
+        result = 8;
+    }
+
+    return result;
+}
+
+void store_address_to_lvtable(int index, Value* address)
+{
+    Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, gLVTableValue, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
+
+    Value* lvalue = lvtable_value2;
+    Value* rvalue = ConstantInt::get(TheContext, llvm::APInt(32, index));
+    Value* element_address_value = Builder.CreateGEP(lvalue, rvalue);
+    Value* address2 = Builder.CreateCast(Instruction::BitCast, address, PointerType::get(IntegerType::get(TheContext, 8), 0));
+
+    Builder.CreateAlignedStore(address2, element_address_value, 8);
 }
 
 BOOL compile_function(unsigned int node, sCompileInfo* info)
@@ -603,6 +656,9 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         n++;
     }
 
+    sVarTable* lv_table = info->lv_table;
+    info->lv_table = init_block_vtable(lv_table, FALSE);
+
     BasicBlock* current_block_before;
     BasicBlock* current_block = BasicBlock::Create(TheContext, "entry", llvm_fun);
     llvm_change_block(current_block, &current_block_before, info, FALSE);
@@ -610,15 +666,25 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
     info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
 
-/*
     /// ready for params ///
     for(i=0; i<num_params; i++) {
         sParserParam param = params[i];
         char* var_name = param.mName;
 
-        sVar* var = get_variable_from_table(node_block->mLVTable, (char*)var_name);
+        sNodeType* var_type = create_node_type_with_class_name(param.mTypeName);
 
-        sNodeType* var_type = var->mType;
+        BOOL readonly = FALSE;
+        BOOL constant = FALSE;
+        BOOL global = FALSE;
+        int index = -1;
+        void* llvm_value = NULL;
+        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            compile_err_msg(info, "overflow variable table");
+            return FALSE;
+        }
+
+        sVar* var = get_variable_from_table(info->lv_table, (char*)var_name);
 
         Type* llvm_type;
         if(!create_llvm_type_from_node_type(&llvm_type, var_type, var_type, info))
@@ -637,11 +703,11 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         Builder.CreateAlignedStore(llvm_params[i], address, alignment);
 
         BOOL parent = FALSE;
-        int index = get_variable_index(block_var_table, var_name, &parent);
+        index = get_variable_index(info->lv_table, var_name, &parent);
 
         store_address_to_lvtable(index, address);
     }
-*/
+
     if(!compile_block(node_block, info)) {
         return FALSE;
     }
@@ -658,6 +724,8 @@ llvm_fun->print(llvm::errs(), nullptr);
     if(info->no_output) {
         llvm_fun->eraseFromParent();
     }
+
+    info->lv_table = lv_table;
 
     return TRUE;
 }
@@ -767,57 +835,6 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     info->type = create_node_type_with_class_name("void");
 
     return TRUE;
-}
-
-void store_address_to_lvtable(int index, Value* address)
-{
-    Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, gLVTableValue, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
-
-    Value* lvalue = lvtable_value2;
-    Value* rvalue = ConstantInt::get(TheContext, llvm::APInt(32, index));
-    Value* element_address_value = Builder.CreateGEP(lvalue, rvalue);
-    Value* address2 = Builder.CreateCast(Instruction::BitCast, address, PointerType::get(IntegerType::get(TheContext, 8), 0));
-
-    Builder.CreateAlignedStore(address2, element_address_value, 8);
-}
-
-int get_llvm_alignment_from_node_type(sNodeType* node_type)
-{
-    int result = 0;
-
-    sCLClass* klass = node_type->mClass;
-
-    if(klass->mFlags & CLASS_FLAGS_STRUCT) {
-        result = 8;
-    }
-    else if(klass->mFlags & CLASS_FLAGS_UNION) {
-        result = 8;
-    }
-    else if(node_type->mPointerNum > 0) {
-        result = 8;
-    }
-    else if(type_identify_with_class_name(node_type, "char"))
-    {
-        result = 1;
-    }
-    else if(type_identify_with_class_name(node_type, "short"))
-    {
-        result = 2;
-    }
-    else if(type_identify_with_class_name(node_type, "int"))
-    {
-        result = 4;
-    }
-    else if(type_identify_with_class_name(node_type, "bool"))
-    {
-        result = 1;
-    }
-    else if(type_identify_with_class_name(node_type, "lambda"))
-    {
-        result = 8;
-    }
-
-    return result;
 }
 
 Value* load_address_to_lvtable(int index, sNodeType* var_type, sCompileInfo* info)
@@ -943,7 +960,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     sVar* var = get_variable_from_table(info->lv_table, var_name);
 
     if(var == NULL || var->mType == NULL) {
-        compile_err_msg(info, "undeclared variable %s(3) var %p type %p", var_name, var, var->mType);
+        compile_err_msg(info, "undeclared variable %s", var_name);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -1040,7 +1057,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     sNodeType* param_types[PARAMS_MAX];
     std::vector<Value*> llvm_params;
     for(i=0; i<num_params; i++) {
-        if(!compile_block(params[i], info)) {
+        if(!compile(params[i], info)) {
             return FALSE;
         }
 

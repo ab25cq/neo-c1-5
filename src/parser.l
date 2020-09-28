@@ -6,10 +6,14 @@
 %}
 
 %%
-[ \t]+
-\n {
-    gSLine++;
-    return yytext[0];
+[ \t\n]+ {
+    char* p = yytext;
+    while(*p) {
+        if(*p == '\n') {
+            gSLine++;
+        }
+        p++;
+    }
 }
 [\*]+ {
     strncpy(yylval.cval, yytext, 128);
