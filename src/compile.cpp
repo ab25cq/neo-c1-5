@@ -1,6 +1,7 @@
 extern "C"
 {
 #include "common.h"
+#include <sys/stat.h>
 }
 
 #include "llvm/IR/Verifier.h"
@@ -207,29 +208,16 @@ void compile_err_msg(sCompileInfo* info, const char* msg, ...)
     output_num++;
 }
 
-void start_to_make_native_code(char* sname)
+void start_to_make_native_code()
 {
-    char sname2[PATH_MAX];
-    xstrncpy(sname2, sname, PATH_MAX);
-
-    char* sname3 = basename(sname2);
-
-    char sname4[PATH_MAX];
-    xstrncpy(sname4, sname3, PATH_MAX);
-
-    char* p = sname4 + strlen(sname4);
-    while(p >= sname4) {
-        if(*p == '.') {
-            *p = '\0';
-            break;
-        }
-        else {
-            p--;
-        }
+    char module_name[PATH_MAX + 128];
+    if(gSName[0] == '\0') {
+        snprintf(module_name, PATH_MAX, "Module stdin");
+    }
+    else {
+        snprintf(module_name, PATH_MAX, "Module %s", gSName);
     }
 
-    char module_name[PATH_MAX + 128];
-    snprintf(module_name, PATH_MAX, "Module %s", sname4);
     TheModule = new Module(module_name, TheContext);
 
     if(gNCDebug) {
@@ -237,96 +225,32 @@ void start_to_make_native_code(char* sname)
         TheModule->addModuleFlag(llvm::Module::Warning, "Dwarf Version", 2);
     }
 
-    //DBuilder = new DIBuilder(*TheModule);
-
     const char* cwd = getenv("PWD");
 
     if(cwd == NULL) {
         cwd = ".";
     }
 
-/*
-#if LLVM_VERSION_MAJOR >= 5
-    KSDbgInfo.TheCU = DBuilder->createCompileUnit(
-        dwarf::DW_LANG_C, DBuilder->createFile(sname, cwd), "neo-c", 0, "", 0);
-#else
-    KSDbgInfo.TheCU = DBuilder->createCompileUnit(
-        dwarf::DW_LANG_C, sname, cwd, "neo-c", false, "", 0);
-#endif
-*/
-
 #if LLVM_VERSION_MAJOR <= 9
     TheFPM = llvm::make_unique<FunctionPassManager>(TheModule);
 #else
     TheFPM = std::make_unique<FunctionPassManager>(TheModule);
 #endif
-
-    //create_internal_functions();
-    //TheLabels.clear();
-  
-    gLLVMStack = (LVALUE*)xcalloc(1, sizeof(LVALUE)*NEO_C_STACK_SIZE);
-    gLLVMStackHead = gLLVMStack;
-    //declare_builtin_functions();
 }
 
-/*
-void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
+void output_native_code()
 {
-    DBuilder->finalize();
+    //DBuilder->finalize();
     free(gLLVMStack);
 
-#if LLVM_VERSION_MAJOR >= 7
-    if(optimize) {
-        puts("OPTIMIZATION PHASE");
-
-        llvm::PassBuilder passBuilder;
-
-        passBuilder.registerModuleAnalyses(moduleAnalysisManager);
-        passBuilder.registerCGSCCAnalyses(cGSCCAnalysisManager);
-        passBuilder.registerFunctionAnalyses(TheFAM);
-        passBuilder.registerLoopAnalyses(loopAnalysisManager);
-
-        passBuilder.buildModuleOptimizationPipeline(llvm::PassBuilder::OptimizationLevel::O3, false);
-    }
-#endif
-
-    char sname2[PATH_MAX];
-    xstrncpy(sname2, sname, PATH_MAX);
-
-    char* p = sname2 + strlen(sname2);
-    while(p >= sname2) {
-        if(*p == '.') {
-            *p = '\0';
-            break;
-        }
-        else {
-            p--;
-        }
-    }
-
-    char module_name[PATH_MAX];
-    xstrncpy(module_name, sname, PATH_MAX);
-
-    char* module_name2 = basename(module_name);
-
-    char module_name3[PATH_MAX];
-    xstrncpy(module_name3, module_name2, PATH_MAX);
-
-    p = module_name3 + strlen(module_name3);
-    while(p >= module_name3) {
-        if(*p == '.') {
-            *p = '\0';
-            break;
-        }
-        else {
-            p--;
-        }
+    if(gSName[0] == '\0') {
+        xstrncpy(gSName, "stdin", PATH_MAX);
     }
 
     {
 #if LLVM_VERSION_MAJOR >= 7
     char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s.ll", sname2);
+    snprintf(path, PATH_MAX, "%s.ll", gSName);
 
     (void)unlink(path);
 
@@ -336,26 +260,13 @@ void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
     std::string err_str;
     raw_string_ostream err_ostream(err_str);
 
-//TheModule->print(llvm::errs(), nullptr);
     TheModule->print(output_stream, nullptr);
     output_stream.flush();
+
+    (void)chmod(path, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 #elif LLVM_VERSION_MAJOR >= 4
     char path[PATH_MAX]; 
-    snprintf(path, PATH_MAX, "%s.ll", sname2);
-
-    (void)unlink(path);
-
-    std::error_code ecode;
-    llvm::raw_fd_ostream output_stream(path, ecode, llvm::sys::fs::F_None);
-
-    std::string err_str;
-    raw_string_ostream err_ostream(err_str);
-
-    TheModule->print(output_stream, nullptr);
-    output_stream.flush();
-#else
-    char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s.ll", sname2);
+    snprintf(path, PATH_MAX, "%s.ll", gSName);
 
     (void)unlink(path);
 
@@ -368,44 +279,10 @@ void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
     TheModule->print(output_stream, nullptr);
     output_stream.flush();
 
-    verifyModule(*TheModule);
-#endif
-    }
-
-#if LLVM_VERSION_MAJOR >= 7
-    char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s.bc", sname2);
-
-    (void)unlink(path);
-
-    std::error_code ecode;
-    llvm::raw_fd_ostream output_stream(path, ecode, llvm::sys::fs::F_None);
-
-    std::string err_str;
-    raw_string_ostream err_ostream(err_str);
-
-    verifyModule(*TheModule);
-
-    llvm::WriteBitcodeToFile(*TheModule, output_stream, true);
-    output_stream.flush();
-#elif LLVM_VERSION_MAJOR >= 4
-    char path[PATH_MAX]; snprintf(path, PATH_MAX, "%s.bc", sname2);
-
-    (void)unlink(path);
-
-    std::error_code ecode;
-    llvm::raw_fd_ostream output_stream(path, ecode, llvm::sys::fs::F_None);
-
-    std::string err_str;
-    raw_string_ostream err_ostream(err_str);
-
-    verifyModule(*TheModule);
-
-    llvm::WriteBitcodeToFile(TheModule, output_stream, true);
-    output_stream.flush();
+    (void)chmod(path, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 #else
     char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s.bc", sname2);
+    snprintf(path, PATH_MAX, "%s.ll", gSName);
 
     (void)unlink(path);
 
@@ -415,40 +292,17 @@ void output_native_code(char* sname, bool optimize, char* throw_to_cflag)
     std::string err_str;
     raw_string_ostream err_ostream(err_str);
 
-    verifyModule(*TheModule);
-
-    llvm::WriteBitcodeToFile(TheModule, output_stream, true);
+    TheModule->print(output_stream, nullptr);
     output_stream.flush();
+
+    (void)chmod(path, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+
+    verifyModule(*TheModule);
 #endif
-
-    char command[PATH_MAX+256];
-
-    snprintf(command, PATH_MAX+256, "%s.ll", sname2);
-    int rc = chmod(command, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-
-    if(rc != 0) {
-        fprintf(stderr, "failed to compile(4) (%s) (%d)\n", command, rc);
-        exit(2);
-    }
-
-    if(gNCDebug) {
-        snprintf(command, PATH_MAX+128, "clang -g -c -o %s.o %s.ll %s", sname2, sname2, throw_to_cflag);
-    }
-    else {
-        snprintf(command, PATH_MAX+128, "clang -c -o %s.o %s.ll %s", sname2, sname2, throw_to_cflag);
-    }
-
-    rc = system(command);
-
-    if(rc != 0) {
-        fprintf(stderr, "failed to compile(6) %d %s\n", rc, command);
-        exit(2);
     }
 
     delete TheModule;
 }
-*/
-
 
 static Type* get_lvtable_type()
 {
@@ -473,7 +327,10 @@ void llvm_init()
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
-    start_to_make_native_code(gSName);
+    start_to_make_native_code();
+
+    gLLVMStack = (LVALUE*)xcalloc(1, sizeof(LVALUE)*NEO_C_STACK_SIZE);
+    gLLVMStackHead = gLLVMStack;
 
     Type* lvtable_type = get_lvtable_type();
 
@@ -487,7 +344,7 @@ void llvm_init()
 
 void llvm_final()
 {
-    //output_native_code(gSName, false, "");
+    output_native_code();
 }
 
 void dec_stack_ptr(int value, sCompileInfo* info)
