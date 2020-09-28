@@ -98,7 +98,7 @@ distclean: clean
 #########################################
 test: 
 	@echo "Compile to test code..."
-	./neo-c2
+	./neo-c2 code/HelloWorld.c
 
 #########################################
 # uninstall

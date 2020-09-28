@@ -272,9 +272,7 @@ void check_already_added_variable(sVarTable* table, char* name)
     sVar* var_ = get_variable_from_this_table_only(table, name);
     
     if(var_ != NULL && !var_->mGlobal) {
-        char msg[1024];
-        snprintf(msg, 1024, "Variable (%s) has already_added in this variable table", name);
-        parser_err_msg(msg);
+        fprintf(stderr, "Variable (%s) has already_added in this variable table", name);
         exit(2);
     }
 }

@@ -97,9 +97,9 @@ if uname -v|grep iSH > /dev/null; then
     AC_DEFINE(__ISH__, 1)
 
     if test $myprefix = /usr/local; then
-        CFLAGS="-Isrc/ -I. -L . $CFLAGS"
+        CFLAGS="-Isrc/ -I. $CFLAGS"
     else
-        CFLAGS="-Isrc/ -I. -L . -I$myprefix/include -L$myprefix/lib $CFLAGS"
+        CFLAGS="-Isrc/ -I. -I$myprefix/include -L$myprefix/lib $CFLAGS"
     fi
 
     AC_HAVE_LIBRARY(util, [ LIBS="$LIBS -lutil" ], [])
@@ -111,9 +111,9 @@ elif test `uname -s` = "Darwin"; then
     AC_DEFINE(__DARWIN__, 1)
 
     if test $myprefix = /usr/local; then
-        CFLAGS="-Isrc/ -I. -L . -I `xcrun --show-sdk-path`/usr/include $CFLAGS"
+        CFLAGS="-Isrc/ -I. -I `xcrun --show-sdk-path`/usr/include $CFLAGS"
     else 
-        CFLAGS="-Isrc/ -I. -L . -I$myprefix/include -L$myprefix/lib -I `xcrun --show-sdk-path`/usr/include $CFLAGS"
+        CFLAGS="-Isrc/ -I. -I$myprefix/include -L$myprefix/lib -I `xcrun --show-sdk-path`/usr/include $CFLAGS"
     fi
 elif test `uname -s` = "FreeBSD"; then
     echo "FreeBSD"
@@ -122,7 +122,7 @@ elif test `uname -s` = "FreeBSD"; then
 
     AC_DEFINE(__FREEBSD__, 1)
 
-    CFLAGS="-Isrc/ -I. -L . -I$myprefix/include -L$myprefix/lib $CFLAGS"
+    CFLAGS="-Isrc/ -I.  -I$myprefix/include -L$myprefix/lib $CFLAGS"
 else
     echo "Linux"
 
@@ -131,9 +131,9 @@ else
     AC_DEFINE(__LINUX__, 1)
 
     if test $myprefix = /usr/local; then
-        CFLAGS="-Isrc/ -I. -L . $CFLAGS"
+        CFLAGS="-Isrc/ -I. $CFLAGS"
     else
-        CFLAGS="-Isrc/ -I. -L . -I$myprefix/include -L$myprefix/lib $CFLAGS"
+        CFLAGS="-Isrc/ -I. -I$myprefix/include -L$myprefix/lib $CFLAGS"
     fi
 
     AC_HAVE_LIBRARY(util, [ LIBS="$LIBS -lutil" ], [])
@@ -147,10 +147,10 @@ then
     CFLAGS="$CFLAGS -I/usr/local/include"
 fi
 
-if test -d /usr/local/lib
-then
-    CFLAGS="$CFLAGS -L /usr/local/lib"
-fi
+#if test -d /usr/local/lib
+#then
+#    CFLAGS="$CFLAGS -L /usr/local/lib"
+#fi
 
 if test -d /opt/local/include
 then

@@ -156,14 +156,14 @@ void free_node_types();
 BOOL check_the_same_fields(sNodeType* left_node, sNodeType* right_node);
 
 sNodeType* clone_node_type(sNodeType* node_type);
-sNodeType* create_node_type_with_class_name(char* class_name);
+sNodeType* create_node_type_with_class_name(const char* class_name);
 sNodeType* create_node_type_with_class_pointer(sCLClass* klass);
 BOOL cast_posibility(sNodeType* left_type, sNodeType* right_type);
 BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type);
 
 BOOL substitution_posibility(sNodeType* left_type, sNodeType* right_type, BOOL no_output);
 BOOL type_identify(sNodeType* left, sNodeType* right);
-BOOL type_identify_with_class_name(sNodeType* left, char* right_class_name);
+BOOL type_identify_with_class_name(sNodeType* left, const char* right_class_name);
 BOOL is_number_type(sNodeType* node_type);
 void show_node_type(sNodeType* node_type);
 BOOL solve_generics(sNodeType** node_type, sNodeType* generics_type, BOOL* success_solve);
@@ -348,6 +348,9 @@ void append_param_to_params(unsigned int params, unsigned int param);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
+unsigned int sNodeTree_create_block(char* sname, int sline);
+unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

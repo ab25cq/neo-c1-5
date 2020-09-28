@@ -41,6 +41,8 @@ void parser_err_msg(char* msg)
     output_num++;
 }
 
+extern int yyparse();
+
 int main(int argc, char** argv)
 {
     compiler_init();

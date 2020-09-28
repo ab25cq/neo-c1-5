@@ -1,7 +1,9 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <malloc.h>
 #include "config.h"
 
 int gNCDebugHeap = 1;
@@ -84,7 +86,7 @@ void *ncmalloc(long long size)
     void* result = malloc(size);
 
     if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. Heap memory number is %d size %d. ncmalloc\n", gNumMemAlloc, size);
+        fprintf(stderr, "can't get heap memory. Heap memory number is %d size %lld. ncmalloc\n", gNumMemAlloc, size);
         exit(2);
     }
 
@@ -108,7 +110,7 @@ void *debug_xcalloc(long long int num, long long int nsize, char* type_name, cha
     }
 
     if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. Heap memory number is %d nccalloc num %d nsize %d type_name %s sname %s sline %d fun_name %s real_fun_name %s\n", gNumMemAlloc, num, nsize, type_name, sname, sline, fun_name, real_fun_name);
+        fprintf(stderr, "can't get heap memory. Heap memory number is %d nccalloc num %lld nsize %lld type_name %s sname %s sline %d fun_name %s real_fun_name %s\n", gNumMemAlloc, num, nsize, type_name, sname, sline, fun_name, real_fun_name);
 
         exit(2);
     }
@@ -151,7 +153,7 @@ void debug_show_none_freed_heap_memory()
             for(i=0; i<gNumHeapDebugs; i++) {
                 if(gHeapDebugs[i].freed == 0) {
                     FILE* f = fopen("memleak_debug.txt", "a");
-                    fprintf(f, "\nremain the heap memory(%p) with type name %s at %s.%d. calloc num is %d. calloc_size is %ld. fun_name is %s %s\n", gHeapDebugs[i].mem, gHeapDebugs[i].type_name, gHeapDebugs[i].sname, gHeapDebugs[i].sline, gHeapDebugs[i].calloc_num, gHeapDebugs[i].calloc_size, gHeapDebugs[i].fun_name, gHeapDebugs[i].real_fun_name);
+                    fprintf(f, "\nremain the heap memory(%p) with type name %s at %s.%d. calloc num is %d. calloc_size is %lld. fun_name is %s %s\n", gHeapDebugs[i].mem, gHeapDebugs[i].type_name, gHeapDebugs[i].sname, gHeapDebugs[i].sline, gHeapDebugs[i].calloc_num, gHeapDebugs[i].calloc_size, gHeapDebugs[i].fun_name, gHeapDebugs[i].real_fun_name);
                     fclose(f);
                 }
             }
@@ -172,7 +174,7 @@ void *nccalloc(long long num, long long nsize)
     void* result = calloc(num, nsize);
 
     if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. Heap memory number is %d. nccalloc num %d nsize %d\n", gNumMemAlloc, num, nsize);
+        fprintf(stderr, "can't get heap memory. Heap memory number is %d. nccalloc num %lld nsize %lld\n", gNumMemAlloc, num, nsize);
 
         exit(2);
     }
@@ -207,7 +209,7 @@ void *ncrealloc(void *block, long long int size)
     void* result = realloc(block, size);
 
     if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. Heap memory number is %d.realloc size %d. realloc memory %p\n", gNumMemAlloc, size, block);
+        fprintf(stderr, "can't get heap memory. Heap memory number is %d.realloc size %lld. realloc memory %p\n", gNumMemAlloc, size, block);
         exit(2);
     }
 
@@ -215,7 +217,7 @@ void *ncrealloc(void *block, long long int size)
 #endif
 }
 
-void *xasprintf(char* msg, ...)
+void *xasprintf(const char* msg, ...)
 {
     if(gNCDebugHeap){
         gNumMemAlloc++;

@@ -281,11 +281,11 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
     return node_type;
 }
 
-sNodeType* create_node_type_with_class_name(char* class_name_)
+sNodeType* create_node_type_with_class_name(const char* class_name_)
 {
     char buf[VAR_NAME_MAX+1];
 
-    char* p = class_name_;
+    char* p = (char*)class_name_;
     char* p2 = buf;
 
     sNodeType* result = parse_class_name(&p, &p2, buf);
@@ -517,7 +517,7 @@ BOOL type_identify(sNodeType* left, sNodeType* right)
     return strcmp(left->mClass->mName, right->mClass->mName) == 0;
 }
 
-BOOL type_identify_with_class_name(sNodeType* left, char* right_class_name)
+BOOL type_identify_with_class_name(sNodeType* left, const char* right_class_name)
 {
     sNodeType* right = create_node_type_with_class_name(right_class_name);
 
@@ -749,7 +749,7 @@ BOOL solve_typeof(sNodeType** node_type, struct sCompileInfoStruct* info)
         sCompileInfo info;
         info.no_output = TRUE;
         if(!compile(node, &info)) {
-            parser_err_msg("can't get type from typedef");
+            fprintf(stderr, "can't get type from typedef\n");
             exit(2);
         }
 

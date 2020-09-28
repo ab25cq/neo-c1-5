@@ -239,7 +239,7 @@ void start_to_make_native_code(char* sname)
 
     //DBuilder = new DIBuilder(*TheModule);
 
-    char* cwd = getenv("PWD");
+    const char* cwd = getenv("PWD");
 
     if(cwd == NULL) {
         cwd = ".";
