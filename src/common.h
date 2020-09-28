@@ -269,7 +269,7 @@ extern int gErrNum;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction };
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable };
 
 struct sNodeTreeStruct 
 {
@@ -299,6 +299,9 @@ struct sNodeTreeStruct
             char mTypeName[VAR_NAME_MAX];
             BOOL mAlloc;
         } sStoreVariable;
+        struct {
+            char mVarName[VAR_NAME_MAX];
+        } sLoadVariable;
         struct {
             char mName[VAR_NAME_MAX];
             sParserParam mParams[PARAMS_MAX];
@@ -345,6 +348,7 @@ unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline);
+unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

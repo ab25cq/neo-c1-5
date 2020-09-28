@@ -334,14 +334,39 @@ unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params,
     gNodes[node].mMiddle = 0;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, fun_name, VAR_NAME_MAX);
-    gNodes[node].uValue.sFunctionCall.mNumParams = gNodes[params].uValue.sParams.mNumParams;
-    int i;
-    for(i=0; i<gNodes[params].uValue.sParams.mNumParams; i++) {
-        gNodes[node].uValue.sFunctionCall.mParams[i] = gNodes[params].uValue.sParams.mParams[i];
+
+    if(params > 0) {
+        gNodes[node].uValue.sFunctionCall.mNumParams = gNodes[params].uValue.sParams.mNumParams;
+        int i;
+        for(i=0; i<gNodes[params].uValue.sParams.mNumParams; i++) {
+            gNodes[node].uValue.sFunctionCall.mParams[i] = gNodes[params].uValue.sParams.mParams[i];
+        }
+    }
+    else {
+        gNodes[node].uValue.sFunctionCall.mNumParams = 0;
     }
 
     return node;
 }
+
+unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeLoadVariable;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sLoadVariable.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 
 void show_node(unsigned int node)
 {

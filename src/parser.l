@@ -7,16 +7,25 @@
 
 %%
 [ \t]+
+\n {
+    gSLine++;
+    return yytext[0];
+}
+[\*]+ {
+    strncpy(yylval.cval, yytext, 128);
+    return(POINTER); 
+}
+
+[%] {
+    strncpy(yylval.cval, yytext, 128);
+    return(HEAP); 
+}
 [=+\-\*\/;\(\)\{\},] { 
     return(yytext[0]); 
 }
 [0-9]+ { 
     sscanf(yytext, "%d", &yylval.ival);
     return(INTNUM); 
-}
-\n {
-    gSLine++;
-    return yytext[0];
 }
 
 void {
@@ -34,7 +43,7 @@ return {
     return(RETURN);
 }
 
-[a-zA-Z_$]+ {
+[a-zA-_$][a-zA-Z0-9$]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 
 }
