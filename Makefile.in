@@ -68,8 +68,8 @@ install:
 	$(INSTALL) -m 644 ./memalloc-stdc.o $(DESTDIR)/lib
 
 	mkdir -p $(DESTDIR)/include
-	$(INSTALL) -m 644 ./neo-c2.h $(DESTDIR)/include
-	$(INSTALL) -m 644 ./pre-neo-c2.h $(DESTDIR)/include
+#	$(INSTALL) -m 644 ./neo-c2.h $(DESTDIR)/include
+#	$(INSTALL) -m 644 ./pre-neo-c2.h $(DESTDIR)/include
 
 	mkdir -p "$(DESTDIR)/bin"
 	$(INSTALL) -m 755 ./neo-c2 "$(DESTDIR)/bin"
