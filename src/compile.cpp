@@ -637,6 +637,40 @@ static BOOL compile_int_value(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+Value* llvm_create_string(char* str)
+{
+    Constant* str_constant = ConstantDataArray::getString(TheModule->getContext(), str, true);
+
+    GlobalVariable* gvar = new GlobalVariable(*TheModule, ArrayType::get(IntegerType::get(TheContext, 8), strlen(str)+1), true, GlobalValue::PrivateLinkage, 0, "global_string");
+    gvar->setAlignment(1);
+
+    gvar->setInitializer(str_constant);
+
+    Value* value = Builder.CreateCast(Instruction::BitCast, gvar, PointerType::get(IntegerType::get(TheContext, 8), 0));
+
+    return value;
+}
+
+static BOOL compile_str_value(unsigned int node, sCompileInfo* info)
+{
+    char buf[512];
+    xstrncpy(buf, gNodes[node].uValue.mStrValue, 512);
+
+    LVALUE llvm_value;
+    llvm_value.value = llvm_create_string(buf);
+    llvm_value.type = create_node_type_with_class_name("char*");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("char*");
+
+    return TRUE;
+}
+
 static BOOL compile_add(unsigned int node, sCompileInfo* info)
 {
     int left_node = gNodes[node].mLeft;
@@ -981,6 +1015,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeIntValue:
             if(!compile_int_value(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeCStringValue:
+            if(!compile_str_value(node, info)) {
                 return FALSE;
             }
             break;

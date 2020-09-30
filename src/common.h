@@ -268,7 +268,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable };
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue };
 
 struct sNodeTreeStruct 
 {
@@ -283,6 +283,7 @@ struct sNodeTreeStruct
 
     union {
         int mIntValue;
+        char mStrValue[512];
 
         struct {
             unsigned int* mNodes;
@@ -351,6 +352,7 @@ unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sli
 unsigned int sNodeTree_create_block(char* sname, int sline);
 unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline);
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, char* sname, int sline);
+unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

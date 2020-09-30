@@ -18,11 +18,13 @@ sCompileInfo cinfo;
     int ival;
     unsigned int node;
     char cval[128];
+    char sval[512];
     int rval;
 }
 
 %token <ival> INTNUM 
 %token <cval> IDENTIFIER
+%token <sval> CSTRING
 %token <cval> VOID
 %token <cval> EXTERN
 %token <cval> RETURN
@@ -35,7 +37,7 @@ sCompileInfo cinfo;
 %start program
 
 %%
-program : function { 
+program: function { 
             $$ = compile($1, &cinfo);
         }
         | program function {
@@ -43,7 +45,7 @@ program : function {
         }
         ;
 
-type :
+type:
     IDENTIFIER {
         xstrncpy($$, $1, VAR_NAME_MAX);
     }
@@ -58,7 +60,7 @@ type :
     }
     ;
 
-function : 
+function: 
         VOID IDENTIFIER '(' func_params ')' '{' block '}' {
             char* result_type = "void";
             char* fun_name = $2;
@@ -99,7 +101,7 @@ function :
         }
         ;
 
-func_params :       { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
+func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
         | VOID { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
         | type IDENTIFIER { func_params = sNodeTree_create_function_params(gSName, gSLine); append_param_to_function_params(func_params, $1, $2); $$ = func_params; }
         | func_params ',' type IDENTIFIER { $$ = func_params; append_param_to_function_params(func_params, $3, $4); }
@@ -135,8 +137,11 @@ mult_div: node                    { $$ = $1; }
         | mult_div '/' node       { $$ = it = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
         ;
 
-node  : 
+node: 
         INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
+        | CSTRING {
+            $$ = it = sNodeTree_create_c_string($1, gSName, gSLine);
+        }
         | '(' exp ')'    { $$ = it = $2; }
         | IDENTIFIER '(' ')' {
             $$ = sNodeTree_create_function_call($1, 0, gSName, gSLine);
