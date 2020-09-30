@@ -397,6 +397,33 @@ unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeIf;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sIf.mIfExp = if_exp;
+    gNodes[node].uValue.sIf.mIfBlock = if_block;
+    gNodes[node].uValue.sIf.mElifNum = elif_num;
+    int i;
+    for(i=0; i<elif_num; i++) {
+        gNodes[node].uValue.sIf.mElifExps[i] = elif_exps[i];
+        gNodes[node].uValue.sIf.mElifBlocks[i] = elif_blocks[i];
+    }
+
+    gNodes[node].uValue.sIf.mElseBlock = else_block;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

@@ -29,6 +29,7 @@
 #define METHOD_DEFAULT_PARAM_MAX 128
 #define SOURCE_EXPRESSION_MAX 4096*2
 #define ELIF_NUM_MAX 128
+#define BLOCK_NUM_MAX 128
 #define STRUCT_FIELD_MAX 256
 #define REAL_FUN_NAME_MAX (VAR_NAME_MAX*PARAMS_MAX+32)
 #define REAL_STRUCT_NAME_MAX (VAR_NAME_MAX*PARAMS_MAX+32)
@@ -268,7 +269,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue };
+enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf };
 
 struct sNodeTreeStruct 
 {
@@ -324,6 +325,14 @@ struct sNodeTreeStruct
             int mNumParams;
             unsigned int mParams[PARAMS_MAX];
         } sParams;
+        struct {
+            unsigned int mIfExp;
+            unsigned int mIfBlock;
+            int mElifNum;
+            unsigned int mElifExps[ELIF_NUM_MAX];
+            unsigned int mElifBlocks[ELIF_NUM_MAX];
+            unsigned int mElseBlock;
+        } sIf;
     } uValue;
 };
 
@@ -338,6 +347,7 @@ void init_nodes();
 void free_nodes();
 
 unsigned int sNodeTree_create_int_value(int value, char* sname, int sline);
+unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline);
 unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
@@ -372,6 +382,8 @@ struct sCompileInfoStruct
 
     char sname[PATH_MAX];
     int sline;
+
+    void* llvm_function;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

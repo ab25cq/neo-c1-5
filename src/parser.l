@@ -159,6 +159,16 @@ void {
     return(VOID); 
 }
 
+if {
+    strncpy(yylval.cval, yytext, 128);
+    return(IF); 
+}
+
+else {
+    strncpy(yylval.cval, yytext, 128);
+    return(ELSE); 
+}
+
 extern {
     strncpy(yylval.cval, yytext, 128);
     return(EXTERN); 

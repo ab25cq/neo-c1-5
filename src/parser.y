@@ -6,12 +6,16 @@
 #include "common.h"
 
 unsigned int it;
+unsigned int prev_block;
 unsigned int block;
 unsigned int func_params;
 unsigned int params;
 extern int yyerror(char *msg);
 extern int yylex();
 sCompileInfo cinfo;
+unsigned int elif_exps[ELIF_NUM_MAX];
+unsigned int elif_blocks[ELIF_NUM_MAX];
+int elif_num;
 %}
 
 %union {
@@ -26,13 +30,15 @@ sCompileInfo cinfo;
 %token <cval> IDENTIFIER
 %token <sval> CSTRING
 %token <cval> VOID
+%token <cval> IF
+%token <cval> ELSE
 %token <cval> EXTERN
 %token <cval> RETURN
 %token <cval> POINTER
 %token <cval> HEAP
 %type <rval> program 
 %type <cval> type 
-%type <node> function block add_sub return_op mult_div node func_params exp store_var params;
+%type <node> function block block_end add_sub statment mult_div node func_params exp store_var params elif_statment prepare_elif_statment else_statment;
 
 %start program
 
@@ -61,14 +67,14 @@ type:
     ;
 
 function: 
-        VOID IDENTIFIER '(' func_params ')' '{' block '}' {
+        VOID IDENTIFIER '(' func_params ')' '{' block '}' block_end {
             char* result_type = "void";
             char* fun_name = $2;
             unsigned int function_params = $4;
             unsigned int node_block = $7;
             $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, gSName, gSLine);
         }
-        | type IDENTIFIER '(' func_params ')' '{' block '}' {
+        | type IDENTIFIER '(' func_params ')' '{' block '}' block_end {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -107,14 +113,86 @@ func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLi
         | func_params ',' type IDENTIFIER { $$ = func_params; append_param_to_function_params(func_params, $3, $4); }
         ;
 
-block:  return_op                  { block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block; } 
-        | return_op ';'            { block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block;  }
-        | block return_op ';'      { $$ = block; append_node_to_node_block(block, $2); }
+block:  statment                  { 
+            prev_block = block;
+            block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block; 
+        } 
+        | statment                { 
+            prev_block = block;
+            block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block;  
+        }
+        | block statment          { 
+            $$ = block; append_node_to_node_block(block, $2); 
+        }
         ;
 
-return_op: exp                  { $$ = $1; }
-    | RETURN '(' exp ')'        { $$ = sNodeTree_create_return($3, gSName, gSLine); }
-    | RETURN exp  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
+block_end: {
+        block = prev_block;
+        $$ = block;
+        };
+
+statment: exp ';'              { $$ = $1; }
+    | RETURN '(' exp ')' ';'   { $$ = sNodeTree_create_return($3, gSName, gSLine); }
+    | RETURN exp ';'  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
+    | IF '(' exp ')' '{' block '}' block_end {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned else_block = 0;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    | IF '(' exp ')' '{' block '}' block_end prepare_elif_statment elif_statment {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        unsigned else_block = 0;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    | IF '(' exp ')' '{' block '}' block_end prepare_elif_statment elif_statment else_statment {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        unsigned int else_block = $11;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    ;
+
+prepare_elif_statment: {
+    elif_num = 0;
+    $$ = 0;
+    }
+    ;
+
+elif_statment:
+    ELSE IF '(' exp ')' '{' block '}' block_end {
+        elif_exps[elif_num] = $4;
+        elif_blocks[elif_num] = $7;
+        elif_num++;
+
+        if(elif_num >= ELIF_NUM_MAX) {
+            fprintf(stderr, "overflow else if number\n");
+            exit(2);
+        }
+    }
+    | elif_statment ELSE IF '(' exp ')' '{' block '}' block_end {
+        elif_exps[elif_num] = $5;
+        elif_blocks[elif_num] = $8;
+        elif_num++;
+
+        if(elif_num >= ELIF_NUM_MAX) {
+            fprintf(stderr, "overflow else if number\n");
+            exit(2);
+        }
+    }
+    ;
+
+else_statment: 
+    ELSE '{' block '}' block_end {
+        $$ = $3;
+    }
     ;
 
 exp: 

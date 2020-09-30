@@ -23,11 +23,19 @@ int main()
 { 
     puts("HELLO WORLD");
 
-/*
-    if(1) {
+    if(0) {
         puts("if ok");
     }
-*/
+    else if(0) {
+        puts("else if ok1");
+    }
+    else if(0) {
+        puts("else if ok2");
+    }
+    else {
+        puts("else");
+    }
+
     return 0; 
 }
 
