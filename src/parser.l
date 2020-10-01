@@ -33,7 +33,7 @@ char* p;
 <str>\\[0-7]{1,3} {
     int result;
 
-    (void)sscanf(yytext + 1, "%o", result);
+    (void)sscanf(yytext + 1, "%o", &result);
 
     if(result > 0xff) {
         fprintf(stderr, "invalid octal escape sequence\n");
@@ -167,6 +167,16 @@ if {
 else {
     strncpy(yylval.cval, yytext, 128);
     return(ELSE); 
+}
+
+true {
+    strncpy(yylval.cval, yytext, 128);
+    return(TOKEN_TRUE); 
+}
+
+false {
+    strncpy(yylval.cval, yytext, 128);
+    return(TOKEN_FALSE); 
 }
 
 extern {

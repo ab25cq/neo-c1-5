@@ -269,7 +269,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf };
 
 struct sNodeTreeStruct 
 {
@@ -347,6 +347,8 @@ void init_nodes();
 void free_nodes();
 
 unsigned int sNodeTree_create_int_value(int value, char* sname, int sline);
+unsigned int sNodeTree_create_true(char* sname, int sline);
+unsigned int sNodeTree_create_false(char* sname, int sline);
 unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline);
 unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);

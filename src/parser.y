@@ -36,9 +36,11 @@ int elif_num;
 %token <cval> RETURN
 %token <cval> POINTER
 %token <cval> HEAP
+%token <cval> TOKEN_TRUE
+%token <cval> TOKEN_FALSE
 %type <rval> program 
 %type <cval> type 
-%type <node> function block block_end add_sub statment mult_div node func_params exp store_var params elif_statment prepare_elif_statment else_statment;
+%type <node> function block block_end add_sub statment mult_div node func_params exp store_var params elif_statment prepare_elif_statment;
 
 %start program
 
@@ -117,10 +119,6 @@ block:  statment                  {
             prev_block = block;
             block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block; 
         } 
-        | statment                { 
-            prev_block = block;
-            block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block;  
-        }
         | block statment          { 
             $$ = block; append_node_to_node_block(block, $2); 
         }
@@ -132,6 +130,7 @@ block_end: {
         };
 
 statment: exp ';'              { $$ = $1; }
+    | RETURN ';'               { $$ = sNodeTree_create_return(0, gSName, gSLine); }
     | RETURN '(' exp ')' ';'   { $$ = sNodeTree_create_return($3, gSName, gSLine); }
     | RETURN exp ';'  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
     | IF '(' exp ')' '{' block '}' block_end {
@@ -144,24 +143,45 @@ statment: exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
     }
-    | IF '(' exp ')' '{' block '}' block_end prepare_elif_statment elif_statment {
+    | IF '(' exp ')' '{' block '}' block_end ELSE '{' block '}' block_end 
+    {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned int else_block = $11;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    | IF '(' exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
+    {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        unsigned int else_block = $15;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    | IF '(' exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
         unsigned int if_exp = $3;
         unsigned int if_block = $6;
         unsigned else_block = 0;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
     }
-    | IF '(' exp ')' '{' block '}' block_end prepare_elif_statment elif_statment else_statment {
-        unsigned int if_exp = $3;
-        unsigned int if_block = $6;
-        unsigned int else_block = $11;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
-    }
     ;
 
-prepare_elif_statment: {
+prepare_elif_statment: '(' exp ')' '{' block '}' block_end {
     elif_num = 0;
+    elif_exps[elif_num] = $2;
+    elif_blocks[elif_num] = $5;
+    elif_num++;
+
+    if(elif_num >= ELIF_NUM_MAX) {
+        fprintf(stderr, "overflow else if number\n");
+        exit(2);
+    }
+
     $$ = 0;
     }
     ;
@@ -186,12 +206,6 @@ elif_statment:
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
-    }
-    ;
-
-else_statment: 
-    ELSE '{' block '}' block_end {
-        $$ = $3;
     }
     ;
 
@@ -229,6 +243,12 @@ node:
         }
         | IDENTIFIER '(' params ')' {
             $$ = sNodeTree_create_function_call($1, $3, gSName, gSLine);
+        }
+        | TOKEN_TRUE {
+            $$ = sNodeTree_create_true(gSName, gSLine);
+        }
+        | TOKEN_FALSE {
+            $$ = sNodeTree_create_false(gSName, gSLine);
         }
         ;
 

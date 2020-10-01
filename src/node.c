@@ -424,6 +424,38 @@ unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int
     return node;
 }
 
+unsigned int sNodeTree_create_true(char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeTrue;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_false(char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeFalse;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

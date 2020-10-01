@@ -890,6 +890,10 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    if(type_identify_with_class_name(result_type, "void")) {
+        Builder.CreateRet(nullptr);
+    }
+
     verifyFunction(*llvm_fun);
 
     // Run the optimizer on the function.
@@ -1030,17 +1034,23 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
 static BOOL compile_return(unsigned int node, sCompileInfo* info)
 {
     int left_node = gNodes[node].mLeft;
-    if(!compile(left_node, info)) {
-        return FALSE;
+
+    if(left_node != 0) {
+        if(!compile(left_node, info)) {
+            return FALSE;
+        }
+
+        sNodeType* left_type = clone_node_type(info->type);
+
+        LVALUE lvalue = *get_value_from_stack(-1);
+
+        dec_stack_ptr(1, info);
+
+        Builder.CreateRet(lvalue.value);
     }
-
-    sNodeType* left_type = clone_node_type(info->type);
-
-    LVALUE lvalue = *get_value_from_stack(-1);
-
-    dec_stack_ptr(1, info);
-
-    Builder.CreateRet(lvalue.value);
+    else {
+        Builder.CreateRet(nullptr);
+    }
 
     info->type = create_node_type_with_class_name("void");
 
@@ -1505,6 +1515,40 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_true(unsigned int node, sCompileInfo* info)
+{
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(1, 1, true)); 
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_false(unsigned int node, sCompileInfo* info)
+{
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(1, 0, true)); 
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -1581,6 +1625,18 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeIf:
             if(!compile_if(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeTrue:
+            if(!compile_true(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeFalse:
+            if(!compile_false(node, info)) {
                 return FALSE;
             }
             break;
