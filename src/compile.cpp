@@ -1266,6 +1266,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
+    BOOL message_passing = gNodes[node].uValue.sFunctionCall.mMessagePassing;
 
     unsigned int params[PARAMS_MAX];
     int i;

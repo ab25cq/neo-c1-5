@@ -336,7 +336,7 @@ void append_param_to_params(unsigned int params, unsigned int param)
     }
 }
 
-unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, char* sname, int sline)
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int param, BOOL message_passing, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -348,6 +348,8 @@ unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params,
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
+
+    gNodes[node].uValue.sFunctionCall.mMessagePassing = message_passing;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, fun_name, VAR_NAME_MAX);
 

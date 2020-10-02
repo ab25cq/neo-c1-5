@@ -181,16 +181,18 @@ YYSTYPE	parser.tab.h	/^typedef union YYSTYPE YYSTYPE;$/;"	t	typeref:union:YYSTYP
 YYSTYPE	parser.tab.h	/^union YYSTYPE$/;"	u
 YYSTYPE_IS_DECLARED	parser.tab.h	/^# define YYSTYPE_IS_DECLARED /;"	d
 YYSTYPE_IS_TRIVIAL	parser.tab.h	/^# define YYSTYPE_IS_TRIVIAL /;"	d
-YYSYMBOL_15_	parser.tab.c	/^  YYSYMBOL_15_ = 15,                       \/* '('  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_16_	parser.tab.c	/^  YYSYMBOL_16_ = 16,                       \/* ')'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_17_	parser.tab.c	/^  YYSYMBOL_17_ = 17,                       \/* '{'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_18_	parser.tab.c	/^  YYSYMBOL_18_ = 18,                       \/* '}'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_19_	parser.tab.c	/^  YYSYMBOL_19_ = 19,                       \/* ';'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_20_	parser.tab.c	/^  YYSYMBOL_20_ = 20,                       \/* ','  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_21_	parser.tab.c	/^  YYSYMBOL_21_ = 21,                       \/* '='  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_22_	parser.tab.c	/^  YYSYMBOL_22_ = 22,                       \/* '+'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_23_	parser.tab.c	/^  YYSYMBOL_23_ = 23,                       \/* '-'  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_24_	parser.tab.c	/^  YYSYMBOL_24_ = 24,                       \/* '\/'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_15_	parser.tab.c	/^  YYSYMBOL_15_ = 15,                       \/* ':'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_16_	parser.tab.c	/^  YYSYMBOL_16_ = 16,                       \/* '('  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_17_	parser.tab.c	/^  YYSYMBOL_17_ = 17,                       \/* ')'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_18_	parser.tab.c	/^  YYSYMBOL_18_ = 18,                       \/* '{'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_19_	parser.tab.c	/^  YYSYMBOL_19_ = 19,                       \/* '}'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_20_	parser.tab.c	/^  YYSYMBOL_20_ = 20,                       \/* ';'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_21_	parser.tab.c	/^  YYSYMBOL_21_ = 21,                       \/* ','  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_22_	parser.tab.c	/^  YYSYMBOL_22_ = 22,                       \/* '.'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_23_	parser.tab.c	/^  YYSYMBOL_23_ = 23,                       \/* '='  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_24_	parser.tab.c	/^  YYSYMBOL_24_ = 24,                       \/* '+'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_25_	parser.tab.c	/^  YYSYMBOL_25_ = 25,                       \/* '-'  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_26_	parser.tab.c	/^  YYSYMBOL_26_ = 26,                       \/* '\/'  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_CSTRING	parser.tab.c	/^  YYSYMBOL_CSTRING = 5,                    \/* CSTRING  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_ELSE	parser.tab.c	/^  YYSYMBOL_ELSE = 8,                       \/* ELSE  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_EXTERN	parser.tab.c	/^  YYSYMBOL_EXTERN = 9,                     \/* EXTERN  *\/$/;"	e	enum:yysymbol_kind_t	file:
@@ -203,26 +205,27 @@ YYSYMBOL_RETURN	parser.tab.c	/^  YYSYMBOL_RETURN = 10,                    \/* RE
 YYSYMBOL_TOKEN_FALSE	parser.tab.c	/^  YYSYMBOL_TOKEN_FALSE = 14,               \/* TOKEN_FALSE  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_TOKEN_TRUE	parser.tab.c	/^  YYSYMBOL_TOKEN_TRUE = 13,                \/* TOKEN_TRUE  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_VOID	parser.tab.c	/^  YYSYMBOL_VOID = 6,                       \/* VOID  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_YYACCEPT	parser.tab.c	/^  YYSYMBOL_YYACCEPT = 25,                  \/* $accept  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_YYACCEPT	parser.tab.c	/^  YYSYMBOL_YYACCEPT = 27,                  \/* $accept  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_YYEMPTY	parser.tab.c	/^  YYSYMBOL_YYEMPTY = -2,$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_YYEOF	parser.tab.c	/^  YYSYMBOL_YYEOF = 0,                      \/* "end of file"  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_YYUNDEF	parser.tab.c	/^  YYSYMBOL_YYUNDEF = 2,                    \/* "invalid token"  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYSYMBOL_YYerror	parser.tab.c	/^  YYSYMBOL_YYerror = 1,                    \/* error  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_add_sub	parser.tab.c	/^  YYSYMBOL_add_sub = 37,                   \/* add_sub  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_block	parser.tab.c	/^  YYSYMBOL_block = 30,                     \/* block  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_block_end	parser.tab.c	/^  YYSYMBOL_block_end = 31,                 \/* block_end  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_elif_statment	parser.tab.c	/^  YYSYMBOL_elif_statment = 34,             \/* elif_statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_exp	parser.tab.c	/^  YYSYMBOL_exp = 35,                       \/* exp  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_func_params	parser.tab.c	/^  YYSYMBOL_func_params = 29,               \/* func_params  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_function	parser.tab.c	/^  YYSYMBOL_function = 28,                  \/* function  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_mult_div	parser.tab.c	/^  YYSYMBOL_mult_div = 38,                  \/* mult_div  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_node	parser.tab.c	/^  YYSYMBOL_node = 39,                      \/* node  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_params	parser.tab.c	/^  YYSYMBOL_params = 40                     \/* params  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_prepare_elif_statment	parser.tab.c	/^  YYSYMBOL_prepare_elif_statment = 33,     \/* prepare_elif_statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_program	parser.tab.c	/^  YYSYMBOL_program = 26,                   \/* program  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_statment	parser.tab.c	/^  YYSYMBOL_statment = 32,                  \/* statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_store_var	parser.tab.c	/^  YYSYMBOL_store_var = 36,                 \/* store_var  *\/$/;"	e	enum:yysymbol_kind_t	file:
-YYSYMBOL_type	parser.tab.c	/^  YYSYMBOL_type = 27,                      \/* type  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_add_sub	parser.tab.c	/^  YYSYMBOL_add_sub = 40,                   \/* add_sub  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_block	parser.tab.c	/^  YYSYMBOL_block = 33,                     \/* block  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_block_end	parser.tab.c	/^  YYSYMBOL_block_end = 34,                 \/* block_end  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_elif_statment	parser.tab.c	/^  YYSYMBOL_elif_statment = 37,             \/* elif_statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_exp	parser.tab.c	/^  YYSYMBOL_exp = 38,                       \/* exp  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_func_params	parser.tab.c	/^  YYSYMBOL_func_params = 32,               \/* func_params  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_func_params_start	parser.tab.c	/^  YYSYMBOL_func_params_start = 31,         \/* func_params_start  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_function	parser.tab.c	/^  YYSYMBOL_function = 30,                  \/* function  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_mult_div	parser.tab.c	/^  YYSYMBOL_mult_div = 41,                  \/* mult_div  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_node	parser.tab.c	/^  YYSYMBOL_node = 42,                      \/* node  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_params	parser.tab.c	/^  YYSYMBOL_params = 43                     \/* params  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_prepare_elif_statment	parser.tab.c	/^  YYSYMBOL_prepare_elif_statment = 36,     \/* prepare_elif_statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_program	parser.tab.c	/^  YYSYMBOL_program = 28,                   \/* program  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_statment	parser.tab.c	/^  YYSYMBOL_statment = 35,                  \/* statment  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_store_var	parser.tab.c	/^  YYSYMBOL_store_var = 39,                 \/* store_var  *\/$/;"	e	enum:yysymbol_kind_t	file:
+YYSYMBOL_type	parser.tab.c	/^  YYSYMBOL_type = 29,                      \/* type  *\/$/;"	e	enum:yysymbol_kind_t	file:
 YYTABLES_NAME	lex.yy.c	/^#define YYTABLES_NAME /;"	d	file:
 YYTABLE_NINF	parser.tab.c	/^#define YYTABLE_NINF /;"	d	file:
 YYTOKENTYPE	parser.tab.h	/^# define YYTOKENTYPE$/;"	d
@@ -476,9 +479,11 @@ free_class	src/klass.c	/^static void free_class(sCLClass* klass)$/;"	f	typeref:t
 free_node_types	src/node_type.c	/^void free_node_types()$/;"	f	typeref:typename:void
 free_nodes	src/node.c	/^void free_nodes()$/;"	f	typeref:typename:void
 freed	src/memalloc-stdc.c	/^    int freed;$/;"	m	struct:sHeapDebug	typeref:typename:int	file:
+fun	code/HelloWorld.c	/^void int::fun(int self) {$/;"	f	typeref:typename:void int::
 fun_name	src/memalloc-stdc.c	/^    char fun_name[128];$/;"	m	struct:sHeapDebug	typeref:typename:char[128]	file:
 func_params	parser.tab.c	/^unsigned int func_params;$/;"	v	typeref:typename:unsigned int
 func_params	src/parser.y	/^func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_p/;"	l
+func_params_start	src/parser.y	/^func_params_start: {$/;"	l
 function	src/parser.y	/^function: $/;"	l
 gClassTable	src/klass.c	/^static sClassTable gClassTable[CLASS_NUM_MAX];$/;"	v	typeref:typename:sClassTable[]	file:
 gFuncs	src/compile.cpp	/^std::map<std::string, sFunction> gFuncs;$/;"	v	typeref:typename:std::map<std::string,sFunction>
@@ -667,6 +672,7 @@ mTypeOfExpression	src/common.h	/^    unsigned int mTypeOfExpression;$/;"	m	struc
 mTypePointerNum	src/common.h	/^    int mTypePointerNum;$/;"	m	struct:sNodeTypeStruct	typeref:typename:int
 mUndefinedStructType	src/common.h	/^    void* mUndefinedStructType;$/;"	m	struct:sCLClassStruct	typeref:typename:void *
 mUnsigned	src/common.h	/^    BOOL mUnsigned;$/;"	m	struct:sNodeTypeStruct	typeref:typename:BOOL
+mVarArg	src/common.h	/^            BOOL mVarArg;$/;"	m	struct:sNodeTreeStruct::__anon70586b7b010a::__anon70586b7b0508	typeref:typename:BOOL
 mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon70586b7b010a::__anon70586b7b0308	typeref:typename:char[]
 mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon70586b7b010a::__anon70586b7b0408	typeref:typename:char[]
 mVarNum	src/common.h	/^    int mVarNum;$/;"	m	struct:sVarTableStruct	typeref:typename:int
@@ -817,6 +823,7 @@ uninstall	Makefile.in	/^uninstall:$/;"	t
 unput	lex.yy.c	/^#define unput(/;"	d	file:
 value	src/compile.cpp	/^    Value* value;$/;"	m	struct:LVALUEStruct	typeref:typename:Value *	file:
 var	src/compile.cpp	/^    sVar* var;$/;"	m	struct:LVALUEStruct	typeref:typename:sVar *	file:
+var_arg	parser.tab.c	/^BOOL var_arg;$/;"	v	typeref:typename:BOOL
 xasprintf	src/memalloc-stdc.c	/^void *xasprintf(const char* msg, ...)$/;"	f	typeref:typename:void *
 xassert	code/HelloWorld.c	/^void xassert(char* msg, bool exp) $/;"	f	typeref:typename:void
 xcalloc	src/xfunc.c	/^ALLOC void* xcalloc(size_t count, size_t size)$/;"	f	typeref:typename:ALLOC void *
@@ -904,7 +911,7 @@ yyclearin	parser.tab.c	/^#define yyclearin /;"	d	file:
 yyconst	lex.yy.c	/^#define yyconst /;"	d	file:
 yydebug	parser.tab.c	/^int yydebug;$/;"	v	typeref:typename:int
 yydefact	parser.tab.c	/^static const yytype_int8 yydefact[] =$/;"	v	typeref:typename:const yytype_int8[]	file:
-yydefgoto	parser.tab.c	/^static const yytype_int8 yydefgoto[] =$/;"	v	typeref:typename:const yytype_int8[]	file:
+yydefgoto	parser.tab.c	/^static const yytype_int16 yydefgoto[] =$/;"	v	typeref:typename:const yytype_int16[]	file:
 yydestruct	parser.tab.c	/^yydestruct (const char *yymsg,$/;"	f	typeref:typename:void	file:
 yyensure_buffer_stack	lex.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	typeref:typename:void	file:
 yyerrok	parser.tab.c	/^#define yyerrok /;"	d	file:
