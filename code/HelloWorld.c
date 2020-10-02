@@ -2,9 +2,11 @@ int puts(char* str);
 
 int exit(int rc);
 
+int printf(char* str, ...);
+
 void xassert(char* msg, bool exp) 
 {
-    puts(msg);
+    printf("%s...", msg);
 
     if(exp) {
         puts("yes");
@@ -22,7 +24,7 @@ int main()
 { 
     puts("HELLO WORLD");
 
-    xassert("test...", true);
+    xassert("test1", true);
 
     return 0; 
 }
