@@ -4,6 +4,10 @@ int exit(int rc);
 
 int printf(char* str, ...);
 
+void int::fun(int self) {
+    printf("self %d\n", self);
+}
+
 void xassert(char* msg, bool exp) 
 {
     printf("%s...", msg);

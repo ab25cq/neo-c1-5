@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -146,6 +146,8 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
+
+    gNodes[node].uValue.sFunction.mVarArg = var_arg;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -234,7 +236,7 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
     }
 }
 
-unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, char* sname, int sline)
+unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -246,6 +248,8 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
+
+    gNodes[node].uValue.sFunction.mVarArg = var_arg;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 

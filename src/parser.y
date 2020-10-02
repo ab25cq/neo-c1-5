@@ -8,6 +8,7 @@
 unsigned int it;
 unsigned int prev_block;
 unsigned int block;
+BOOL var_arg;
 unsigned int func_params;
 unsigned int params;
 extern int yyerror(char *msg);
@@ -40,7 +41,7 @@ int elif_num;
 %token <cval> TOKEN_FALSE
 %type <rval> program 
 %type <cval> type 
-%type <node> function block block_end add_sub statment mult_div node func_params exp store_var params elif_statment prepare_elif_statment;
+%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment;
 
 %start program
 
@@ -69,43 +70,73 @@ type:
     ;
 
 function: 
-        VOID IDENTIFIER '(' func_params ')' '{' block '}' block_end {
+        VOID IDENTIFIER ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
+            char* result_type = "void";
+
+            char fun_name[VAR_NAME_MAX];
+            xstrncpy(fun_name, $2, VAR_NAME_MAX);
+            xstrncat(fun_name, "_", VAR_NAME_MAX);
+            xstrncat(fun_name, $5, VAR_NAME_MAX);
+
+            unsigned int function_params = $8;
+            unsigned int node_block = $11;
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, gSName, gSLine);
+        }
+        | type IDENTIFIER ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
+            char* result_type = $1;
+
+            char fun_name[VAR_NAME_MAX];
+            xstrncpy(fun_name, $2, VAR_NAME_MAX);
+            xstrncat(fun_name, "_", VAR_NAME_MAX);
+            xstrncat(fun_name, $5, VAR_NAME_MAX);
+
+            unsigned int function_params = $8;
+            unsigned int node_block = $11;
+
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, gSName, gSLine);
+        }
+        | VOID IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
             char* result_type = "void";
             char* fun_name = $2;
-            unsigned int function_params = $4;
-            unsigned int node_block = $7;
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, gSName, gSLine);
+            unsigned int function_params = $5;
+            unsigned int node_block = $8;
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, gSName, gSLine);
         }
-        | type IDENTIFIER '(' func_params ')' '{' block '}' block_end {
+        | type IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
             char* result_type = $1;
             char* fun_name = $2;
-            unsigned int function_params = $4;
-            unsigned int node_block = $7;
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, gSName, gSLine);
+            unsigned int function_params = $5;
+            unsigned int node_block = $8;
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, gSName, gSLine);
         }
-        | type IDENTIFIER '(' func_params ')' ';' {
+        | type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $1;
             char* fun_name = $2;
-            unsigned int function_params = $4;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, gSName, gSLine);
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
         }
-        | VOID IDENTIFIER '(' func_params ')' ';' {
+        | VOID IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = "void";
             char* fun_name = $2;
-            unsigned int function_params = $4;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, gSName, gSLine);
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
         }
-        | EXTERN type IDENTIFIER '(' func_params ')' ';' {
+        | EXTERN type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $2;
             char* fun_name = $3;
-            unsigned int function_params = $5;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, gSName, gSLine);
+            unsigned int function_params = $6;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
         }
-        | EXTERN VOID IDENTIFIER '(' func_params ')' ';' {
+        | EXTERN VOID IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = "void";
             char* fun_name = $3;
-            unsigned int function_params = $5;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, gSName, gSLine);
+            unsigned int function_params = $6;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
+        }
+        ;
+
+func_params_start: {
+        var_arg = FALSE;
         }
         ;
 
@@ -113,6 +144,9 @@ func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLi
         | VOID { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
         | type IDENTIFIER { func_params = sNodeTree_create_function_params(gSName, gSLine); append_param_to_function_params(func_params, $1, $2); $$ = func_params; }
         | func_params ',' type IDENTIFIER { $$ = func_params; append_param_to_function_params(func_params, $3, $4); }
+        | func_params ',' '.' '.' '.' {
+            var_arg = TRUE;
+        }
         ;
 
 block:  statment                  { 

@@ -468,7 +468,7 @@ BOOL cast_right_type_to_left_type(sNodeType* left_type, sNodeType** right_type, 
     return TRUE;
 }
 
-BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, sCompileInfo* info)
+BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, BOOL var_arg, sCompileInfo* info)
 {
     sFunction fun;
 
@@ -498,7 +498,7 @@ BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeT
         fun.mParamTypes[i] = clone_node_type(param_types[i]);
     }
 
-    FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, false);
+    FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
     Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
     fun.mLLVMFunction = llvm_fun;
 
@@ -790,6 +790,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
+    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
 
     sParserParam params[PARAMS_MAX];
 
@@ -811,7 +812,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         param_types[i] = params[i].mType;
     }
 
-    if(!add_function(fun_name, result_type, num_params, param_types, info)) {
+    if(!add_function(fun_name, result_type, num_params, param_types, var_arg, info)) {
         return FALSE;
     }
 
@@ -915,6 +916,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
+    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
 
     sParserParam params[PARAMS_MAX];
 
@@ -934,7 +936,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         param_types[i] = params[i].mType;
     }
 
-    if(!add_function(fun_name, result_type, num_params, param_types, info)) {
+    if(!add_function(fun_name, result_type, num_params, param_types, var_arg, info)) {
         return FALSE;
     }
 
