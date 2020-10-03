@@ -176,7 +176,14 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
     *p2 = buf;
 
     while(**p) {
-        if(**p == '<') {
+        if(strstr(*p, "const") == *p) {
+            node_type->mConstant = TRUE;
+            (*p)+= 5;
+            while(**p == ' ' || **p == '\t') {
+                (*p)++;
+            }
+        }
+        else if(**p == '<') {
             (*p)++;
             skip_spaces_for_parse_class_name(p);
 

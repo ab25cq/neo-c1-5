@@ -364,7 +364,7 @@ unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, un
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 unsigned int sNodeTree_create_block(char* sname, int sline);
-unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline);
 unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
 
@@ -387,7 +387,8 @@ struct sCompileInfoStruct
     char sname[PATH_MAX];
     int sline;
 
-    void* llvm_function;
+    void* function;
+    sNodeType* function_result_type;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

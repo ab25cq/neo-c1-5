@@ -268,7 +268,7 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
     return node;
 }
 
-unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline)
+unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline)
 {
     unsigned node = alloc_node();
 
@@ -277,8 +277,8 @@ unsigned int sNodeTree_create_return(unsigned int left, char* sname, int sline)
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
 
-    gNodes[node].mLeft = left;
-    gNodes[node].mRight = 0;
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = right;
     gNodes[node].mMiddle = 0;
 
     return node;

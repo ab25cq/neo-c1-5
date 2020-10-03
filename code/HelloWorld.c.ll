@@ -9,6 +9,8 @@ source_filename = "Module stdin"
 @global_string.4 = private constant [12 x i8] c"HELLO WORLD\00", align 1
 @global_string.5 = private constant [6 x i8] c"test1\00", align 1
 @global_string.6 = private constant [21 x i8] c"message passing test\00", align 1
+@global_string.7 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.8 = private constant [11 x i8] c"const test\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -65,6 +67,21 @@ cond_end:                                         ; preds = %cond_else_block, %c
   ret void
 }
 
+define i1 @const_test(i8* %str) {
+entry:
+  %andand_result_var = alloca i1
+  %andand_result_var1 = alloca i1
+  %str2 = alloca i8*
+  store i8* %str, i8** %str2, align 8
+  %0 = bitcast i8** %str2 to i8*
+  store i8* %0, i8** getelementptr inbounds ([8192 x i8*], [8192 x i8*]* @gLVTable, i32 0, i32 0), align 8
+  %1 = load i8*, i8** getelementptr inbounds ([8192 x i8*], [8192 x i8*]* @gLVTable, i32 0, i32 0), align 8
+  %2 = bitcast i8* %1 to i8**
+  %str3 = load i8*, i8** %2, align 8
+  %3 = call i32 @puts(i8* %str3)
+  ret i1 true
+}
+
 define i32 @main() {
 entry:
   %andand_result_var = alloca i1
@@ -73,5 +90,7 @@ entry:
   call void @xassert(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.5, i32 0, i32 0), i1 true)
   %1 = call i1 @int_fun(i32 3)
   call void @xassert(i8* getelementptr inbounds ([21 x i8], [21 x i8]* @global_string.6, i32 0, i32 0), i1 %1)
+  %2 = call i1 @const_test(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.7, i32 0, i32 0))
+  call void @xassert(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @global_string.8, i32 0, i32 0), i1 %2)
   ret i32 0
 }

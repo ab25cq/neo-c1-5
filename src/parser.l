@@ -184,12 +184,17 @@ extern {
     return(EXTERN); 
 }
 
+const {
+    strncpy(yylval.cval, yytext, 128);
+    return(CONST); 
+}
+
 return {
     strncpy(yylval.cval, yytext, 128);
     return(RETURN);
 }
 
-[a-zA-_$][a-zA-Z0-9$]* {
+[a-zA-_$][a-zA-Z0-9$_]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 
 }

@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include "xfunc.h"
 
-char* xstrncpy(char* des, char* src, int size)
+char* xstrncpy(char* des, const char* src, int size)
 {
     char* result;
 
@@ -17,7 +17,7 @@ char* xstrncpy(char* des, char* src, int size)
     return result;
 }
 
-char* xstrncat(char* des, char* str, int size)
+char* xstrncat(char* des, const char* str, int size)
 {
     char* result;
 
@@ -41,7 +41,7 @@ ALLOC void* xmalloc(size_t size)
     return buf;
 }
 
-ALLOC char* xstrdup(char* str)
+ALLOC char* xstrdup(const char* str)
 {
     char* buf;
 

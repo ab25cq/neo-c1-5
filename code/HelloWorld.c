@@ -23,6 +23,22 @@ void xassert(char* msg, bool exp)
     }
 }
 
+bool const_test(const char* str) 
+{
+    puts(str);
+    return true;
+}
+
+/*
+extern char* strcpy(char* str, char* str2);
+
+char*% string_test1() {
+    char*% result = new char[128];
+
+
+}
+*/
+
 // aaaa
 // aaaa
 
@@ -33,6 +49,7 @@ int main()
     xassert("test1", true);
 
     xassert("message passing test", 3.fun());
+    xassert("const test", const_test("ABC"));
 
     return 0; 
 }

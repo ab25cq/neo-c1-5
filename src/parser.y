@@ -39,6 +39,7 @@ int elif_num;
 %token <cval> HEAP
 %token <cval> TOKEN_TRUE
 %token <cval> TOKEN_FALSE
+%token <cval> CONST
 %type <rval> program 
 %type <cval> type 
 %type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params;
@@ -66,6 +67,21 @@ type:
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
+    }
+    | CONST IDENTIFIER {
+        xstrncpy($$, "const ", VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
+    }
+    | CONST IDENTIFIER POINTER {
+        xstrncpy($$, "const ", VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+    }
+    | CONST IDENTIFIER POINTER HEAP {
+        xstrncpy($$, "const ", VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $4, VAR_NAME_MAX);
     }
     ;
 
