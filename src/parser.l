@@ -146,7 +146,7 @@ char* p;
     strncpy(yylval.cval, yytext, 128);
     return(HEAP); 
 }
-[=+\-\*\/;\(\)\{\},.:] { 
+[=+\-\*\/;\(\)\{\},\.:] { 
     return(yytext[0]); 
 }
 [0-9]+ { 

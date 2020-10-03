@@ -64,6 +64,7 @@ LVALUE* gLLVMStack;
 LVALUE* gLLVMStackHead;
 
 struct sFunctionStruct {
+    bool existance;
     char mName[VAR_NAME_MAX];
     Function* mLLVMFunction;
     sNodeType* mResultType;
@@ -471,6 +472,8 @@ BOOL cast_right_type_to_left_type(sNodeType* left_type, sNodeType** right_type, 
 BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, BOOL var_arg, sCompileInfo* info)
 {
     sFunction fun;
+
+    fun.existance = true;
 
     xstrncpy(fun.mName, fun_name, VAR_NAME_MAX);
     fun.mResultType = clone_node_type(result_type);
@@ -1274,11 +1277,9 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         params[i] = gNodes[node].uValue.sFunctionCall.mParams[i];
     }
 
-    sFunction fun = gFuncs[fun_name];
-
-    /// compile parametors ///
     sNodeType* param_types[PARAMS_MAX];
     std::vector<Value*> llvm_params;
+
     for(i=0; i<num_params; i++) {
         if(!compile(params[i], info)) {
             return FALSE;
@@ -1292,6 +1293,26 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         llvm_params.push_back(param->value);
     }
 
+    sFunction fun;
+    memset(&fun, 0, sizeof(sFunction));
+
+    if(message_passing) {
+        char real_fun_name[VAR_NAME_MAX];
+        snprintf(real_fun_name, VAR_NAME_MAX, "%s_%s", param_types[0]->mClass->mName, fun_name);
+        fun = gFuncs[real_fun_name];
+    }
+    else {
+        fun = gFuncs[fun_name];
+    }
+
+    if(!fun.existance) {
+        compile_err_msg(info, "Function not found %s\n", fun_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
 
     sNodeType* result_type = clone_node_type(fun.mResultType);
 

@@ -336,7 +336,7 @@ void append_param_to_params(unsigned int params, unsigned int param)
     }
 }
 
-unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int param, BOOL message_passing, char* sname, int sline)
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 

@@ -41,7 +41,7 @@ int elif_num;
 %token <cval> TOKEN_FALSE
 %type <rval> program 
 %type <cval> type 
-%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment;
+%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params;
 
 %start program
 
@@ -270,13 +270,19 @@ node:
         }
         | '(' exp ')'    { $$ = it = $2; }
         | IDENTIFIER '(' ')' {
-            $$ = sNodeTree_create_function_call($1, 0, gSName, gSLine);
+            $$ = sNodeTree_create_function_call($1, 0, FALSE, gSName, gSLine);
         }
         | IDENTIFIER {
             $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
         }
         | IDENTIFIER '(' params ')' {
-            $$ = sNodeTree_create_function_call($1, $3, gSName, gSLine);
+            $$ = sNodeTree_create_function_call($1, $3, FALSE, gSName, gSLine);
+        }
+        | object '.' IDENTIFIER '(' method_params ')' {
+            $$ = sNodeTree_create_function_call($3, $5, TRUE, gSName, gSLine);
+        }
+        | object '.' IDENTIFIER '(' ')' {
+            $$ = sNodeTree_create_function_call($3, $1, TRUE, gSName, gSLine);
         }
         | TOKEN_TRUE {
             $$ = sNodeTree_create_true(gSName, gSLine);
@@ -284,6 +290,19 @@ node:
         | TOKEN_FALSE {
             $$ = sNodeTree_create_false(gSName, gSLine);
         }
+        ;
+
+object:
+        exp {
+            params = sNodeTree_create_params(gSName, gSLine); 
+            append_param_to_params(params, $1);
+            $$ = params;
+        }
+        ;
+
+method_params :
+        exp { append_param_to_params(params, $1); $$ = params; }
+        | exp ',' method_params { $$ = params; append_param_to_params(params, $1); }
         ;
 
 params :       { params = sNodeTree_create_params(gSName, gSLine); $$ = params; }
