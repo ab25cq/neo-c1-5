@@ -194,6 +194,13 @@ return {
     return(RETURN);
 }
 
+new {
+    strncpy(yylval.cval, yytext, 128);
+    return(NEW);
+}
+
+
+
 [a-zA-_$][a-zA-Z0-9$_]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 

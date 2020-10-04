@@ -40,6 +40,7 @@ int elif_num;
 %token <cval> TOKEN_TRUE
 %token <cval> TOKEN_FALSE
 %token <cval> CONST
+%token <cval> NEW
 %type <rval> program 
 %type <cval> type 
 %type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params;
@@ -305,6 +306,9 @@ node:
         }
         | TOKEN_FALSE {
             $$ = sNodeTree_create_false(gSName, gSLine);
+        }
+        | NEW type {
+            $$ = sNodeTree_create_object($2, gSName, gSLine);
         }
         ;
 
