@@ -535,6 +535,56 @@ unsigned int sNodeTree_create_coroutine(char* type_name, unsigned int block, cha
     return node;
 }
 
+unsigned int sNodeTree_create_struct_fields(char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeFields;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sFields.mNumFields = 0;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+void append_field_to_fields(unsigned int fields, char* name, char* type_name)
+{
+    xstrncpy(gNodes[fields].uValue.sFields.mName, name, VAR_NAME_MAX);
+    xstrncpy(gNodes[fields].uValue.sFields.mTypeName, type_name, VAR_NAME_MAX);
+    gNodes[fields].uValue.sFields.mNumFields++;
+
+    if(gNodes[fields].uValue.sFields.mNumFields >= STRUCT_FIELD_MAX) {
+        fprintf(stderr, "overflow field number\n");
+        exit(2);
+    }
+}
+
+unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeStruct;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sStruct.mName, struct_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sStruct.mFields = fields;
+    gNodes[node].uValue.sStruct.mAnonyomous = anonymous;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

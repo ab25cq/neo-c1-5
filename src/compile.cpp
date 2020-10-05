@@ -40,6 +40,7 @@ IRBuilder<> Builder(TheContext);
 Module* TheModule;
 std::unique_ptr<FunctionPassManager> TheFPM;
 FunctionAnalysisManager TheFAM(false);
+std::map<std::string, std::pair<Type*, sNodeType*>> gLLVMStructType;
 
 GlobalVariable* gLVTableValue;
 
@@ -527,6 +528,190 @@ Value* get_dummy_value(sNodeType* node_type, sCompileInfo* info)
     int alignment = get_llvm_alignment_from_node_type(node_type);
 
     return Builder.CreateAlignedLoad(address, alignment, "dummy_value");
+}
+
+static void create_real_struct_name(char* real_struct_name, int size_real_struct_name, int num_generics, sNodeType* generics_types[GENERICS_TYPES_MAX])
+{
+    if(num_generics > 0) {
+        xstrncat(real_struct_name, "__", size_real_struct_name);
+    }
+
+    int i;
+    for(i=0; i<num_generics; i++) {
+        sNodeType* node_type = generics_types[i];
+
+        xstrncat(real_struct_name, CLASS_NAME(node_type->mClass), size_real_struct_name);
+
+        int j;
+        for(j=0; j<node_type->mPointerNum; j++)
+        {
+            xstrncat(real_struct_name, "p", size_real_struct_name);
+        }
+
+        create_real_struct_name(real_struct_name, size_real_struct_name, node_type->mNumGenericsTypes, node_type->mGenericsTypes);
+
+        if(i != num_generics-1) {
+            xstrncat(real_struct_name, "_", size_real_struct_name);
+        }
+    }
+}
+
+static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generics_type, char* real_struct_name, sCompileInfo* info)
+{
+    sCLClass* klass = node_type->mClass;
+
+    if(klass->mUndefinedStructType) {
+        StructType* struct_type = (StructType*)klass->mUndefinedStructType;
+        std::vector<Type*> fields;
+
+        int i;
+        for(i=0; i<klass->mNumFields; i++) {
+            sNodeType* field = clone_node_type(klass->mFields[i]);
+
+            sNodeType* generics_type2 = generics_type;
+
+            if(!is_generics_type(field) && field->mNumGenericsTypes > 0)
+            {
+                generics_type2 = clone_node_type(field);
+            }
+            else {
+                BOOL success_solve;
+                (void)solve_generics(&field, field, &success_solve);
+
+                if(!solve_generics(&field, generics_type, &success_solve))
+                {
+                    return FALSE;
+                }
+            }
+
+            if(field->mClass == klass && field->mPointerNum == 0)
+            {
+                return FALSE;
+            }
+
+            Type* field_type;
+            if(!create_llvm_type_from_node_type(&field_type, field, generics_type2, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(100)");
+                show_node_type(field);
+                show_node_type(generics_type2);
+                return FALSE;
+            }
+
+            fields.push_back(field_type);
+        }
+
+        if(struct_type->isOpaque()) {
+            struct_type->setBody(fields, false);
+        }
+
+        klass->mUndefinedStructType = NULL;
+
+        std::pair<Type*, sNodeType*> pair_value;
+        pair_value.first = struct_type;
+        pair_value.second = clone_node_type(node_type);
+        pair_value.second->mNumFields = node_type->mClass->mNumFields;
+
+        gLLVMStructType[real_struct_name] = pair_value;
+    }
+
+    return TRUE;
+}
+
+BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOOL new_create, sCompileInfo* info)
+{
+    int i;
+    for(i=0; i<generics_type->mNumGenericsTypes; i++)
+    {
+        sNodeType* node_type2 = generics_type->mGenericsTypes[i];
+
+        sCLClass* klass = node_type2->mClass;
+        if(klass->mFlags & CLASS_FLAGS_STRUCT)
+        {
+            if(!create_llvm_struct_type(node_type2, node_type2, new_create, info))
+            {
+                return FALSE;
+            }
+        }
+    }
+
+    sCLClass* klass = node_type->mClass;
+
+    char* class_name = klass->mName;
+
+    char real_struct_name[REAL_STRUCT_NAME_MAX];
+    int size_real_struct_name = REAL_STRUCT_NAME_MAX;
+    xstrncpy(real_struct_name, class_name, size_real_struct_name);
+
+    create_real_struct_name(real_struct_name, size_real_struct_name, node_type->mNumGenericsTypes, node_type->mGenericsTypes);
+
+    if(klass->mUndefinedStructType)
+    {
+        if(!solve_undefined_strcut_type(node_type, generics_type, real_struct_name, info))
+        {
+            return FALSE;
+        }
+    }
+    else if(gLLVMStructType[real_struct_name].first == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)))
+    {
+        if(TheModule->getTypeByName(real_struct_name) == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)))
+        {
+            StructType* struct_type = StructType::create(TheContext, real_struct_name);
+            std::vector<Type*> fields;
+
+            std::pair<Type*, sNodeType*> pair_value;
+            pair_value.first = struct_type;
+            pair_value.second = clone_node_type(node_type);
+            pair_value.second->mNumFields = node_type->mClass->mNumFields;
+
+            gLLVMStructType[real_struct_name] = pair_value;
+
+            int i;
+            for(i=0; i<klass->mNumFields; i++) {
+                sNodeType* field = clone_node_type(klass->mFields[i]);
+
+
+                sNodeType* generics_type2 = generics_type;
+
+                if(!is_generics_type(field) && field->mNumGenericsTypes > 0)
+                {
+                    generics_type2 = clone_node_type(field);
+                }
+                else {
+                    BOOL success_solve;
+                    (void)solve_generics(&field, field, &success_solve);
+
+                    if(!solve_generics(&field, generics_type, &success_solve))
+                    {
+                        return FALSE;
+                    }
+                }
+
+                if(field->mClass == klass && field->mPointerNum == 0)
+                {
+                    return FALSE;
+                }
+                Type* field_type;
+
+                if(!create_llvm_type_from_node_type(&field_type, field, generics_type2, info))
+                {
+                    compile_err_msg(info, "Getting llvm type failed(100)");
+                    show_node_type(field);
+                    show_node_type(generics_type2);
+                    return FALSE;
+                }
+
+                fields.push_back(field_type);
+            }
+
+            if(struct_type->isOpaque()) 
+            {
+                struct_type->setBody(fields, false);
+            }
+        }
+    }
+
+    return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -3125,7 +3310,40 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+BOOL compile_struct(unsigned int node, sCompileInfo* info)
+{
+    char struct_name[VAR_NAME_MAX];
+    xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
+    unsigned int fields = gNodes[node].uValue.sStruct.mFields;
 
+    int num_fields = gNodes[fields].uValue.sFields.mNumFields;
+    char type_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
+    char name_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
+    int i;
+    for(i=0; i<num_fields; i++) {
+        xstrncpy(type_fields[i], gNodes[fields].uValue.sFields.mTypeFields[i], VAR_NAME_MAX);
+        xstrncpy(name_fields[i], gNodes[fields].uValue.sFields.mNameFields[i], VAR_NAME_MAX);
+    }
+
+    BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
+
+    sCLClass* klass = alloc_struct(struct_name, anonymous);
+
+    sNodeType* fields[STRUCT_FIELD_MAX];
+
+    for(i=0; i<num_fields; i++) {
+        fields[i] = create_node_type_with_class_name(type_fields[i]);
+        add_field_to_struct(klass, name_fields[i], fields[i]);
+    }
+
+    sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
+
+    sNodeType* generics_type = struct_type;
+    BOOL new_create = TRUE;
+    (void)create_llvm_struct_type(node_type, generics_type, new_create, info);
+
+    return TRUE;
+}
 
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
@@ -3233,6 +3451,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeCoroutine:
             if(!compile_coroutine(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeStruct:
+            if(!compile_struct(node, info)) {
                 return FALSE;
             }
             break;

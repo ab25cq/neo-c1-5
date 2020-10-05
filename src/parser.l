@@ -221,6 +221,10 @@ inline {
     strncpy(yylval.cval, yytext, 128);
     return(INLINE); 
 }
+struct {
+    strncpy(yylval.cval, yytext, 128);
+    return(STRUCT); 
+}
 
 return {
     strncpy(yylval.cval, yytext, 128);

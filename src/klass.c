@@ -204,20 +204,17 @@ sCLClass* alloc_enum(char* class_name_)
     return klass;
 }
 
-void add_fields_to_struct(sCLClass* klass, int num_fields, char** field_name, struct sNodeTypeStruct* fields[STRUCT_FIELD_MAX])
+void add_field_to_struct(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)
 {
-    if(klass->mNumFields + num_fields >= STRUCT_FIELD_MAX) {
+    xstrncpy(klass->mNameFields[klass->mNumFields], field_name, VAR_NAME_MAX);
+    klass->mFields[klass->mNumFields] = clone_node_type(filed_type);
+
+    klass->mNumFields ++;
+
+    if(klass->mNumFields >= STRUCT_FIELD_MAX) {
         fprintf(stderr, "overflow field number of %s\n", klass->mName);
         exit(0);
     }
-
-    int i;
-    for(i=0; i<num_fields; i++) {
-        xstrncpy(klass->mNameFields[klass->mNumFields+i], field_name[i], VAR_NAME_MAX);
-        klass->mFields[klass->mNumFields+i] = clone_node_type(fields[i]);
-    }
-
-    klass->mNumFields += num_fields;
 }
 
 sCLClass* alloc_union(char* class_name_, BOOL anonymous, BOOL anonymous_var_name)
@@ -227,20 +224,16 @@ sCLClass* alloc_union(char* class_name_, BOOL anonymous, BOOL anonymous_var_name
     return klass;
 }
 
-void add_fields_to_union(sCLClass* klass, int num_fields, char** field_name, struct sNodeTypeStruct* fields[STRUCT_FIELD_MAX])
+void add_field_to_union(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)
 {
-    klass->mNumFields = num_fields;
+    xstrncpy(klass->mNameFields[klass->mNumFields], filed_name, VAR_NAME_MAX);
+    klass->mFields[klas->mNumFields] = clone_node_type(filed_type);
+
+    klass->mNumFields++;
 
     if(klass->mNumFields >= STRUCT_FIELD_MAX) {
         fprintf(stderr, "overflow field number of %s\n", klass->mName);
         exit(0);
-    }
-
-
-    int i;
-    for(i=0; i<num_fields; i++) {
-        xstrncpy(klass->mNameFields[i], field_name[i], VAR_NAME_MAX);
-        klass->mFields[i] = clone_node_type(fields[i]);
     }
 }
 

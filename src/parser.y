@@ -17,6 +17,7 @@ sCompileInfo cinfo;
 unsigned int elif_exps[ELIF_NUM_MAX];
 unsigned int elif_blocks[ELIF_NUM_MAX];
 int elif_num;
+unsigned int fields;
 %}
 
 %union {
@@ -47,11 +48,12 @@ int elif_num;
 %token <cval> NEW
 %token <cval> CLONE
 %token <cval> INLINE
+%token <cval> STRUCT
 %type <rval> program 
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
-%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params;
+%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params struct_ fields;
 
 %start program
 
@@ -59,7 +61,13 @@ int elif_num;
 program: function {
             $$ = compile($1, &cinfo);
         }
+        | struct_ {
+            $$ = compile($1, &cinfo);
+        }
         | program function {
+            $$ = compile($2, &cinfo);
+        }
+        | program struct_ {
             $$ = compile($2, &cinfo);
         }
         ;
@@ -129,6 +137,21 @@ type_name: IDENTIFIER {
         xstrncpy($$, "void",  VAR_NAME_MAX);
     }
     ;
+
+struct_: STRUCT IDENTIFIER '{' fields '} {
+            char* struct_name = $2;
+            unsigned int fields = $4;
+            BOOL anonymous = FALSE;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, anonymous, gSName, gSLine);
+        }
+        ;
+
+fields:       
+        { fields = sNodeTree_create_struct_fields(gSName, gSLine); $$ = fields; }
+        | type IDENTIFIER { fields = sNodeTree_create_struct_fields(gSName, gSLine); append_field_to_struct_fields(fields, $2, $1); $$ = fields; }
+        | fields ';' type IDENTIFIER { $$ = fields; append_field_to_struct_fields(fields, $4, $3); }
+        ;
 
 function: 
         type IDENTIFIER ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {

@@ -1,6 +1,6 @@
-run co-routine
 struct, union, enum
 generics, method generics
+run co-routine
 subroutine header only all function is inline or generics
 
 -----
