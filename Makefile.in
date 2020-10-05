@@ -88,7 +88,7 @@ permission:
 # clean
 #########################################
 clean:
-	rm -fR parser* lex* mini-lang memleak_debug.txt neo-c2 neo-c2.dSYM src/*.o config.log config.status *.stackdump autom3te.cache .DS_Store core.* core a.out *.bc *.s *.o code/*.o *.ll *.so.1.0.0 *.so src/config.h moveVarDecls.hi moveVarDecls.o moveVarDecls *.so.1 src/*.dwo code/*.out code/*.nc.tmp *.nc.tmp *.out memalloc-stdc.o memalloc.o src/*.out
+	rm -fR parser* lex* mini-lang memleak_debug.txt neo-c2 neo-c2.dSYM src/*.o config.log config.status *.stackdump autom3te.cache .DS_Store core.* core a.out *.bc *.s *.o *.o *.ll *.so.1.0.0 *.so src/config.h moveVarDecls.hi moveVarDecls.o moveVarDecls *.so.1 src/*.dwo *.ll code/*.nc.tmp *.nc.tmp *.out memalloc-stdc.o memalloc.o src/*.out code/HelloWorld
 
 distclean: clean
 	rm -fR  config.h Makefile autom4te.cache 
@@ -99,7 +99,6 @@ distclean: clean
 test: 
 	@echo "Compile to test code..."
 	./neo-c2 code/HelloWorld.c
-#	cat code/HelloWorld.c.ll
 	clang -o code/HelloWorld code/HelloWorld.c.ll
 	./code/HelloWorld
 

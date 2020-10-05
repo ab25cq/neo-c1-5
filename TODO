@@ -1,1 +1,9 @@
-message passing
+run co-routine
+struct, union, enum
+generics, method generics
+subroutine header only all function is inline or generics
+
+-----
+inline with heap
+co-routine with type
+

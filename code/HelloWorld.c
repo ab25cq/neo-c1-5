@@ -1,14 +1,9 @@
 int puts(char* str);
 
 int exit(int rc);
-
 int printf(char* str, ...);
-
-bool int::fun(int self) {
-    printf("self %d\n", self);
-
-    return true;
-}
+void*% calloc(size_t nmemb, size_t size);
+void free(void *ptr);
 
 void xassert(char* msg, bool exp) 
 {
@@ -23,6 +18,12 @@ void xassert(char* msg, bool exp)
     }
 }
 
+bool int::fun(int self) {
+    printf("self %d\n", self);
+
+    return true;
+}
+
 bool const_test(const char* str) 
 {
     puts(str);
@@ -30,18 +31,38 @@ bool const_test(const char* str)
 }
 
 extern char* strcpy(char* str, char* str2);
+extern int strlen(char* str);
+extern char* strcat(char* str, char* str2);
 
-char*% string_test1() 
+inline char*% string(char* str) 
 {
-    char*% result = new char[128];
+    char*% result = new char[strlen(str) + 1];
 
-    strcpy(result, "ABC");
+    strcpy(result, str);
 
     return result;
 }
 
-// aaaa
-// aaaa
+char*% string2(char*% str) 
+{
+    char*% result = new char[strlen(str) + 6];
+
+    strcpy(result, str);
+    strcat(result, "+ABC");
+
+    return result;
+}
+
+char*% string_test1(char*% var) 
+{
+    char*% a = new char[128];
+
+    strcpy(a, var);
+
+    puts(a);
+
+    return a;
+}
 
 int main() 
 { 
@@ -52,9 +73,15 @@ int main()
     xassert("message passing test", 3.fun());
     xassert("const test", const_test("ABC"));
 
-    char*% str = string_test1();
+    char*% b = string_test1(string2(string("ABC")));
 
-    puts(str);
+    puts(b);
+
+    int xxx = 123;
+
+    int {
+        return xxx;
+    };
 
     return 0; 
 }

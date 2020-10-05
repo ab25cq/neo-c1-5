@@ -137,18 +137,16 @@ char* p;
         p++;
     }
 }
+
 [\*]+ {
     strncpy(yylval.cval, yytext, 128);
     return(POINTER); 
 }
 
-[%] {
-    strncpy(yylval.cval, yytext, 128);
-    return(HEAP); 
-}
-[=+\-\*\/;\(\)\{\},\.:] { 
+[=+\-\*\/;\(\)\{\},\.:%\[\]] { 
     return(yytext[0]); 
 }
+
 [0-9]+ { 
     sscanf(yytext, "%d", &yylval.ival);
     return(INTNUM); 
@@ -189,6 +187,41 @@ const {
     return(CONST); 
 }
 
+unsigned {
+    strncpy(yylval.cval, yytext, 128);
+    return(UNSIGNED); 
+}
+
+signed {
+    strncpy(yylval.cval, yytext, 128);
+    return(SIGNED); 
+}
+
+register {
+    strncpy(yylval.cval, yytext, 128);
+    return(REGISTER); 
+}
+
+volatile {
+    strncpy(yylval.cval, yytext, 128);
+    return(VOLATILE); 
+}
+
+clone {
+    strncpy(yylval.cval, yytext, 128);
+    return(CLONE); 
+}
+
+static {
+    strncpy(yylval.cval, yytext, 128);
+    return(STATIC); 
+}
+
+inline {
+    strncpy(yylval.cval, yytext, 128);
+    return(INLINE); 
+}
+
 return {
     strncpy(yylval.cval, yytext, 128);
     return(RETURN);
@@ -199,9 +232,7 @@ new {
     return(NEW);
 }
 
-
-
-[a-zA-_$][a-zA-Z0-9$_]* {
+[a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 
 }

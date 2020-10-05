@@ -201,6 +201,8 @@ struct sVarTableStruct {
 
     int mBlockLevel;
 
+    BOOL mCoroutineTop;
+
     struct sVarTableStruct* mParent;            // make linked list
     struct sVarTableStruct* mNext;              // for free var table
 };
@@ -248,8 +250,8 @@ sVar* get_variable_from_this_table_only(sVarTable* table, char* name);
 /////////////////////////////// 
 void init_typedef();
 
-void add_typedef(char* name, sNodeType* node_type);
-sNodeType* get_typedef(char* name);
+void add_typedef(char* name, char* node_type);
+void get_typedef(char* name, char* result);
 
 /////////////////////////////// 
 // parser.c
@@ -269,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeCoroutine };
 
 struct sNodeTreeStruct 
 {
@@ -310,6 +312,8 @@ struct sNodeTreeStruct
             char mResultTypeName[VAR_NAME_MAX];
             unsigned int mNodeBlock;
             BOOL mVarArg;
+            BOOL mInline;
+            BOOL mStatic;
         } sFunction;
         struct {
             char mFunName[VAR_NAME_MAX];
@@ -335,6 +339,13 @@ struct sNodeTreeStruct
             unsigned int mElifBlocks[ELIF_NUM_MAX];
             unsigned int mElseBlock;
         } sIf;
+        struct {
+            char mTypeName[VAR_NAME_MAX];
+        } sCreateObject;
+        struct {
+            char mTypeName[VAR_NAME_MAX];
+            unsigned int mBlock;
+        } sCoroutine;
     } uValue;
 };
 
@@ -356,7 +367,7 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
@@ -367,6 +378,9 @@ unsigned int sNodeTree_create_block(char* sname, int sline);
 unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline);
 unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
+unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, char* sname, int sline);
+unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_coroutine(char* type_name, unsigned int block, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp
@@ -389,6 +403,8 @@ struct sCompileInfoStruct
 
     void* function;
     sNodeType* function_result_type;
+
+    void* right_value_objects;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

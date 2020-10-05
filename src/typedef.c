@@ -3,7 +3,7 @@
 struct sTypeDefTable
 {
     char mName[VAR_NAME_MAX];
-    sNodeType* mItem;
+    char mItem[VAR_NAME_MAX];
 };
 
 static struct sTypeDefTable gTypeDefTable[TYPEDEF_MAX];
@@ -13,7 +13,7 @@ void init_typedef()
     memset(gTypeDefTable, 0, sizeof(struct sTypeDefTable)*TYPEDEF_MAX);
 }
 
-void add_typedef(char* name, sNodeType* node_type)
+void add_typedef(char* name, char* type_name)
 {
     unsigned int hash_value = get_hash_key(name, TYPEDEF_MAX);
 
@@ -22,7 +22,7 @@ void add_typedef(char* name, sNodeType* node_type)
     while(1) {
         if(strcmp(it->mName,"") == 0) {
             xstrncpy(it->mName, name, VAR_NAME_MAX);
-            it->mItem = clone_node_type(node_type);
+            xstrncpy(it->mItem, type_name, VAR_NAME_MAX);
             break;
         }
         else {
@@ -41,12 +41,12 @@ void add_typedef(char* name, sNodeType* node_type)
     }
 }
 
-sNodeType* get_typedef(char* name)
+void get_typedef(char* name, char* result)
 {
-    sNodeType* result = NULL;
+    xstrncpy(result, name, VAR_NAME_MAX);
 
     if(strcmp(name, "") == 0) {
-        return NULL;
+        return;
     }
 
     unsigned int hash_value = get_hash_key(name, TYPEDEF_MAX);
@@ -55,7 +55,7 @@ sNodeType* get_typedef(char* name)
 
     while(1) {
         if(strcmp(it->mName, name) == 0) {
-            result = clone_node_type(it->mItem);
+            xstrncpy(result, it->mItem, VAR_NAME_MAX);
             break;
         }
         else {
@@ -71,7 +71,5 @@ sNodeType* get_typedef(char* name)
             }
         }
     }
-
-    return result;
 }
 

@@ -179,9 +179,32 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
         if(strstr(*p, "const") == *p) {
             node_type->mConstant = TRUE;
             (*p)+= 5;
-            while(**p == ' ' || **p == '\t') {
-                (*p)++;
-            }
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "singed") == *p) {
+            node_type->mUnsigned = FALSE;
+            (*p)+= 6;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "register") == *p) {
+            node_type->mRegister = FALSE;
+            (*p)+= 8;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "volatile") == *p) {
+            node_type->mRegister = FALSE;
+            (*p)+= 8;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "static") == *p) {
+            node_type->mStatic = FALSE;
+            (*p)+= 6;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "unsigned") == *p) {
+            node_type->mUnsigned = TRUE;
+            (*p)+= 8;
+            skip_spaces_for_parse_class_name(p);
         }
         else if(**p == '<') {
             (*p)++;
@@ -246,6 +269,12 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             skip_spaces_for_parse_class_name(p);
 
             node_type->mNullable = TRUE;
+        }
+        else if(**p == '%') {
+            (*p)++;
+            skip_spaces_for_parse_class_name(p);
+
+            node_type->mHeap = TRUE;
         }
         else if(**p == '*') {
             (*p)++;

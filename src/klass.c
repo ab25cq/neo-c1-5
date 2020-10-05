@@ -291,12 +291,12 @@ void class_init()
     alloc_class("_Float128x", TRUE, FALSE, FALSE, FALSE, -1, -1, FALSE, FALSE, FALSE, FALSE);
 
     if(sizeof(size_t) == 4) {
-        add_typedef("size_t", create_node_type_with_class_name("int"));
+        add_typedef("size_t", "int");
     }
     else {
-        add_typedef("size_t", create_node_type_with_class_name("long"));
+        add_typedef("size_t", "long");
     }
-    add_typedef("_Bool", create_node_type_with_class_name("bool"));
+    add_typedef("_Bool", "bool");
 }
 
 void class_final()

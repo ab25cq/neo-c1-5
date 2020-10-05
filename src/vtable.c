@@ -45,6 +45,7 @@ sVarTable* clone_var_table(sVarTable* lv_table)
     result->mMaxBlockVarNum = lv_table->mMaxBlockVarNum;
     result->mBlockLevel = lv_table->mBlockLevel;
     result->mID = lv_table->mID;
+    result->mCoroutineTop = lv_table->mCoroutineTop;
 
     sVarTable* it = lv_table;
 
@@ -337,28 +338,6 @@ int get_var_num(sVarTable* table)
 int get_parent_var_num_of_sum(sVarTable* table)
 {
     return get_sum_of_parent_var_num(table);
-}
-
-sVarTable* init_block_vtable(sVarTable* lv_table, BOOL no_increment_block_level)
-{
-    sVarTable* new_table;
-
-    new_table = init_var_table();
-    if(lv_table) {
-        if(no_increment_block_level) {
-            new_table->mBlockLevel = lv_table->mBlockLevel;
-        }
-        else {
-            new_table->mBlockLevel = lv_table->mBlockLevel + 1;
-        }
-        new_table->mParent = lv_table;
-    }
-    else {
-        new_table->mBlockLevel = 0;
-        new_table->mParent = NULL;
-    }
-
-    return new_table;
 }
 
 void set_max_block_var_num(sVarTable* lv_table, sVarTable* old_table)

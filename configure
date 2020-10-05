@@ -4135,7 +4135,7 @@ $as_echo "$ac_cv_lib_fl_main" >&6; }
 if test "x$ac_cv_lib_fl_main" = xyes; then :
    LIBS="$LIBS -lfl";
 else
-   LIBS="$LIBS -lfl"
+   LIBS="$LIBS -lfl";
 fi
 ac_cv_lib_fl=ac_cv_lib_fl_main
 

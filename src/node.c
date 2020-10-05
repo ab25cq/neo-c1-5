@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -148,6 +148,8 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].mMiddle = 0;
 
     gNodes[node].uValue.sFunction.mVarArg = var_arg;
+    gNodes[node].uValue.sFunction.mInline = inline_;
+    gNodes[node].uValue.sFunction.mStatic = static_;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -454,6 +456,77 @@ unsigned int sNodeTree_create_false(char* sname, int sline)
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeCreateObject;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sCreateObject.mTypeName, type_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = object_num;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_typedef(char* name, char* type_name, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeTypeDef;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    add_typedef(name, type_name);
+
+    return node;
+}
+
+unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeClone;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_coroutine(char* type_name, unsigned int block, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeCoroutine;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sCoroutine.mBlock = block;
+    xstrncpy(gNodes[node].uValue.sCoroutine.mTypeName, type_name, VAR_NAME_MAX);
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;

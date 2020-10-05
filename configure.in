@@ -210,7 +210,7 @@ fi
 AC_CHECK_HEADER(pcre.h, [AC_DEFINE(HAVE_PCRE_H,1)], [])
 AC_HAVE_LIBRARY(pcre, [ LIBS="$LIBS -lpcre"; ], [ eixt ])
 AC_HAVE_LIBRARY(y, [ LIBS="$LIBS -ly"; ], [ eixt ])
-AC_HAVE_LIBRARY(fl, [ LIBS="$LIBS -lfl"; ], [ LIBS="$LIBS -lfl" ])
+AC_HAVE_LIBRARY(fl, [ LIBS="$LIBS -lfl"; ], [ LIBS="$LIBS -lfl"; ])
 
 AC_HAVE_LIBRARY(rt, [ LIBS="$LIBS -lrt"; ], [])
 
