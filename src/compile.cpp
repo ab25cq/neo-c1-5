@@ -137,7 +137,7 @@ static void create_real_struct_name(char* real_struct_name, int size_real_struct
     }
 }
 
-BOOL create_llvm_union_type(sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
+static BOOL create_llvm_union_type(sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
 
@@ -340,7 +340,7 @@ static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generic
     return TRUE;
 }
 
-BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOOL new_create, sCompileInfo* info)
+static BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOOL new_create, sCompileInfo* info)
 {
     int i;
     for(i=0; i<generics_type->mNumGenericsTypes; i++)
@@ -374,9 +374,9 @@ BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOO
             return FALSE;
         }
     }
-    else if(gLLVMStructType[real_struct_name].first == nullptr || node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)
+    else if(gLLVMStructType[real_struct_name].first == nullptr)
     {
-        if(TheModule->getTypeByName(real_struct_name) == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields))
+        if(TheModule->getTypeByName(real_struct_name) == nullptr)
         {
             StructType* struct_type = StructType::create(TheContext, real_struct_name);
             std::vector<Type*> fields;
@@ -436,51 +436,6 @@ BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOO
     return TRUE;
 }
 
-static BOOL same_struct_type(sNodeType* left_type, sNodeType* right_type, sCompileInfo* info)
-{
-    sCLClass* left_class = left_type->mClass;
-    sCLClass* right_class = right_type->mClass; 
-
-    if(type_identify(left_type, right_type))
-    {
-        if(left_type->mNumGenericsTypes > 0 || right_type->mNumGenericsTypes > 0)
-        {
-            if(left_type->mNumGenericsTypes != right_type->mNumGenericsTypes)
-            {
-                return FALSE;
-            }
-
-            int i;
-            for(i=0; i<left_type->mNumGenericsTypes; i++)
-            {
-                if(!same_struct_type(left_type->mGenericsTypes[i], right_type->mGenericsTypes[i], info))
-                {
-                    return FALSE;
-                }
-            }
-        }
-
-        if(left_type->mNumFields != right_type->mNumFields)
-        {
-            return FALSE;
-        }
-
-        int i;
-        for(i=0; i<left_type->mNumFields; i++) 
-        {
-            if(!same_struct_type(left_class->mFields[i], right_class->mFields[i], info))
-            {
-                return FALSE;
-            }
-        }
-
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-
 BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
@@ -503,7 +458,7 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
             struct_node_type = gLLVMStructType[real_struct_name].second;
         }
 
-        if(struct_node_type == nullptr || !same_struct_type(struct_node_type, node_type, info))
+        if(struct_node_type == nullptr)
         {
             if(!create_llvm_struct_type(node_type, generics_type, TRUE, info))
             {

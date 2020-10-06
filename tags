@@ -12,7 +12,7 @@ BLOCK_NUM_MAX	src/common.h	32;"	d
 BOOL	src/xfunc.h	7;"	d
 BUFFER_H	src/buffer.h	2;"	d
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
 CLASS_FLAGS_ANONYMOUS	src/common.h	62;"	d
 CLASS_FLAGS_ANONYMOUS_VAR_NAME	src/common.h	64;"	d
 CLASS_FLAGS_ENUM	src/common.h	63;"	d
@@ -34,7 +34,7 @@ CONST	parser.tab.h	/^    CONST = 269,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 260,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 260,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DESTDIR	Makefile	/^DESTDIR=\/usr\/local$/;"	m
 Data	code/HelloWorld.c	/^struct Data {$/;"	s	file:
 ECHO	lex.yy.c	643;"	d	file:
@@ -308,17 +308,25 @@ append_node_to_node_block	src/node.c	/^void append_node_to_node_block(unsigned i
 append_param_to_function_params	src/node.c	/^void append_param_to_function_params(unsigned int function_params, char* type_name, char* name)$/;"	f
 append_param_to_params	src/node.c	/^void append_param_to_params(unsigned int params, unsigned int param)$/;"	f
 arrange_stack	src/compile.cpp	/^void arrange_stack(sCompileInfo* info, int top)$/;"	f
+as_fn_append	config.status	/^  as_fn_append ()$/;"	f
 as_fn_append	configure	/^  as_fn_append ()$/;"	f
+as_fn_arith	config.status	/^  as_fn_arith ()$/;"	f
 as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
+as_fn_error	config.status	/^as_fn_error ()$/;"	f
 as_fn_error	configure	/^as_fn_error ()$/;"	f
+as_fn_executable_p	config.status	/^as_fn_executable_p ()$/;"	f
 as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
+as_fn_exit	config.status	/^as_fn_exit ()$/;"	f
 as_fn_exit	configure	/^as_fn_exit ()$/;"	f
 as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
+as_fn_mkdir_p	config.status	/^as_fn_mkdir_p ()$/;"	f
 as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
 as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
 as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
+as_fn_set_status	config.status	/^as_fn_set_status ()$/;"	f
 as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
 as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
+as_fn_unset	config.status	/^as_fn_unset ()$/;"	f
 as_fn_unset	configure	/^as_fn_unset ()$/;"	f
 auto_cast_posibility	src/node_type.c	/^BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type)$/;"	f
 b	code/HelloWorld.c	/^    int b;$/;"	m	struct:Data	file:
@@ -751,7 +759,6 @@ sVar	src/common.h	/^typedef struct sVarStruct sVar;$/;"	t	typeref:struct:sVarStr
 sVarStruct	src/common.h	/^struct sVarStruct {$/;"	s
 sVarTable	src/common.h	/^typedef struct sVarTableStruct sVarTable;$/;"	t	typeref:struct:sVarTableStruct
 sVarTableStruct	src/common.h	/^struct sVarTableStruct {$/;"	s
-same_struct_type	src/compile.cpp	/^static BOOL same_struct_type(sNodeType* left_type, sNodeType* right_type, sCompileInfo* info)$/;"	f	file:
 set_max_block_var_num	src/vtable.c	/^void set_max_block_var_num(sVarTable* lv_table, sVarTable* old_table)$/;"	f
 sharedstatedir	Makefile	/^sharedstatedir=${prefix}\/com$/;"	m
 short	parser.tab.c	184;"	d	file:
