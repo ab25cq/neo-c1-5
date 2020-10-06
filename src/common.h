@@ -271,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeCoroutine, kNodeTypeFields, kNodeTypeStruct };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeCoroutine, kNodeTypeFields, kNodeTypeStruct, kNodeTypeDefineVariable };
 
 struct sNodeTreeStruct 
 {
@@ -356,6 +356,12 @@ struct sNodeTreeStruct
             unsigned int mFields;
             BOOL mAnonymous;
         } sStruct;
+        struct {
+            char mVarName[VAR_NAME_MAX];
+            char mTypeName[VAR_NAME_MAX];
+            BOOL mGlobal;
+            BOOL mExtern;
+        } sDefineVariable;
     } uValue;
 };
 
@@ -394,6 +400,7 @@ unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline);
 unsigned int sNodeTree_create_coroutine(char* type_name, unsigned int block, char* sname, int sline);
 unsigned int sNodeTree_create_struct_fields(char* sname, int sline);
 unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
+unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

@@ -138,7 +138,7 @@ type_name: IDENTIFIER {
     }
     ;
 
-struct_: STRUCT IDENTIFIER '{' fields '} {
+struct_: STRUCT IDENTIFIER '{' fields '}' ';' {
             char* struct_name = $2;
             unsigned int fields = $4;
             BOOL anonymous = FALSE;
@@ -147,10 +147,11 @@ struct_: STRUCT IDENTIFIER '{' fields '} {
         }
         ;
 
-fields:       
-        { fields = sNodeTree_create_struct_fields(gSName, gSLine); $$ = fields; }
-        | type IDENTIFIER { fields = sNodeTree_create_struct_fields(gSName, gSLine); append_field_to_struct_fields(fields, $2, $1); $$ = fields; }
-        | fields ';' type IDENTIFIER { $$ = fields; append_field_to_struct_fields(fields, $4, $3); }
+fields:  { 
+            fields = sNodeTree_create_struct_fields(gSName, gSLine); $$ = fields; 
+        }
+        | type IDENTIFIER ';' { fields = sNodeTree_create_struct_fields(gSName, gSLine); append_field_to_fields(fields, $2, $1); $$ = fields; }
+        | fields type IDENTIFIER ';' { $$ = fields; append_field_to_fields(fields, $3, $2); }
         ;
 
 function: 
@@ -310,6 +311,14 @@ statment: exp ';'              { $$ = $1; }
         unsigned else_block = 0;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
+    }
+    | type IDENTIFIER ';' {
+        char* type_name = $1;
+        char* var_name = $2;
+        BOOL global = FALSE;
+        BOOL extern_ = FALSE;
+
+        $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
     }
     ;
 

@@ -64,6 +64,11 @@ char*% string_test1(char*% var)
     return a;
 }
 
+struct Data {
+    int a;
+    int b;
+};
+
 int main() 
 { 
     puts("HELLO WORLD");
@@ -82,6 +87,8 @@ int main()
     int {
         return xxx;
     };
+
+    Data data;
 
     return 0; 
 }

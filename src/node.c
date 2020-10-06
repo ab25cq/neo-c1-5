@@ -586,6 +586,27 @@ unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOO
     return node;
 }
 
+unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeDefineVariable;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sDefineVariable.mVarName, var_name, VAR_NAME_MAX);
+    xstrncpy(gNodes[node].uValue.sDefineVariable.mTypeName, type_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sDefineVariable.mGlobal = global;
+    gNodes[node].uValue.sDefineVariable.mExtern = extern_;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {
