@@ -207,7 +207,7 @@ sCLClass* alloc_enum(char* class_name_)
 void add_field_to_struct(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)
 {
     xstrncpy(klass->mNameFields[klass->mNumFields], field_name, VAR_NAME_MAX);
-    klass->mFields[klass->mNumFields] = clone_node_type(filed_type);
+    klass->mFields[klass->mNumFields] = clone_node_type(field_type);
 
     klass->mNumFields ++;
 
@@ -226,8 +226,8 @@ sCLClass* alloc_union(char* class_name_, BOOL anonymous, BOOL anonymous_var_name
 
 void add_field_to_union(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)
 {
-    xstrncpy(klass->mNameFields[klass->mNumFields], filed_name, VAR_NAME_MAX);
-    klass->mFields[klas->mNumFields] = clone_node_type(filed_type);
+    xstrncpy(klass->mNameFields[klass->mNumFields], field_name, VAR_NAME_MAX);
+    klass->mFields[klass->mNumFields] = clone_node_type(field_type);
 
     klass->mNumFields++;
 

@@ -348,11 +348,11 @@ struct sNodeTreeStruct
         } sCoroutine;
         struct {
             int mNumFields;
-            char mTypeFields[STRUCT_FIELD_MAX][VAR_NAME_MAX]
-            char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX]
+            char mTypeFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
+            char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
         } sFields;
         struct {
-            char mName[VAR_NAME_MAX]
+            char mName[VAR_NAME_MAX];
             unsigned int mFields;
             BOOL mAnonymous;
         } sStruct;

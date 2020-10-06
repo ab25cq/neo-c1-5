@@ -555,8 +555,9 @@ unsigned int sNodeTree_create_struct_fields(char* sname, int sline)
 
 void append_field_to_fields(unsigned int fields, char* name, char* type_name)
 {
-    xstrncpy(gNodes[fields].uValue.sFields.mName, name, VAR_NAME_MAX);
-    xstrncpy(gNodes[fields].uValue.sFields.mTypeName, type_name, VAR_NAME_MAX);
+    int num_fields = gNodes[fields].uValue.sFields.mNumFields;
+    xstrncpy(gNodes[fields].uValue.sFields.mNameFields[num_fields], name, VAR_NAME_MAX);
+    xstrncpy(gNodes[fields].uValue.sFields.mTypeFields[num_fields], type_name, VAR_NAME_MAX);
     gNodes[fields].uValue.sFields.mNumFields++;
 
     if(gNodes[fields].uValue.sFields.mNumFields >= STRUCT_FIELD_MAX) {
@@ -576,7 +577,7 @@ unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOO
 
     xstrncpy(gNodes[node].uValue.sStruct.mName, struct_name, VAR_NAME_MAX);
     gNodes[node].uValue.sStruct.mFields = fields;
-    gNodes[node].uValue.sStruct.mAnonyomous = anonymous;
+    gNodes[node].uValue.sStruct.mAnonymous = anonymous;
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;

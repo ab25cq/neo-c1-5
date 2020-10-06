@@ -83,6 +83,30 @@ std::map<std::string, sFunction> gFuncs;
 ///////////////////////////////////////////////////////////////////////
 // type
 ///////////////////////////////////////////////////////////////////////
+static BOOL is_generics_type(sNodeType* node_type)
+{
+    sCLClass* klass = node_type->mClass;
+
+    if(klass->mFlags & CLASS_FLAGS_GENERICS)
+    {
+        return TRUE;
+    }
+    else {
+        int i;
+        for(i=0; i<node_type->mNumGenericsTypes; i++)
+        {
+            sNodeType* node_type2 = node_type->mGenericsTypes[i];
+
+            if(is_generics_type(node_type2))
+            {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
 BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
@@ -540,7 +564,7 @@ static void create_real_struct_name(char* real_struct_name, int size_real_struct
     for(i=0; i<num_generics; i++) {
         sNodeType* node_type = generics_types[i];
 
-        xstrncat(real_struct_name, CLASS_NAME(node_type->mClass), size_real_struct_name);
+        xstrncat(real_struct_name, node_type->mClass->mName, size_real_struct_name);
 
         int j;
         for(j=0; j<node_type->mPointerNum; j++)
@@ -555,6 +579,8 @@ static void create_real_struct_name(char* real_struct_name, int size_real_struct
         }
     }
 }
+
+void compile_err_msg(sCompileInfo* info, const char* msg, ...);
 
 static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generics_type, char* real_struct_name, sCompileInfo* info)
 {
@@ -652,9 +678,9 @@ BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOO
             return FALSE;
         }
     }
-    else if(gLLVMStructType[real_struct_name].first == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)))
+    else if(gLLVMStructType[real_struct_name].first == nullptr || node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)
     {
-        if(TheModule->getTypeByName(real_struct_name) == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields)))
+        if(TheModule->getTypeByName(real_struct_name) == nullptr || (node_type->mClass->mNumFields != gLLVMStructType[real_struct_name].second->mNumFields))
         {
             StructType* struct_type = StructType::create(TheContext, real_struct_name);
             std::vector<Type*> fields;
@@ -768,7 +794,6 @@ BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeT
     return TRUE;
 }
 
-void compile_err_msg(sCompileInfo* info, const char* msg, ...);
 void push_value_to_stack_ptr(LVALUE* value, sCompileInfo* info);
 void append_heap_object_to_right_value(LVALUE* llvm_value, sCompileInfo* info);
 
@@ -3314,15 +3339,15 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
 {
     char struct_name[VAR_NAME_MAX];
     xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
-    unsigned int fields = gNodes[node].uValue.sStruct.mFields;
+    unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
 
-    int num_fields = gNodes[fields].uValue.sFields.mNumFields;
+    int num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
     char type_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     char name_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     int i;
     for(i=0; i<num_fields; i++) {
-        xstrncpy(type_fields[i], gNodes[fields].uValue.sFields.mTypeFields[i], VAR_NAME_MAX);
-        xstrncpy(name_fields[i], gNodes[fields].uValue.sFields.mNameFields[i], VAR_NAME_MAX);
+        xstrncpy(type_fields[i], gNodes[fields_node].uValue.sFields.mTypeFields[i], VAR_NAME_MAX);
+        xstrncpy(name_fields[i], gNodes[fields_node].uValue.sFields.mNameFields[i], VAR_NAME_MAX);
     }
 
     BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
@@ -3340,7 +3365,7 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
 
     sNodeType* generics_type = struct_type;
     BOOL new_create = TRUE;
-    (void)create_llvm_struct_type(node_type, generics_type, new_create, info);
+    (void)create_llvm_struct_type(struct_type, generics_type, new_create, info);
 
     return TRUE;
 }
