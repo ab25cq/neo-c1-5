@@ -69,6 +69,12 @@ struct Data {
     int b;
 };
 
+union Data2 {
+    int a;
+    long b;
+};
+
+
 int main() 
 { 
     puts("HELLO WORLD");
@@ -89,6 +95,8 @@ int main()
     };
 
     Data data;
+
+    Data2 data2;
 
     return 0; 
 }

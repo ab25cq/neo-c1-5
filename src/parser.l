@@ -226,6 +226,11 @@ struct {
     return(STRUCT); 
 }
 
+union {
+    strncpy(yylval.cval, yytext, 128);
+    return(UNION); 
+}
+
 return {
     strncpy(yylval.cval, yytext, 128);
     return(RETURN);

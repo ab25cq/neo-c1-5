@@ -3606,6 +3606,41 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+BOOL compile_union(unsigned int node, sCompileInfo* info)
+{
+    char struct_name[VAR_NAME_MAX];
+    xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
+    unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
+
+    int num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
+    char type_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
+    char name_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
+    int i;
+    for(i=0; i<num_fields; i++) {
+        xstrncpy(type_fields[i], gNodes[fields_node].uValue.sFields.mTypeFields[i], VAR_NAME_MAX);
+        xstrncpy(name_fields[i], gNodes[fields_node].uValue.sFields.mNameFields[i], VAR_NAME_MAX);
+    }
+
+    BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
+    BOOL anonymous_var_name = FALSE;
+
+    sCLClass* klass = alloc_union(struct_name, anonymous, anonymous_var_name);
+
+    sNodeType* fields[STRUCT_FIELD_MAX];
+
+    for(i=0; i<num_fields; i++) {
+        fields[i] = create_node_type_with_class_name(type_fields[i]);
+        add_field_to_union(klass, name_fields[i], fields[i]);
+    }
+
+    sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
+
+    sNodeType* generics_type = struct_type;
+    (void)create_llvm_union_type(struct_type, generics_type, info);
+
+    return TRUE;
+}
+
 static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 {
     char var_name[VAR_NAME_MAX];
@@ -3895,6 +3930,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeStruct:
             if(!compile_struct(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeUnion:
+            if(!compile_union(node, info)) {
                 return FALSE;
             }
             break;

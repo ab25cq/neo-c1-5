@@ -586,6 +586,26 @@ unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOO
     return node;
 }
 
+unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeUnion;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sStruct.mName, struct_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sStruct.mFields = fields;
+    gNodes[node].uValue.sStruct.mAnonymous = anonymous;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline)
 {
     unsigned int node = alloc_node();

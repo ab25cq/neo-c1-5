@@ -2,6 +2,7 @@
 source_filename = "Module stdin"
 
 %Data = type { i32, i32 }
+%Data2 = type { i64 }
 
 @gLVTable = internal global [8192 x i8*] zeroinitializer, align 8
 @global_string = private constant [6 x i8] c"%s...\00", align 1
@@ -224,16 +225,19 @@ entry:
   %data = alloca %Data
   %9 = bitcast %Data* %data to i8*
   store i8* %9, i8** getelementptr inbounds ([8192 x i8*], [8192 x i8*]* @gLVTable, i32 0, i32 2), align 8
-  %10 = load i8*, i8** %b, align 8
-  %11 = ptrtoint i8* %10 to i64
-  %12 = icmp ne i64 %11, 0
-  br i1 %12, label %cond_then_block, label %cond_end
+  %data2 = alloca %Data2
+  %10 = bitcast %Data2* %data2 to i8*
+  store i8* %10, i8** getelementptr inbounds ([8192 x i8*], [8192 x i8*]* @gLVTable, i32 0, i32 3), align 8
+  %11 = load i8*, i8** %b, align 8
+  %12 = ptrtoint i8* %11 to i64
+  %13 = icmp ne i64 %12, 0
+  br i1 %13, label %cond_then_block, label %cond_end
 
 cond_then_block:                                  ; preds = %entry
   br label %cond_end
 
 cond_end:                                         ; preds = %cond_then_block, %entry
-  call void @free(i8* %10)
+  call void @free(i8* %11)
   ret i32 0
 }
 

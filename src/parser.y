@@ -49,11 +49,12 @@ unsigned int fields;
 %token <cval> CLONE
 %token <cval> INLINE
 %token <cval> STRUCT
+%token <cval> UNION
 %type <rval> program 
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
-%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params struct_ fields;
+%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params struct_ fields union_;
 
 %start program
 
@@ -64,10 +65,16 @@ program: function {
         | struct_ {
             $$ = compile($1, &cinfo);
         }
+        | union_ {
+            $$ = compile($1, &cinfo);
+        }
         | program function {
             $$ = compile($2, &cinfo);
         }
         | program struct_ {
+            $$ = compile($2, &cinfo);
+        }
+        | program union_ {
             $$ = compile($2, &cinfo);
         }
         ;
@@ -144,6 +151,14 @@ struct_: STRUCT IDENTIFIER '{' fields '}' ';' {
             BOOL anonymous = FALSE;
 
             $$ = sNodeTree_create_struct(struct_name, fields, anonymous, gSName, gSLine);
+        }
+        ;
+
+union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
+            unsigned int fields = $4;
+            BOOL anonymous = FALSE;
+
+            $$ = sNodeTree_create_union(union_name, fields, anonymous, gSName, gSLine);
         }
         ;
 
