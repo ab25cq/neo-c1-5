@@ -5,6 +5,10 @@ int printf(char* str, ...);
 void*% calloc(size_t nmemb, size_t size);
 void free(void *ptr);
 
+int fun() {
+    return 2;
+}
+
 void xassert(char* msg, bool exp) 
 {
     printf("%s...", msg);
@@ -76,7 +80,7 @@ union Data2 {
 
 
 int main() 
-{ 
+{
     puts("HELLO WORLD");
 
     xassert("test1", true);
@@ -92,9 +96,9 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int yyy = int { printf("xxx %d\n", xxx); return xxx; }();
-    xassert("block test", yyy == 123);
+    int (*aaa)(int) = int lambda(int a) { return 123; };
 
+//    int lambda() a = int lambda() { printf("%d\n", xxx); return 123; };
 
 /*
     Data data;

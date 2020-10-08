@@ -176,6 +176,7 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
     *p2 = buf;
 
     while(**p) {
+printf("**p %c\n", **p);
         if(strstr(*p, "const") == *p) {
             node_type->mConstant = TRUE;
             (*p)+= 5;
@@ -205,6 +206,69 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             node_type->mUnsigned = TRUE;
             (*p)+= 8;
             skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "lambda") == *p) {
+            (*p)+=6;
+            skip_spaces_for_parse_class_name(p);
+
+            char* pp = *p2;
+
+            *pp = '\0';
+
+            if(buf[0] != '\0') {
+printf("buf (%s)\n", buf);
+                node_type->mResultType = create_node_type_with_class_name(buf);
+
+                if(node_type->mResultType == NULL) {
+puts("1");
+                    return NULL;
+                }
+
+                node_type->mClass = get_class("lambda");
+            }
+            else {
+                node_type->mClass = get_class("lambda");
+
+                return node_type;
+            }
+
+            if(**p == '(') {
+                (*p)++;
+                skip_spaces_for_parse_class_name(p);
+
+                if(**p == ')') {
+                    (*p)++;
+                    skip_spaces_for_parse_class_name(p);
+                    return node_type;
+                }
+
+                while(1) {
+printf("AAA %s\n", *p);
+                    node_type->mParamTypes[node_type->mNumParams] = parse_class_name(p, p2, buf);
+                    node_type->mNumParams++;
+
+                    if(node_type->mNumParams >= PARAMS_MAX) 
+                    {
+puts("2");
+                        return NULL;
+                    }
+
+                    if(**p == ',') {
+                        (*p)++;
+                        skip_spaces_for_parse_class_name(p);
+                    }
+                    else if(**p == ')') {
+                        (*p)++;
+                        skip_spaces_for_parse_class_name(p);
+                        return node_type;
+                    }
+                    else {
+printf("**p (%d)\n", **p);
+puts("3");
+                        return NULL;
+                    }
+                }
+            }
         }
         else if(**p == '<') {
             (*p)++;
@@ -294,6 +358,12 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
 
             return node_type;
         }
+        else if(**p == ' ') {
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(**p == ')') {
+            break;
+        }
         else {
             char* pp = *p2;
             *pp = **p;
@@ -326,7 +396,7 @@ sNodeType* create_node_type_with_class_name(const char* class_name_)
 
     sNodeType* result = parse_class_name(&p, &p2, buf);
 
-    if(strcmp(class_name_, "lambda") == 0) {
+    if(result->mClass == get_class("lambda")) {
         result->mPointerNum++;
     }
     
@@ -406,22 +476,6 @@ BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type)
     }
     //else if(left_type->mNullable && type_identify_with_class_name(left_type, "lambda") && type_identify_with_class_name(right_type, "void*")) 
     else if(type_identify_with_class_name(left_type, "lambda") && type_identify_with_class_name(right_type, "void*")) 
-    {
-        return TRUE;
-    }
-    else if(type_identify_with_class_name(left_type, "char*") && type_identify_with_class_name(right_type, "__builtin_va_list"))
-    {
-        return TRUE;
-    }
-    else if(type_identify_with_class_name(left_type, "__builtin_va_list") && type_identify_with_class_name(right_type, "char*"))
-    {
-        return TRUE;
-    }
-    else if(type_identify_with_class_name(left_type, "va_list") && type_identify_with_class_name(right_type, "va_list*"))
-    {
-        return TRUE;
-    }
-    else if(type_identify_with_class_name(left_type, "__builtin_va_list") && type_identify_with_class_name(right_type, "__builtin_va_list*"))
     {
         return TRUE;
     }

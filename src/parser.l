@@ -148,6 +148,11 @@ char* p;
     return(EQEQ); 
 }
 
+\([ \t\n]*\* {
+    strncpy(yylval.cval, yytext, 128);
+    return(FUNCTION_POINTER); 
+}
+
 [=+\-\*\/;\(\)\{\},\.:%\[\]\!] { 
     return(yytext[0]); 
 }
@@ -170,6 +175,11 @@ if {
 else {
     strncpy(yylval.cval, yytext, 128);
     return(ELSE); 
+}
+
+lambda {
+    strncpy(yylval.cval, yytext, 128);
+    return(LAMBDA); 
 }
 
 true {

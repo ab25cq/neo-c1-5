@@ -2083,6 +2083,11 @@ Value* llvm_create_string(char* str)
 
 Value* load_address_to_lvtable(int index, sNodeType* var_type, sCompileInfo* info)
 {
+    if(index >= LOCAL_VARIABLE_MAX) {
+        fprintf(stderr, "overflow local variable number\n");
+        exit(1);
+    }
+
     Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, (Value*)info->lv_table_value, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
 
     Value* lvalue = lvtable_value2;
@@ -2103,6 +2108,11 @@ Value* load_address_to_lvtable(int index, sNodeType* var_type, sCompileInfo* inf
 
 void store_address_to_lvtable(int index, Value* address, sCompileInfo* info)
 {
+    if(index >= LOCAL_VARIABLE_MAX) {
+        fprintf(stderr, "overflow local variable number\n");
+        exit(1);
+    }
+
     Value* lvtable_value2 = Builder.CreateCast(Instruction::BitCast, (Value*)info->lv_table_value, PointerType::get(PointerType::get(IntegerType::get(TheContext, 8), 0), 0));
 
     Value* lvalue = lvtable_value2;
@@ -2186,9 +2196,11 @@ LVALUE* get_value_from_stack(int offset)
 
 void llvm_change_block(BasicBlock* current_block, BasicBlock** current_block_before, sCompileInfo* info, BOOL no_free_right_objects)
 {
+/*
     if(!no_free_right_objects) {
         free_right_value_objects(info);
     }
+*/
 
     *current_block_before = (BasicBlock*)info->current_block;
 
@@ -2701,6 +2713,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
     BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
     BOOL static_ = gNodes[node].uValue.sFunction.mStatic;
+    BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
 
     sParserParam params[PARAMS_MAX];
 
@@ -2758,6 +2771,11 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     sVarTable* lv_table = info->lv_table;
     info->lv_table = init_var_table();
 
+    if(coroutine) {
+        info->lv_table->mCoroutineTop = TRUE;
+        info->lv_table->mParent = lv_table;
+    }
+
     BasicBlock* current_block_before;
     BasicBlock* current_block = BasicBlock::Create(TheContext, "entry", llvm_fun);
     llvm_change_block(current_block, &current_block_before, info, FALSE);
@@ -2765,11 +2783,25 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
     info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
 
-    Type* lvtable_type = get_lvtable_type();
+    if(!coroutine) {
+        Type* lvtable_type = get_lvtable_type();
 
-    Value* lv_table_value = Builder.CreateAlloca(lvtable_type, 0, "lv_table");
+        static int func_num = 0;
 
-    info->lv_table_value = lv_table_value;
+        char buf[VAR_NAME_MAX];
+        snprintf(buf, VAR_NAME_MAX, "gLVTable%d", func_num);
+        func_num++;
+
+        GlobalVariable* lv_table_value = new GlobalVariable(*TheModule, lvtable_type, false, GlobalValue::InternalLinkage, 0, buf);
+        lv_table_value->setAlignment(8);
+
+        ConstantAggregateZero* initializer = ConstantAggregateZero::get(lvtable_type);
+
+        lv_table_value->setInitializer(initializer);
+
+        info->lv_table_value = (void*)lv_table_value;
+    }
+
 
     /// ready for params ///
     for(i=0; i<num_params; i++) {
@@ -2834,19 +2866,39 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     // Run the optimizer on the function.
     //TheFPM->run(*llvm_fun, TheFAM);
 
-    info->type = create_node_type_with_class_name("void");
-
-    if(info->no_output) {
-        llvm_fun->eraseFromParent();
-    }
-
     info->lv_table = lv_table;
-    info->function = function;
 
     restore_right_value_objects_container(right_value_objects, info);
 
-    info->type = create_node_type_with_class_name("void");
+    BasicBlock* current_block_before2;
+    llvm_change_block(current_block_before, &current_block_before2, info, FALSE);
 
+    info->function = function;
+
+    if(coroutine) {
+        sNodeType* lambda_type = create_node_type_with_class_name("lambda");
+
+        lambda_type->mResultType = result_type;
+        lambda_type->mNumParams = num_params;
+        for(i=0; i<num_params; i++) {
+            lambda_type->mParamTypes[i] = param_types[i];
+        }
+
+        LVALUE llvm_value;
+        llvm_value.value = llvm_fun;
+        llvm_value.type = lambda_type;
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = lambda_type;
+    }
+    else {
+        info->type = create_node_type_with_class_name("void");
+    }
 
     return TRUE;
 }
@@ -2953,8 +3005,8 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
 
 BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 {
-    char fun_name[VAR_NAME_MAX];
-    xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
+    BOOL lambda_call = gNodes[node].uValue.sFunctionCall.mLambdaCall;
+
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
     BOOL message_passing = gNodes[node].uValue.sFunctionCall.mMessagePassing;
 
@@ -2964,45 +3016,44 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         params[i] = gNodes[node].uValue.sFunctionCall.mParams[i];
     }
 
-    sNodeType* param_types[PARAMS_MAX];
-    LVALUE param_values[PARAMS_MAX];
+    Function* llvm_fun;
+    std::vector<Value*> llvm_params;
+    sNodeType* result_type;
 
-    for(i=0; i<num_params; i++) {
-        if(!compile(params[i], info)) {
+    if(lambda_call) {
+        unsigned int lambda_node = gNodes[node].mLeft;
+
+        /// go ///
+        if(!compile(lambda_node, info)) {
             return FALSE;
         }
 
-        param_types[i] = clone_node_type(info->type);
-        param_values[i] = *get_value_from_stack(-1);
-    }
+        sNodeType* lambda_type = clone_node_type(info->type);
+        LVALUE lambda_value = *get_value_from_stack(-1);
 
-    sFunction fun;
-    memset(&fun, 0, sizeof(sFunction));
+        sNodeType* param_types[PARAMS_MAX];
+        LVALUE param_values[PARAMS_MAX];
 
-    if(message_passing) {
-        char real_fun_name[VAR_NAME_MAX];
-        snprintf(real_fun_name, VAR_NAME_MAX, "%s_%s", param_types[0]->mClass->mName, fun_name);
-        fun = gFuncs[real_fun_name];
-    }
-    else {
-        fun = gFuncs[fun_name];
-    }
+        for(i=0; i<num_params; i++) {
+            if(!compile(params[i], info)) {
+                return FALSE;
+            }
 
-    if(!fun.existance) {
-        compile_err_msg(info, "Function not found %s\n", fun_name);
-        info->err_num++;
+            param_types[i] = clone_node_type(info->type);
+            param_values[i] = *get_value_from_stack(-1);
+        }
 
-        info->type = create_node_type_with_class_name("int"); // dummy
+        if(!type_identify_with_class_name(lambda_type, "lambda")) {
+            compile_err_msg(info, "invalid type of calling co-routine\n");
+            info->err_num++;
 
-        return TRUE;
-    }
+            info->type = create_node_type_with_class_name("int"); // dummy
 
-    /// cast and type checking ///
-    std::vector<Value*> llvm_params;
+            return TRUE;
+        }
 
-    if(!fun.mVarArg) {
-        if(fun.mNumParams != num_params) {
-            compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+        if(num_params != lambda_type->mNumParams) {
+            compile_err_msg(info, "invalid param number of calling co-routine\n");
             info->err_num++;
 
             info->type = create_node_type_with_class_name("int"); // dummy
@@ -3011,7 +3062,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
 
         for(i=0; i<num_params; i++) {
-            sNodeType* left_type = fun.mParamTypes[i];
+            sNodeType* left_type = lambda_type->mParamTypes[i];
             sNodeType* right_type = param_types[num_params-i-1];
 
             LVALUE rvalue = param_values[num_params-i-1];
@@ -3030,7 +3081,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
             if(!substitution_posibility(left_type, right_type, FALSE)) 
             {
-                compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
+                compile_err_msg(info, "Calling lambda function parametor #%d is invalid. The different type between left type and right type.", i);
                 show_node_type(left_type);
                 show_node_type(right_type);
                 info->err_num++;
@@ -3057,10 +3108,41 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
             llvm_params.push_back(rvalue.value);
         }
+
+        result_type = lambda_type->mResultType;
+        llvm_fun = (Function*)lambda_value.value;
     }
     else {
-        if(fun.mNumParams > num_params) {
-            compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+        char fun_name[VAR_NAME_MAX];
+
+        xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
+
+        sNodeType* param_types[PARAMS_MAX];
+        LVALUE param_values[PARAMS_MAX];
+
+        for(i=0; i<num_params; i++) {
+            if(!compile(params[i], info)) {
+                return FALSE;
+            }
+
+            param_types[i] = clone_node_type(info->type);
+            param_values[i] = *get_value_from_stack(-1);
+        }
+
+        sFunction fun;
+        memset(&fun, 0, sizeof(sFunction));
+
+        if(message_passing) {
+            char real_fun_name[VAR_NAME_MAX];
+            snprintf(real_fun_name, VAR_NAME_MAX, "%s_%s", param_types[0]->mClass->mName, fun_name);
+            fun = gFuncs[real_fun_name];
+        }
+        else {
+            fun = gFuncs[fun_name];
+        }
+
+        if(!fun.existance) {
+            compile_err_msg(info, "Function not found %s\n", fun_name);
             info->err_num++;
 
             info->type = create_node_type_with_class_name("int"); // dummy
@@ -3068,18 +3150,87 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             return TRUE;
         }
 
-        for(i=0; i<num_params; i++) {
-            LVALUE rvalue = param_values[num_params-i-1];
-            llvm_params.push_back(rvalue.value);
+        /// cast and type checking ///
+        if(!fun.mVarArg) {
+            if(fun.mNumParams != num_params) {
+                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            for(i=0; i<num_params; i++) {
+                sNodeType* left_type = fun.mParamTypes[i];
+                sNodeType* right_type = param_types[num_params-i-1];
+
+                LVALUE rvalue = param_values[num_params-i-1];
+
+                if(auto_cast_posibility(left_type, right_type)) {
+                    if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+                    {
+                        compile_err_msg(info, "Cast failed");
+                        info->err_num++;
+
+                        info->type = create_node_type_with_class_name("int"); // dummy
+
+                        return TRUE;
+                    }
+                }
+
+                if(!substitution_posibility(left_type, right_type, FALSE)) 
+                {
+                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
+                    show_node_type(left_type);
+                    show_node_type(right_type);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                if(left_type->mHeap && right_type->mHeap)
+                {
+                    if(rvalue.binded_value && rvalue.var)
+                    {
+                        std_move(NULL, left_type, &rvalue, FALSE, info);
+                    }
+                    else {
+                        remove_from_right_value_object(rvalue.value, info);
+                    }
+                }
+                else if(right_type->mHeap && !rvalue.binded_value)
+                {
+                    append_heap_object_to_right_value(&rvalue, info);
+                }
+
+                llvm_params.push_back(rvalue.value);
+            }
         }
-    }
+        else {
+            if(fun.mNumParams > num_params) {
+                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                info->err_num++;
 
-    sNodeType* result_type = clone_node_type(fun.mResultType);
+                info->type = create_node_type_with_class_name("int"); // dummy
 
-    Function* llvm_fun = fun.mLLVMFunction;
+                return TRUE;
+            }
 
-    if(llvm_fun == nullptr) {
-        return TRUE;
+            for(i=0; i<num_params; i++) {
+                LVALUE rvalue = param_values[num_params-i-1];
+                llvm_params.push_back(rvalue.value);
+            }
+        }
+
+        result_type = clone_node_type(fun.mResultType);
+        llvm_fun = fun.mLLVMFunction;
+
+        if(llvm_fun == nullptr) {
+            return TRUE;
+        }
     }
 
     LVALUE llvm_value;
@@ -3468,124 +3619,6 @@ static BOOL compile_clone(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
-{
-    void* right_value_objects = new_right_value_objects_container(info);
-
-    static int coroutine_num = 0;
-    coroutine_num++;
-
-    char fun_name[VAR_NAME_MAX];
-    snprintf(fun_name, VAR_NAME_MAX, "%s_coroutine%d", gSName, coroutine_num);
-
-    BOOL var_arg = FALSE;
-    BOOL inline_ = FALSE;
-    BOOL static_ = TRUE;
-
-    sParserParam params[PARAMS_MAX];
-
-    sNodeType* result_type = create_node_type_with_class_name(gNodes[node].uValue.sCoroutine.mTypeName);
-
-    if(result_type == NULL || result_type->mClass == NULL) {
-        compile_err_msg(info, "Invalid type name %s\n", gNodes[node].uValue.sCoroutine.mTypeName);
-        return FALSE;
-    }
-
-    unsigned int node_block = gNodes[node].uValue.sCoroutine.mBlock;
-
-    int num_params = 1;
-    sNodeType* param_types[PARAMS_MAX];
-
-    char buf[128];
-    snprintf(buf, 128, "char*[%d]", LOCAL_VARIABLE_MAX);
-    param_types[0] = create_node_type_with_class_name(buf);
-
-    if(!add_function(fun_name, result_type, num_params, param_types, var_arg, inline_, static_, info)) 
-    {
-        return FALSE;
-    }
-
-    sFunction fun = gFuncs[fun_name];
-
-    Function* llvm_fun = fun.mLLVMFunction;
-
-    sFunction* function = (sFunction*)info->function;
-    info->function = &fun;
-    info->function_result_type = fun.mResultType;
-
-    sVarTable* lv_table = info->lv_table;
-    info->lv_table = init_var_table();
-    info->lv_table->mCoroutineTop = TRUE;
-    info->lv_table->mParent = lv_table;
-
-    BasicBlock* current_block_before;
-    BasicBlock* current_block = BasicBlock::Create(TheContext, "entry", llvm_fun);
-    llvm_change_block(current_block, &current_block_before, info, FALSE);
-
-    info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-    info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-
-    BOOL last_expression_is_return = FALSE;
-    if(!compile_block(node_block, info, &last_expression_is_return)) {
-        return FALSE;
-    }
-
-    if(type_identify_with_class_name(result_type, "void")) {
-        Builder.CreateRet(nullptr);
-    }
-
-    free_objects_with_parents(nullptr, info);
-
-    verifyFunction(*llvm_fun);
-
-    // Run the optimizer on the function.
-    //TheFPM->run(*llvm_fun, TheFAM);
-
-    info->type = create_node_type_with_class_name("void");
-
-/*
-    if(info->no_output) {
-        llvm_fun->eraseFromParent();
-    }
-*/
-
-    info->lv_table = lv_table;
-
-    restore_right_value_objects_container(right_value_objects, info);
-
-    BasicBlock* current_block_before2;
-    llvm_change_block(current_block_before, &current_block_before2, info, FALSE);
-
-    sNodeType* lambda_type = create_node_type_with_class_name("lambda");
-
-    lambda_type->mResultType = result_type;
-    lambda_type->mNumParams = num_params;
-    lambda_type->mParamTypes[0] = param_types[0];
-
-    LVALUE llvm_value;
-    llvm_value.value = llvm_fun;
-    llvm_value.type = lambda_type;
-    llvm_value.address = nullptr;
-    llvm_value.var = nullptr;
-    llvm_value.binded_value = FALSE;
-    llvm_value.load_field = FALSE;
-
-    push_value_to_stack_ptr(&llvm_value, info);
-
-    info->type = lambda_type;
-
-    info->function = function;
-
-
-    Value* llvm_params[PARAMS_MAX];
-
-    llvm_params[0] = (Value*)info->lv_table_value;
-
-    (void)call_function(fun_name, llvm_params, 1, "", FALSE, NULL, info);
-
-    return TRUE;
-}
-
 BOOL compile_struct(unsigned int node, sCompileInfo* info)
 {
     char struct_name[VAR_NAME_MAX];
@@ -3941,163 +3974,6 @@ static BOOL compile_not_equals(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-BOOL compile_lambda_call(unsigned int node, sCompileInfo* info)
-{
-    unsigned int lambda_node = gNodes[node].mLeft;
-
-    /// go ///
-    if(!compile(lambda_node, info)) {
-        return FALSE;
-    }
-
-    sNodeType* lambda_type = info->type;
-
-    char fun_name[VAR_NAME_MAX];
-    xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
-    int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
-    BOOL message_passing = gNodes[node].uValue.sFunctionCall.mMessagePassing;
-
-    unsigned int params[PARAMS_MAX];
-    int i;
-    for(i=0; i<num_params; i++) {
-        params[i] = gNodes[node].uValue.sFunctionCall.mParams[i];
-    }
-
-    sNodeType* param_types[PARAMS_MAX];
-    LVALUE param_values[PARAMS_MAX];
-
-    for(i=0; i<num_params; i++) {
-        if(!compile(params[i], info)) {
-            return FALSE;
-        }
-
-        param_types[i] = clone_node_type(info->type);
-        param_values[i] = *get_value_from_stack(-1);
-    }
-
-    sFunction fun;
-    memset(&fun, 0, sizeof(sFunction));
-
-    if(message_passing) {
-        char real_fun_name[VAR_NAME_MAX];
-        snprintf(real_fun_name, VAR_NAME_MAX, "%s_%s", param_types[0]->mClass->mName, fun_name);
-        fun = gFuncs[real_fun_name];
-    }
-    else {
-        fun = gFuncs[fun_name];
-    }
-
-    if(!fun.existance) {
-        compile_err_msg(info, "Function not found %s\n", fun_name);
-        info->err_num++;
-
-        info->type = create_node_type_with_class_name("int"); // dummy
-
-        return TRUE;
-    }
-
-    /// cast and type checking ///
-    std::vector<Value*> llvm_params;
-
-    if(!fun.mVarArg) {
-        if(fun.mNumParams != num_params) {
-            compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
-            info->err_num++;
-
-            info->type = create_node_type_with_class_name("int"); // dummy
-
-            return TRUE;
-        }
-
-        for(i=0; i<num_params; i++) {
-            sNodeType* left_type = fun.mParamTypes[i];
-            sNodeType* right_type = param_types[num_params-i-1];
-
-            LVALUE rvalue = param_values[num_params-i-1];
-
-            if(auto_cast_posibility(left_type, right_type)) {
-                if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
-                {
-                    compile_err_msg(info, "Cast failed");
-                    info->err_num++;
-
-                    info->type = create_node_type_with_class_name("int"); // dummy
-
-                    return TRUE;
-                }
-            }
-
-            if(!substitution_posibility(left_type, right_type, FALSE)) 
-            {
-                compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
-                show_node_type(left_type);
-                show_node_type(right_type);
-                info->err_num++;
-
-                info->type = create_node_type_with_class_name("int"); // dummy
-
-                return TRUE;
-            }
-
-            if(left_type->mHeap && right_type->mHeap)
-            {
-                if(rvalue.binded_value && rvalue.var)
-                {
-                    std_move(NULL, left_type, &rvalue, FALSE, info);
-                }
-                else {
-                    remove_from_right_value_object(rvalue.value, info);
-                }
-            }
-            else if(right_type->mHeap && !rvalue.binded_value)
-            {
-                append_heap_object_to_right_value(&rvalue, info);
-            }
-
-            llvm_params.push_back(rvalue.value);
-        }
-    }
-    else {
-        if(fun.mNumParams > num_params) {
-            compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
-            info->err_num++;
-
-            info->type = create_node_type_with_class_name("int"); // dummy
-
-            return TRUE;
-        }
-
-        for(i=0; i<num_params; i++) {
-            LVALUE rvalue = param_values[num_params-i-1];
-            llvm_params.push_back(rvalue.value);
-        }
-    }
-
-    sNodeType* result_type = clone_node_type(fun.mResultType);
-
-    Function* llvm_fun = fun.mLLVMFunction;
-
-    if(llvm_fun == nullptr) {
-        return TRUE;
-    }
-
-    LVALUE llvm_value;
-    llvm_value.value = Builder.CreateCall(llvm_fun, llvm_params);
-    llvm_value.type = clone_node_type(result_type);
-    llvm_value.address = nullptr;
-    llvm_value.var = nullptr;
-    llvm_value.binded_value = FALSE;
-    llvm_value.load_field = FALSE;
-
-    push_value_to_stack_ptr(&llvm_value, info);
-
-    info->type = clone_node_type(result_type);
-
-    return TRUE;
-
-    return TRUE;
-}
-
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -4202,12 +4078,6 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
-        case kNodeTypeCoroutine:
-            if(!compile_coroutine(node, info)) {
-                return FALSE;
-            }
-            break;
-
         case kNodeTypeStruct:
             if(!compile_struct(node, info)) {
                 return FALSE;
@@ -4237,13 +4107,6 @@ BOOL compile(unsigned int node, sCompileInfo* info)
                 return FALSE;
             }
             break;
-
-        case kNodeTypeLambdaCall:
-            if(!compile_lambda_call(node, info)) {
-                return FALSE;
-            }
-            break;
-
     }
     
 

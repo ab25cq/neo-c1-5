@@ -150,6 +150,7 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].uValue.sFunction.mVarArg = var_arg;
     gNodes[node].uValue.sFunction.mInline = inline_;
     gNodes[node].uValue.sFunction.mStatic = static_;
+    gNodes[node].uValue.sFunction.mCoroutine = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -516,21 +517,46 @@ unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline)
     return node;
 }
 
-unsigned int sNodeTree_create_coroutine(char* type_name, unsigned int block, char* sname, int sline)
+unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
-    gNodes[node].mNodeType = kNodeTypeCoroutine;
+    gNodes[node].mNodeType = kNodeTypeFunction;
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
 
-    gNodes[node].uValue.sCoroutine.mBlock = block;
-    xstrncpy(gNodes[node].uValue.sCoroutine.mTypeName, type_name, VAR_NAME_MAX);
+    static int coroutine_num = 0;
+    coroutine_num++;
 
-    gNodes[node].mLeft = 0;
-    gNodes[node].mRight = 0;
-    gNodes[node].mMiddle = 0;
+    char fun_name[VAR_NAME_MAX];
+    snprintf(fun_name, VAR_NAME_MAX, "coroutine%d", coroutine_num);
+
+    gNodes[node].uValue.sFunction.mVarArg = var_arg;
+    gNodes[node].uValue.sFunction.mInline = FALSE;
+    gNodes[node].uValue.sFunction.mStatic = TRUE;
+    gNodes[node].uValue.sFunction.mCoroutine = TRUE;
+
+    xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
+
+    xstrncpy(gNodes[node].uValue.sFunction.mResultTypeName, result_type_name, VAR_NAME_MAX);
+    gNodes[node].uValue.sFunction.mNodeBlock = node_block;
+
+    if(function_params > 0) {
+        gNodes[node].uValue.sFunction.mNumParams = gNodes[function_params].uValue.sFunctionParams.mNumParams;
+
+        int i;
+        for(i=0; i<gNodes[function_params].uValue.sFunctionParams.mNumParams; i++) {
+            sParserParam* param = gNodes[function_params].uValue.sFunctionParams.mParams + i;
+            xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mName, param->mName, VAR_NAME_MAX);
+            xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
+        }
+    }
+    else {
+        gNodes[node].uValue.sFunction.mNumParams = 0;
+    }
+
+    int num_params = gNodes[node].uValue.sFunction.mNumParams;
 
     return node;
 }
@@ -663,7 +689,7 @@ unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int
 {
     unsigned int node = alloc_node();
 
-    gNodes[node].mNodeType = kNodeTypeLambdaCall;
+    gNodes[node].mNodeType = kNodeTypeFunctionCall;
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
@@ -673,6 +699,7 @@ unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int
     gNodes[node].mMiddle = 0;
 
     gNodes[node].uValue.sFunctionCall.mMessagePassing = FALSE;
+    gNodes[node].uValue.sFunctionCall.mLambdaCall = TRUE;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, "", VAR_NAME_MAX);
 
