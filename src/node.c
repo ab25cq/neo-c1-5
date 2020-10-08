@@ -627,6 +627,69 @@ unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, B
     return node;
 }
 
+unsigned int sNodeTree_create_equals(unsigned int left, unsigned int right,  char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeEquals;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_not_equals(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeNotEquals;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int params, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeLambdaCall;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = lambda_node;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    gNodes[node].uValue.sFunctionCall.mMessagePassing = FALSE;
+
+    xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, "", VAR_NAME_MAX);
+
+    if(params > 0) {
+        gNodes[node].uValue.sFunctionCall.mNumParams = gNodes[params].uValue.sParams.mNumParams;
+        int i;
+        for(i=0; i<gNodes[params].uValue.sParams.mNumParams; i++) {
+            gNodes[node].uValue.sFunctionCall.mParams[i] = gNodes[params].uValue.sParams.mParams[i];
+        }
+    }
+    else {
+        gNodes[node].uValue.sFunctionCall.mNumParams = 0;
+    }
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

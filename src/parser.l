@@ -143,7 +143,12 @@ char* p;
     return(POINTER); 
 }
 
-[=+\-\*\/;\(\)\{\},\.:%\[\]] { 
+== {
+    strncpy(yylval.cval, yytext, 128);
+    return(EQEQ); 
+}
+
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!] { 
     return(yytext[0]); 
 }
 

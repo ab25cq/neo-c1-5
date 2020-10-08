@@ -90,13 +90,21 @@ int main()
 
     int xxx = 123;
 
-    int {
-        return xxx;
-    };
+    xassert("eqeq test", xxx == 123);
 
+    int yyy = int { printf("xxx %d\n", xxx); return xxx; }();
+    xassert("block test", yyy == 123);
+
+
+/*
     Data data;
 
     Data2 data2;
+
+    data.a = 111;
+
+    xassert("store and load field test", data.a == 111);
+*/
 
     return 0; 
 }

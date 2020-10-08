@@ -50,11 +50,12 @@ unsigned int fields;
 %token <cval> INLINE
 %token <cval> STRUCT
 %token <cval> UNION
+%token <cval> EQEQ
 %type <rval> program 
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
-%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp store_var params elif_statment prepare_elif_statment object method_params struct_ fields union_;
+%type <node> function block block_end add_sub statment mult_div node func_params func_params_start exp params elif_statment prepare_elif_statment object method_params struct_ fields union_ equals_and_not_equals;
 
 %start program
 
@@ -375,24 +376,23 @@ elif_statment:
     }
     ;
 
-exp: store_var { $$ = $1; }
+exp: mult_div { $$ = $1; }
     ;
 
-
-store_var:  add_sub                  { $$ = $1; }
-     | type IDENTIFIER '=' add_sub  { $$ = sNodeTree_create_store_variable($2, $1, $4, TRUE, gSName, gSLine); }
-     | IDENTIFIER '=' add_sub { $$ = sNodeTree_create_store_variable($1, "", $3, FALSE, gSName, gSLine); }
-     ;
-
-add_sub:  mult_div                  { $$ = $1; }
-        | add_sub '+' mult_div      { $$ = it = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
-        | add_sub '-' mult_div      { $$ = it = sNodeTree_create_sub($1, $3, 0, gSName, gSLine); }
+mult_div: add_sub                    { $$ = $1; }
+        | mult_div POINTER add_sub       { $$ = it = sNodeTree_create_mult($1, $3, 0, gSName, gSLine); }
+        | mult_div '/' add_sub       { $$ = it = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
         ;
 
-mult_div: node                    { $$ = $1; }
-        | mult_div POINTER node       { $$ = it = sNodeTree_create_mult($1, $3, 0, gSName, gSLine); }
-        | mult_div '/' node       { $$ = it = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
+add_sub:  equals_and_not_equals                  { $$ = $1; }
+        | add_sub '+' equals_and_not_equals      { $$ = it = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
+        | add_sub '-' equals_and_not_equals      { $$ = it = sNodeTree_create_sub($1, $3, 0, gSName, gSLine); }
         ;
+
+equals_and_not_equals: node { $$ = $1; }
+    | equals_and_not_equals EQEQ node { $$ = sNodeTree_create_equals($1, $3, gSName, gSLine); }
+    | equals_and_not_equals '!' '=' node { $$ = sNodeTree_create_not_equals($1, $4, gSName, gSLine); }
+    ;
 
 node: 
         INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
@@ -443,6 +443,12 @@ node:
             unsigned int block = $3;
 
             $$ = sNodeTree_create_coroutine(type_name, block, gSName, gSLine);
+        }
+        | type IDENTIFIER '=' exp  { $$ = sNodeTree_create_store_variable($2, $1, $4, TRUE, gSName, gSLine); }
+        | IDENTIFIER '=' exp { $$ = sNodeTree_create_store_variable($1, "", $3, FALSE, gSName, gSLine); }
+
+        | node '(' params ')' {
+            $$ = sNodeTree_create_lambda_call($1, $2, gSName, gSLine);
         }
         ;
 

@@ -24,7 +24,7 @@
 #define PARSER_ERR_MSG_MAX 5
 #define COMPILE_ERR_MSG_MAX 5
 #define NEO_C_STACK_SIZE 512
-#define LOCAL_VARIABLE_MAX 4096*2
+#define LOCAL_VARIABLE_MAX 512
 #define PARAMS_MAX 32
 #define METHOD_DEFAULT_PARAM_MAX 128
 #define SOURCE_EXPRESSION_MAX 4096*2
@@ -271,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeCoroutine, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeCoroutine, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLambdaCall };
 
 struct sNodeTreeStruct 
 {
@@ -402,6 +402,8 @@ unsigned int sNodeTree_create_struct_fields(char* sname, int sline);
 unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline);
+unsigned int sNodeTree_create_equals(unsigned int left, unsigned int right,  char* sname, int sline);
+unsigned int sNodeTree_create_not_equals(unsigned int left, unsigned int right, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp
@@ -416,6 +418,7 @@ struct sCompileInfoStruct
 
     void* andand_result_var;
     void* oror_result_var;
+    void* lv_table_value;
 
     sVarTable* lv_table;
 
