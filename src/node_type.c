@@ -176,7 +176,6 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
     *p2 = buf;
 
     while(**p) {
-printf("**p %c\n", **p);
         if(strstr(*p, "const") == *p) {
             node_type->mConstant = TRUE;
             (*p)+= 5;
@@ -216,11 +215,9 @@ printf("**p %c\n", **p);
             *pp = '\0';
 
             if(buf[0] != '\0') {
-printf("buf (%s)\n", buf);
                 node_type->mResultType = create_node_type_with_class_name(buf);
 
                 if(node_type->mResultType == NULL) {
-puts("1");
                     return NULL;
                 }
 
@@ -243,13 +240,11 @@ puts("1");
                 }
 
                 while(1) {
-printf("AAA %s\n", *p);
                     node_type->mParamTypes[node_type->mNumParams] = parse_class_name(p, p2, buf);
                     node_type->mNumParams++;
 
                     if(node_type->mNumParams >= PARAMS_MAX) 
                     {
-puts("2");
                         return NULL;
                     }
 
@@ -263,8 +258,6 @@ puts("2");
                         return node_type;
                     }
                     else {
-printf("**p (%d)\n", **p);
-puts("3");
                         return NULL;
                     }
                 }

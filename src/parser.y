@@ -448,13 +448,29 @@ node:
             $$ = sNodeTree_create_coroutine(function_params, result_type_name, node_block, var_arg, gSName, gSLine);
         }
         | IDENTIFIER '(' ')' {
-            $$ = sNodeTree_create_function_call($1, 0, FALSE, gSName, gSLine);
+            BOOL existance = function_existance($1);
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call($1, 0, FALSE, gSName, gSLine);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, gSLine);
+                $$ = sNodeTree_create_lambda_call(node, 0, gSName, gSLine);
+            }
         }
         | IDENTIFIER {
             $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
         }
         | IDENTIFIER '(' params ')' {
-            $$ = sNodeTree_create_function_call($1, $3, FALSE, gSName, gSLine);
+            BOOL existance = function_existance($1);
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call($1, $3, FALSE, gSName, gSLine);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, gSLine);
+                $$ = sNodeTree_create_lambda_call(node, $3, gSName, gSLine);
+            }
         }
         | object '.' IDENTIFIER '(' method_params ')' {
             $$ = sNodeTree_create_function_call($3, $5, TRUE, gSName, gSLine);

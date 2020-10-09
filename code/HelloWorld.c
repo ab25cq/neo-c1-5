@@ -96,9 +96,10 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int (*aaa)(int) = int lambda(int a) { return 123; };
+    int (*aaa)() = int lambda() { return 123; };
 
-//    int lambda() a = int lambda() { printf("%d\n", xxx); return 123; };
+    aaa();
+
 
 /*
     Data data;

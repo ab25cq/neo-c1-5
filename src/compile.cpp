@@ -977,6 +977,12 @@ Value* get_dummy_value(sNodeType* node_type, sCompileInfo* info)
 ///////////////////////////////////////////////////////////////////////
 // function
 ///////////////////////////////////////////////////////////////////////
+BOOL function_existance(char* fun_name)
+{
+    sFunction fun = gFuncs[fun_name];
+    return fun.existance;
+}
+
 BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, BOOL var_arg, BOOL inline_, BOOL static_, sCompileInfo* info)
 {
     sFunction fun;
@@ -3110,6 +3116,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
 
         result_type = lambda_type->mResultType;
+lambda_value.value->print(llvm::errs(), false);
         llvm_fun = (Function*)lambda_value.value;
     }
     else {

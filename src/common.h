@@ -432,6 +432,7 @@ struct sCompileInfoStruct
 
 typedef struct sCompileInfoStruct sCompileInfo;
 
+BOOL function_existance(char* fun_name);
 void dec_stack_ptr(int value, sCompileInfo* info);
 BOOL compile(unsigned int node, sCompileInfo* info);
 void llvm_init();

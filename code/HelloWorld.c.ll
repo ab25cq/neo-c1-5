@@ -235,10 +235,10 @@ entry:
   %xxx3 = load i32, i32* %xxx, align 4
   %eqtmpX = icmp eq i32 %xxx3, 123
   call void @xassert(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @global_string.11, i32 0, i32 0), i1 %eqtmpX)
-  %a = alloca i32 (i32)*
-  %9 = bitcast i32 (i32)** %a to i8*
+  %aaa = alloca i32 ()*
+  %9 = bitcast i32 ()** %aaa to i8*
   store i8* %9, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable7, i32 0, i32 2), align 8
-  store i32 (i32)* @coroutine1, i32 (i32)** %a, align 8
+  store i32 ()* @coroutine1, i32 ()** %aaa, align 8
   %10 = load i8*, i8** %b, align 8
   %11 = ptrtoint i8* %10 to i64
   %12 = icmp ne i64 %11, 0
@@ -252,13 +252,9 @@ cond_end:                                         ; preds = %cond_then_block, %e
   ret i32 0
 }
 
-define internal i32 @coroutine1(i32 %a) {
+define internal i32 @coroutine1() {
 entry:
   %andand_result_var = alloca i1
   %andand_result_var1 = alloca i1
-  %a2 = alloca i32
-  store i32 %a, i32* %a2, align 4
-  %0 = bitcast i32* %a2 to i8*
-  store i8* %0, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable7, i32 0, i32 2), align 8
   ret i32 123
 }
