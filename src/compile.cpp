@@ -3022,7 +3022,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         params[i] = gNodes[node].uValue.sFunctionCall.mParams[i];
     }
 
-    Function* llvm_fun;
+    Value* llvm_fun;
     std::vector<Value*> llvm_params;
     sNodeType* result_type;
 
@@ -3116,8 +3116,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
 
         result_type = lambda_type->mResultType;
-lambda_value.value->print(llvm::errs(), false);
-        llvm_fun = (Function*)lambda_value.value;
+        llvm_fun = lambda_value.value;
     }
     else {
         char fun_name[VAR_NAME_MAX];

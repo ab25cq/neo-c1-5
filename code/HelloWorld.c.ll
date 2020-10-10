@@ -21,6 +21,8 @@ source_filename = "Module stdin"
 @global_string.9 = private constant [11 x i8] c"const test\00", align 1
 @global_string.10 = private constant [4 x i8] c"ABC\00", align 1
 @global_string.11 = private constant [10 x i8] c"eqeq test\00", align 1
+@global_string.12 = private constant [4 x i8] c"FUN\00", align 1
+@global_string.13 = private constant [4 x i8] c"%d\0A\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -28,7 +30,7 @@ declare i32 @exit(i32)
 
 declare i32 @printf(i8*, ...)
 
-declare i8* @calloc(i32, i32)
+declare i8* @calloc(i64, i64)
 
 declare void @free(i8*)
 
@@ -122,7 +124,8 @@ entry:
   %str3 = load i8*, i8** %2, align 8
   %3 = call i32 @strlen(i8* %str3)
   %addtmp = add nsw i32 %3, 1
-  %4 = call i8* @calloc(i32 %addtmp, i32 1)
+  %sext14 = zext i32 %addtmp to i64
+  %4 = call i8* @calloc(i64 %sext14, i64 1)
   %result = alloca i8*
   %5 = bitcast i8** %result to i8*
   store i8* %5, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable4, i32 0, i32 1), align 8
@@ -149,7 +152,8 @@ entry:
   %str3 = load i8*, i8** %2, align 8
   %3 = call i32 @strlen(i8* %str3)
   %addtmp = add nsw i32 %3, 6
-  %4 = call i8* @calloc(i32 %addtmp, i32 1)
+  %sext14 = zext i32 %addtmp to i64
+  %4 = call i8* @calloc(i64 %sext14, i64 1)
   %result = alloca i8*
   %5 = bitcast i8** %result to i8*
   store i8* %5, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable5, i32 0, i32 1), align 8
@@ -183,7 +187,7 @@ entry:
   store i8* %var, i8** %var2, align 8
   %0 = bitcast i8** %var2 to i8*
   store i8* %0, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable6, i32 0, i32 0), align 8
-  %1 = call i8* @calloc(i32 128, i32 1)
+  %1 = call i8* @calloc(i64 128, i64 1)
   %a = alloca i8*
   %2 = bitcast i8** %a to i8*
   store i8* %2, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable6, i32 0, i32 1), align 8
@@ -239,16 +243,19 @@ entry:
   %9 = bitcast i32 ()** %aaa to i8*
   store i8* %9, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable7, i32 0, i32 2), align 8
   store i32 ()* @coroutine1, i32 ()** %aaa, align 8
-  %10 = load i8*, i8** %b, align 8
-  %11 = ptrtoint i8* %10 to i64
-  %12 = icmp ne i64 %11, 0
-  br i1 %12, label %cond_then_block, label %cond_end
+  %aaa4 = load i32 ()*, i32 ()** %aaa, align 8
+  %10 = call i32 %aaa4()
+  %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.13, i32 0, i32 0), i32 %10)
+  %12 = load i8*, i8** %b, align 8
+  %13 = ptrtoint i8* %12 to i64
+  %14 = icmp ne i64 %13, 0
+  br i1 %14, label %cond_then_block, label %cond_end
 
 cond_then_block:                                  ; preds = %entry
   br label %cond_end
 
 cond_end:                                         ; preds = %cond_then_block, %entry
-  call void @free(i8* %10)
+  call void @free(i8* %12)
   ret i32 0
 }
 
@@ -256,5 +263,9 @@ define internal i32 @coroutine1() {
 entry:
   %andand_result_var = alloca i1
   %andand_result_var1 = alloca i1
-  ret i32 123
+  %0 = call i32 @puts(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.12, i32 0, i32 0))
+  %1 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable7, i32 0, i32 1), align 8
+  %2 = bitcast i8* %1 to i32*
+  %xxx = load i32, i32* %2, align 4
+  ret i32 %xxx
 }
