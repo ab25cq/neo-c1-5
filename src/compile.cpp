@@ -66,12 +66,14 @@ struct sFunctionStruct {
     bool existance;
     char mName[VAR_NAME_MAX];
     Function* mLLVMFunction;
-    sNodeType* mResultType;
+    char mResultTypeName[VAR_NAME_MAX];
     int mNumParams;
-    sNodeType* mParamTypes[PARAMS_MAX];
+    char mParamTypes[PARAMS_MAX][VAR_NAME_MAX];
     BOOL mVarArg;
     BOOL mInline;
     BOOL mStatic;
+    unsigned int mNodeBlock;
+    BOOL mGenerics;
 };
 
 typedef sFunctionStruct sFunction;
@@ -309,6 +311,7 @@ static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generic
                 return FALSE;
             }
 
+show_node_type(field);
             Type* field_type;
             if(!create_llvm_type_from_node_type(&field_type, field, generics_type2, info))
             {
@@ -983,53 +986,74 @@ BOOL function_existance(char* fun_name)
     return fun.existance;
 }
 
-BOOL add_function(char* fun_name, sNodeType* result_type, int num_params, sNodeType** param_types, BOOL var_arg, BOOL inline_, BOOL static_, sCompileInfo* info)
+BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, BOOL var_arg, BOOL inline_, BOOL static_, unsigned int node_block, BOOL generics, sCompileInfo* info)
 {
     sFunction fun;
 
     fun.existance = true;
 
     xstrncpy(fun.mName, fun_name, VAR_NAME_MAX);
-    fun.mResultType = clone_node_type(result_type);
+    xstrncpy(fun.mResultTypeName, result_type_name, VAR_NAME_MAX);
     fun.mVarArg = var_arg;
     fun.mInline = inline_;
     fun.mStatic = static_;
     fun.mNumParams = num_params;
-
-    Type* llvm_result_type;
-    if(!create_llvm_type_from_node_type(&llvm_result_type, result_type, result_type, info))
-    {
-        return TRUE;
-    }
-
-    std::vector<Type *> llvm_param_types;
+    fun.mNodeBlock = node_block;
+    fun.mGenerics = generics;
 
     int i;
     for(i=0; i<num_params; i++) {
-        sNodeType* param_type = param_types[i];
+        xstrncpy(fun.mParamTypes[i], param_types[i], VAR_NAME_MAX);
+    }
 
-        Type* llvm_param_type;
-        if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
-        {
+    if(!generics) {
+        sNodeType* result_type = create_node_type_with_class_name(result_type_name);
+
+        if(result_type == NULL || result_type->mClass == NULL) {
             return FALSE;
         }
-        llvm_param_types.push_back(llvm_param_type);
 
-        fun.mParamTypes[i] = clone_node_type(param_types[i]);
-    }
+        Type* llvm_result_type;
+        if(!create_llvm_type_from_node_type(&llvm_result_type, result_type, result_type, info))
+        {
+            return TRUE;
+        }
 
-    if(inline_ || static_) {
-        FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
-        Function* llvm_fun = Function::Create(function_type, Function::InternalLinkage, fun_name, TheModule);
-        fun.mLLVMFunction = llvm_fun;
+        std::vector<Type *> llvm_param_types;
+
+        int i;
+        for(i=0; i<num_params; i++) {
+            sNodeType* param_type = create_node_type_with_class_name(param_types[i]);
+
+            if(param_type == NULL || param_type->mClass == NULL) {
+                return FALSE;
+            }
+
+            Type* llvm_param_type;
+            if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
+            {
+                return FALSE;
+            }
+
+            llvm_param_types.push_back(llvm_param_type);
+        }
+
+        if(inline_ || static_) {
+            FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
+            Function* llvm_fun = Function::Create(function_type, Function::InternalLinkage, fun_name, TheModule);
+            fun.mLLVMFunction = llvm_fun;
+        }
+        else {
+            FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
+            Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
+            fun.mLLVMFunction = llvm_fun;
+        }
+
+        gFuncs[fun_name] = fun;
     }
     else {
-        FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
-        Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
-        fun.mLLVMFunction = llvm_fun;
+        gFuncs[fun_name] = fun;
     }
-
-    gFuncs[fun_name] = fun;
 
     return TRUE;
 }
@@ -1069,16 +1093,23 @@ BOOL call_function(const char* fun_name, Value** params, int num_params, const c
     }
     dec_stack_ptr(num_params, info);
 
-    if(type_identify_with_class_name(fun.mResultType, "void"))
+    sNodeType* result_type = create_node_type_with_class_name(fun.mResultTypeName);
+
+    if(result_type == NULL || result_type->mClass == NULL) {
+        dec_stack_ptr(num_params, info);
+        return FALSE;
+    }
+
+    if(type_identify_with_class_name(result_type, "void"))
     {
         Builder.CreateCall(llvm_fun, llvm_params);
 
-        info->type = clone_node_type(fun.mResultType);
+        info->type = clone_node_type(result_type);
     }
     else {
         LVALUE llvm_value;
         llvm_value.value = Builder.CreateCall(llvm_fun, llvm_params);
-        llvm_value.type = clone_node_type(fun.mResultType);
+        llvm_value.type = clone_node_type(result_type);
         llvm_value.address = nullptr;
         llvm_value.var = nullptr;
         llvm_value.binded_value = FALSE;
@@ -1086,7 +1117,7 @@ BOOL call_function(const char* fun_name, Value** params, int num_params, const c
 
         push_value_to_stack_ptr(&llvm_value, info);
 
-        info->type = clone_node_type(fun.mResultType);
+        info->type = clone_node_type(result_type);
 
         if(llvm_value.type->mHeap && !llvm_value.binded_value &&& llvm_value.var) 
         {
@@ -1652,8 +1683,8 @@ static BOOL call_clone_method(sNodeType* node_type, Value** address, sCompileInf
         Value* cmp_right_value = ConstantInt::get(Type::getInt64Ty(TheContext), (uint64_t)0);
         Value* conditional = Builder.CreateICmpNE(obj2, cmp_right_value);
 
-        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", gFunction);
-        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", gFunction);
+        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", llvm_function);
 
         Builder.CreateCondBr(conditional, cond_then_block, cond_end_block);
 
@@ -1711,8 +1742,8 @@ static BOOL call_clone_method(sNodeType* node_type, Value** address, sCompileInf
         Value* cmp_right_value = ConstantInt::get(Type::getInt64Ty(TheContext), (uint64_t)0);
         Value* conditional = Builder.CreateICmpNE(obj2, cmp_right_value);
 
-        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", gFunction);
-        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", gFunction);
+        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", llvm_function);
 
         Builder.CreateCondBr(conditional, cond_then_block, cond_end_block);
 
@@ -1833,8 +1864,8 @@ Value* clone_object(sNodeType* node_type, Value* address, sCompileInfo* info)
         Value* cmp_right_value = ConstantInt::get(Type::getInt64Ty(TheContext), (uint64_t)0);
         Value* conditional = Builder.CreateICmpNE(obj2, cmp_right_value);
 
-        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", gFunction);
-        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", gFunction);
+        BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+        BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end", llvm_function);
 
         Builder.CreateCondBr(conditional, cond_then_block, cond_end_block);
 
@@ -2695,6 +2726,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
         llvm_value.type = var_type;
         llvm_value.address = var_address;
+
         llvm_value.var = var;
         llvm_value.binded_value = TRUE;
         llvm_value.load_field = FALSE;
@@ -2709,58 +2741,34 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-BOOL compile_function(unsigned int node, sCompileInfo* info)
+BOOL create_llvm_function(char* fun_name, int num_params, char** param_names, BOOL coroutine, sCompileInfo* info)
 {
     void* right_value_objects = new_right_value_objects_container(info);
 
-    char fun_name[VAR_NAME_MAX];
-    xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
-    int num_params = gNodes[node].uValue.sFunction.mNumParams;
-    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
-    BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
-    BOOL static_ = gNodes[node].uValue.sFunction.mStatic;
-    BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
+    sFunction fun = gFuncs[fun_name];
 
     sParserParam params[PARAMS_MAX];
 
     int i;
     for(i=0; i<num_params; i++) {
-        sParserParam* param = gNodes[node].uValue.sFunction.mParams + i;
-        xstrncpy(params[i].mName, param->mName, VAR_NAME_MAX);
-        xstrncpy(params[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
-        params[i].mType = create_node_type_with_class_name(param->mTypeName);
+        xstrncpy(params[i].mName, param_names[i], VAR_NAME_MAX);
+        xstrncpy(params[i].mTypeName, fun.mParamTypes[i], VAR_NAME_MAX);
+        params[i].mType = create_node_type_with_class_name(params[i].mTypeName);
         if(params[i].mType == NULL || params[i].mType->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name %s\n", param->mTypeName);
+            compile_err_msg(info, "Invalid type name %s\n", param_names[i]);
             return FALSE;
         }
     }
 
-    sNodeType* result_type = create_node_type_with_class_name(gNodes[node].uValue.sFunction.mResultTypeName);
-
-    if(result_type == NULL || result_type->mClass == NULL) {
-        compile_err_msg(info, "Invalid type name %s\n", gNodes[node].uValue.sFunction.mResultTypeName);
-        return FALSE;
-    }
-
-    unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
-
-    sNodeType* param_types[PARAMS_MAX];
-
-    for(i=0; i<num_params; i++) {
-        param_types[i] = params[i].mType;
-    }
-
-    if(!add_function(fun_name, result_type, num_params, param_types, var_arg, inline_, static_, info)) {
-        return FALSE;
-    }
-
-    sFunction fun = gFuncs[fun_name];
+    sNodeType* result_type = create_node_type_with_class_name(fun.mResultTypeName);
 
     Function* llvm_fun = fun.mLLVMFunction;
 
+    unsigned int node_block = fun.mNodeBlock;
+
     sFunction* function = (sFunction*)info->function;
     info->function = &fun;
-    info->function_result_type = fun.mResultType;
+    info->function_result_type = result_type;
 
     int n = 0;
     std::vector<Value *> llvm_params;
@@ -2881,13 +2889,54 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
 
     info->function = function;
 
+    return TRUE;
+}
+
+BOOL compile_function(unsigned int node, sCompileInfo* info)
+{
+    char fun_name[VAR_NAME_MAX];
+    xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+    int num_params = gNodes[node].uValue.sFunction.mNumParams;
+    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
+    BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
+    BOOL static_ = gNodes[node].uValue.sFunction.mStatic;
+    BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
+    BOOL generics = gNodes[node].uValue.sFunction.mGenerics;
+    
+    char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
+
+    unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
+
+    char* param_types[PARAMS_MAX];
+    char* param_names[PARAMS_MAX];
+
+    int i;
+    for(i=0; i<num_params; i++) {
+        param_types[i] = gNodes[node].uValue.sFunction.mParams[i].mTypeName;
+        param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
+    }
+
+    if(!add_function(fun_name, result_type_name, num_params, param_types, var_arg, inline_, static_, node_block, generics, info)) {
+        return FALSE;
+    }
+
+    if(!generics) {
+        if(!create_llvm_function(fun_name, num_params, param_names, coroutine, info)) {
+            return FALSE;
+        }
+    }
+
     if(coroutine) {
+        sFunction fun = gFuncs[fun_name];
+
+        Function* llvm_fun = fun.mLLVMFunction;
+
         sNodeType* lambda_type = create_node_type_with_class_name("lambda");
 
-        lambda_type->mResultType = result_type;
+        lambda_type->mResultType = create_node_type_with_class_name(result_type_name);
         lambda_type->mNumParams = num_params;
         for(i=0; i<num_params; i++) {
-            lambda_type->mParamTypes[i] = param_types[i];
+            lambda_type->mParamTypes[i] = create_node_type_with_class_name(param_types[i]);
         }
 
         LVALUE llvm_value;
@@ -2930,20 +2979,16 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         }
     }
 
-    sNodeType* result_type = create_node_type_with_class_name(gNodes[node].uValue.sFunction.mResultTypeName);
+    char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
 
-    if(result_type == NULL || result_type->mClass == NULL) {
-        compile_err_msg(info, "Invalid type name %s\n", gNodes[node].uValue.sFunction.mResultTypeName);
-        return FALSE;
-    }
-
-    sNodeType* param_types[PARAMS_MAX];
+    char* param_types[PARAMS_MAX];
 
     for(i=0; i<num_params; i++) {
-        param_types[i] = params[i].mType;
+        sParserParam* param = gNodes[node].uValue.sFunction.mParams + i;
+        param_types[i] = param->mTypeName;
     }
 
-    if(!add_function(fun_name, result_type, num_params, param_types, var_arg, FALSE, FALSE, info)) {
+    if(!add_function(fun_name, result_type_name, num_params, param_types, var_arg, FALSE, FALSE, 0, FALSE, info)) {
         return FALSE;
     }
 
@@ -3168,7 +3213,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             }
 
             for(i=0; i<num_params; i++) {
-                sNodeType* left_type = fun.mParamTypes[i];
+                sNodeType* left_type = create_node_type_with_class_name(fun.mParamTypes[i]);
                 sNodeType* right_type = param_types[num_params-i-1];
 
                 LVALUE rvalue = param_values[num_params-i-1];
@@ -3231,7 +3276,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             }
         }
 
-        result_type = clone_node_type(fun.mResultType);
+        result_type = create_node_type_with_class_name(fun.mResultTypeName);
         llvm_fun = fun.mLLVMFunction;
 
         if(llvm_fun == nullptr) {
@@ -3641,6 +3686,7 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
     }
 
     BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
+    BOOL generics = gNodes[node].uValue.sStruct.mGenerics;
 
     sCLClass* klass = alloc_struct(struct_name, anonymous);
 
@@ -3651,11 +3697,13 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
         add_field_to_struct(klass, name_fields[i], fields[i]);
     }
 
-    sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
+    if(!generics) {
+        sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
 
-    sNodeType* generics_type = struct_type;
-    BOOL new_create = TRUE;
-    (void)create_llvm_struct_type(struct_type, generics_type, new_create, info);
+        sNodeType* generics_type = struct_type;
+        BOOL new_create = TRUE;
+        (void)create_llvm_struct_type(struct_type, generics_type, new_create, info);
+    }
 
     return TRUE;
 }
@@ -3980,6 +4028,553 @@ static BOOL compile_not_equals(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX]; 
+    xstrncpy(var_name, gNodes[node].uValue.sLoadField.mVarName, VAR_NAME_MAX);
+
+    /// compile left node ///
+    unsigned int lnode = gNodes[node].mLeft;
+
+    if(!compile(lnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
+        compile_err_msg(info, "This is not struct type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    if(left_type->mPointerNum > 1) {
+        compile_err_msg(info, "This is pointer of pointer type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    int field_index = get_field_index(left_type->mClass, var_name, NULL);
+
+    if(field_index == -1) {
+        compile_err_msg(info, "The field(%s) is not found", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    sNodeType* field_type = clone_node_type(left_type->mClass->mFields[field_index]);
+
+    BOOL success_solve;
+    if(!solve_generics(&field_type, left_type, &success_solve)) {
+        compile_err_msg(info, "Can't solve generics types(13)");
+        show_node_type(field_type);
+        show_node_type(left_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Type* llvm_field_type;
+    if(!create_llvm_type_from_node_type(&llvm_field_type, field_type, field_type, info))
+    {
+        compile_err_msg(info, "Getting llvm type failed(13)");
+        show_node_type(field_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    sNodeType* left_type2 = clone_node_type(left_type);
+    left_type2->mPointerNum = 0;
+
+    Type* llvm_struct_type;
+    if(!create_llvm_type_from_node_type(&llvm_struct_type, left_type2, left_type2, info))
+    {
+        compile_err_msg(info, "Getting llvm type failed(14)");
+        show_node_type(left_type2);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Value* field_address;
+    if(left_type->mClass->mFlags & CLASS_FLAGS_UNION) {
+        if(left_type->mPointerNum == 0) {
+            if(lvalue.address == NULL) {
+                field_address = NULL;
+            }
+            else {
+                field_address = Builder.CreateCast(Instruction::BitCast, lvalue.address, PointerType::get(llvm_field_type, 0));
+            }
+        }
+        else {
+            field_address = Builder.CreateCast(Instruction::BitCast, lvalue.value, PointerType::get(llvm_field_type, 0));
+        }
+    }
+    else {
+        if(left_type->mPointerNum == 0) {
+#if LLVM_VERSION_MAJOR >= 7
+            field_address = Builder.CreateStructGEP(lvalue.address, field_index);
+#else
+            field_address = Builder.CreateStructGEP(llvm_struct_type, lvalue.address, field_index);
+#endif
+        }
+        else {
+#if LLVM_VERSION_MAJOR >= 7
+            field_address = Builder.CreateStructGEP(lvalue.value, field_index);
+#else
+            field_address = Builder.CreateStructGEP(llvm_struct_type, lvalue.value, field_index);
+#endif
+        }
+    }
+
+    int alignment = get_llvm_alignment_from_node_type(field_type);
+
+    Value* field_address2;
+    if(field_address == NULL) {
+        field_address2 = NULL;
+    }
+    else {
+        field_address2 = Builder.CreateCast(Instruction::BitCast, field_address, PointerType::get(llvm_field_type, 0));
+    }
+
+    LVALUE llvm_value;
+    if(field_type->mArrayDimentionNum == 1) {
+        llvm_value.value = field_address2;
+    }
+    else {
+        if(field_address2 == NULL) {
+            llvm_value.value = Builder.CreateCast(Instruction::BitCast, lvalue.value, llvm_field_type);
+        }
+        else {
+            llvm_value.value = Builder.CreateAlignedLoad(field_address2, alignment);
+        }
+    }
+
+    llvm_value.type = clone_node_type(field_type);
+    llvm_value.address = field_address2;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = TRUE;
+    llvm_value.load_field = TRUE;
+
+    if(field_type->mArrayDimentionNum == 1) {
+        sNodeType* field_type2 = clone_node_type(field_type);
+
+        field_type2->mArrayDimentionNum = 0;
+        field_type2->mPointerNum++;
+
+        if(!cast_right_type_to_left_type(field_type2, &field_type, &llvm_value, info))
+        {
+            return FALSE;
+        }
+    }
+
+    info->type = clone_node_type(field_type);
+
+    dec_stack_ptr(1, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    return TRUE;
+}
+
+static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX];
+    xstrncpy(var_name, gNodes[node].uValue.sStoreField.mVarName, VAR_NAME_MAX);
+
+    /// compile left node ///
+    unsigned int lnode = gNodes[node].mLeft;
+
+    if(!compile(lnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = clone_node_type(info->type);
+
+    if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
+        compile_err_msg(info, "This is not struct type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    /// compile right node ///
+    unsigned int rnode = gNodes[node].mRight;
+
+    if(!compile(rnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+
+    int field_index = get_field_index(left_type->mClass, var_name, NULL);
+
+    if(field_index == -1) {
+        compile_err_msg(info, "The field(%s) is not found", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    sNodeType* field_type = clone_node_type(left_type->mClass->mFields[field_index]);
+
+    BOOL success_solve;
+    if(!solve_generics(&field_type, left_type, &success_solve)) {
+        compile_err_msg(info, "Can't solve generics types(11)");
+        show_node_type(field_type);
+        show_node_type(left_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    if(auto_cast_posibility(field_type, right_type)) {
+        if(!cast_right_type_to_left_type(field_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+    
+    if(!substitution_posibility(field_type, right_type, FALSE)) {
+        compile_err_msg(info, "The different type between left type and right type. store field");
+        show_node_type(field_type);
+        show_node_type(right_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    sNodeType* left_type2 = clone_node_type(left_type);
+    left_type2->mPointerNum = 0;
+
+    Type* llvm_struct_type;
+    if(!create_llvm_type_from_node_type(&llvm_struct_type, left_type2, left_type2, info))
+    {
+        compile_err_msg(info, "Getting llvm type failed(11)");
+        show_node_type(left_type2);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Type* llvm_field_type;
+    if(!create_llvm_type_from_node_type(&llvm_field_type, field_type, field_type, info))
+    {
+        compile_err_msg(info, "Getting llvm type failed(12)");
+        show_node_type(field_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    int alignment = get_llvm_alignment_from_node_type(field_type);
+
+    Value* field_address;
+
+    if(left_type->mClass->mFlags & CLASS_FLAGS_UNION) {
+        if(left_type->mPointerNum == 0) {
+            field_address = Builder.CreateCast(Instruction::BitCast, lvalue.address, PointerType::get(llvm_field_type, 0));
+        }
+        else {
+            field_address = Builder.CreateCast(Instruction::BitCast, lvalue.value, PointerType::get(llvm_field_type, 0));
+        }
+    }
+    else {
+        if(left_type->mPointerNum == 0) {
+#if LLVM_VERSION_MAJOR >= 7
+            field_address = Builder.CreateStructGEP(lvalue.address, field_index);
+#else
+            field_address = Builder.CreateStructGEP(llvm_struct_type, lvalue.address, field_index);
+#endif
+        }
+        else {
+#if LLVM_VERSION_MAJOR >= 7
+            field_address = Builder.CreateStructGEP(lvalue.value, field_index);
+#else
+            field_address = Builder.CreateStructGEP(llvm_struct_type, lvalue.value, field_index);
+#endif
+        }
+    }
+
+    Value* rvalue2 = rvalue.value;
+
+    BOOL alloc = FALSE;
+    std_move(field_address, field_type, &rvalue, alloc, info);
+
+    Builder.CreateAlignedStore(rvalue2, field_address, alignment);
+
+    info->type = right_type;
+
+    dec_stack_ptr(2, info);
+    push_value_to_stack_ptr(&rvalue, info);
+
+    return TRUE;
+}
+
+static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
+{
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    Value* result_var = (Value*)info->andand_result_var;
+
+    /// compile expression ///
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE conditional_value = *get_value_from_stack(-1);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, left_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &left_type, &conditional_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(left_type, "bool")) {
+        compile_err_msg(info, "Left expression is not bool type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Builder.CreateAlignedStore(conditional_value.value, result_var, 1);
+
+    BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_jump_then", llvm_function);
+
+    BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_jump_end", llvm_function);
+
+    free_right_value_objects(info);
+
+    Builder.CreateCondBr(conditional_value.value, cond_then_block, cond_end_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(cond_then_block, &current_block_before, info, FALSE);
+
+    /// compile right expression ///
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE conditional_value2 = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(bool_type, right_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &right_type, &conditional_value2, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(right_type, "bool")) {
+        compile_err_msg(info, "Right expression is not bool type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Value* andand_value = Builder.CreateAnd(conditional_value.value, conditional_value2.value, "andand");
+
+    Builder.CreateAlignedStore(andand_value, result_var, 1);
+
+    free_right_value_objects(info);
+    Builder.CreateBr(cond_end_block);
+
+    BasicBlock* current_block_before2;
+    llvm_change_block(cond_end_block, &current_block_before2, info, FALSE);
+
+    dec_stack_ptr(2, info);
+
+    LVALUE llvm_value;
+    llvm_value.value = Builder.CreateAlignedLoad(result_var, 1, "andand_result_value");
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = result_var;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+
+static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
+{
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    Value* result_var = (Value*)info->oror_result_var;
+
+    /// compile expression ///
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE conditional_value = *get_value_from_stack(-1);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, left_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &left_type, &conditional_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(left_type, "bool")) {
+        compile_err_msg(info, "Right expression is not bool type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Builder.CreateAlignedStore(conditional_value.value, result_var, 1);
+
+    BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_jump_then", llvm_function);
+
+    BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_jump_end", llvm_function);;
+
+    free_right_value_objects(info);
+
+    Builder.CreateCondBr(conditional_value.value, cond_end_block, cond_then_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(cond_then_block, &current_block_before, info, FALSE);
+
+    /// compile right expression ///
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE conditional_value2 = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(bool_type, right_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &right_type, &conditional_value2, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(right_type, "bool")) {
+        compile_err_msg(info, "Right expression is not bool type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Value* oror_value = Builder.CreateOr(conditional_value.value, conditional_value2.value, "oror");
+
+    Builder.CreateAlignedStore(oror_value, result_var, 1);
+
+    free_right_value_objects(info);
+    Builder.CreateBr(cond_end_block);
+
+    BasicBlock* current_block_before2;
+    llvm_change_block(cond_end_block, &current_block_before2, info, FALSE);
+
+    dec_stack_ptr(2, info);
+
+    LVALUE llvm_value;
+    llvm_value.value = Builder.CreateAlignedLoad(result_var, 1, "oror_result_value");
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = result_var;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -4110,6 +4705,30 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeNotEquals:
             if(!compile_not_equals(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLoadField:
+            if(!compile_load_field(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeStoreField:
+            if(!compile_store_field(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeAndAnd:
+            if(!compile_and_and(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeOrOr:
+            if(!compile_or_or(node, info)) {
                 return FALSE;
             }
             break;

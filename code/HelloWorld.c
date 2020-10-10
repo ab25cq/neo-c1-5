@@ -6,6 +6,7 @@ void*% calloc(size_t nmemb, size_t size);
 void free(void *ptr);
 
 int fun() {
+    puts("called fun");
     return 2;
 }
 
@@ -22,10 +23,11 @@ void xassert(char* msg, bool exp)
     }
 }
 
-bool int::fun(int self) {
+int int::fun(int self) {
+    puts("called int::fun");
     printf("self %d\n", self);
 
-    return true;
+    return 123;
 }
 
 bool const_test(const char* str) 
@@ -78,6 +80,15 @@ union Data2 {
     long b;
 };
 
+struct GenericsData<T> {
+    T a;
+    T b;
+};
+
+int GenericsData<T>::show(GenericsData<T>* self)
+{
+    printf("%d %d\n", self.a, self.b);
+}
 
 int main() 
 {
@@ -85,7 +96,9 @@ int main()
 
     xassert("test1", true);
 
-    xassert("message passing test", 3.fun());
+    fun();
+
+    xassert("message passing test", 3.fun() == 123);
     xassert("const test", const_test("ABC"));
 
     char*% b = string_test1(string2(string("ABC")));
@@ -98,18 +111,21 @@ int main()
 
     int (*aaa)() = int lambda() { puts("FUN"); return xxx; };
 
-    printf("%d\n", aaa());
+    xassert("function pointer test", aaa() == 123);
 
-
-/*
     Data data;
 
-    Data2 data2;
+    data.a = 123;
+    data.b = 234;
 
-    data.a = 111;
+    xassert("load field and store test", data.a == 123 && data.b == 234);
 
-    xassert("store and load field test", data.a == 111);
-*/
+    GenericsData<int> data;
+
+    data.a = 123;
+    data.b = 234;
+
+    xassert("load field and store test2", data.a == 123 && data.b == 234);
 
     return 0; 
 }

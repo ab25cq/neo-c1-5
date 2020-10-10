@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -151,6 +151,7 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].uValue.sFunction.mInline = inline_;
     gNodes[node].uValue.sFunction.mStatic = static_;
     gNodes[node].uValue.sFunction.mCoroutine = FALSE;
+    gNodes[node].uValue.sFunction.mGenerics = generics;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -353,6 +354,7 @@ unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params,
     gNodes[node].mMiddle = 0;
 
     gNodes[node].uValue.sFunctionCall.mMessagePassing = message_passing;
+    gNodes[node].uValue.sFunctionCall.mLambdaCall = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, fun_name, VAR_NAME_MAX);
 
@@ -536,6 +538,7 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
     gNodes[node].uValue.sFunction.mInline = FALSE;
     gNodes[node].uValue.sFunction.mStatic = TRUE;
     gNodes[node].uValue.sFunction.mCoroutine = TRUE;
+    gNodes[node].uValue.sFunction.mGenerics = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -604,6 +607,7 @@ unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOO
     xstrncpy(gNodes[node].uValue.sStruct.mName, struct_name, VAR_NAME_MAX);
     gNodes[node].uValue.sStruct.mFields = fields;
     gNodes[node].uValue.sStruct.mAnonymous = anonymous;
+    gNodes[node].uValue.sStruct.mGenerics = FALSE;
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;
@@ -713,6 +717,74 @@ unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int
     else {
         gNodes[node].uValue.sFunctionCall.mNumParams = 0;
     }
+
+    return node;
+}
+
+unsigned int sNodeTree_create_load_field(char* name, unsigned int left_node, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeLoadField;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sLoadField.mVarName, name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = left_node;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_store_field(char* var_name, unsigned int left_node, unsigned int right_node, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeStoreField;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sStoreField.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = left_node;
+    gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_and_and(unsigned int left_node, unsigned int right_node, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeAndAnd;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left_node;
+    gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_or_or(unsigned int left_node, unsigned int right_node, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeOrOr;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left_node;
+    gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
 
     return node;
 }

@@ -140,7 +140,7 @@ char* p;
 
 [\*]+ {
     strncpy(yylval.cval, yytext, 128);
-    return(POINTER); 
+    return(STAR); 
 }
 
 == {
@@ -148,12 +148,27 @@ char* p;
     return(EQEQ); 
 }
 
+!= {
+    strncpy(yylval.cval, yytext, 128);
+    return(NOT_EQ); 
+}
+
 \([ \t\n]*\* {
     strncpy(yylval.cval, yytext, 128);
     return(FUNCTION_POINTER); 
 }
 
-[=+\-\*\/;\(\)\{\},\.:%\[\]\!] { 
+"&&" {
+    strncpy(yylval.cval, yytext, 128);
+    return(ANDAND); 
+}
+
+"||" {
+    strncpy(yylval.cval, yytext, 128);
+    return(OROR); 
+}
+
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>] { 
     return(yytext[0]); 
 }
 

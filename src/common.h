@@ -271,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr };
 
 struct sNodeTreeStruct 
 {
@@ -315,6 +315,7 @@ struct sNodeTreeStruct
             BOOL mInline;
             BOOL mStatic;
             BOOL mCoroutine;
+            BOOL mGenerics;
         } sFunction;
         struct {
             char mFunName[VAR_NAME_MAX];
@@ -323,6 +324,12 @@ struct sNodeTreeStruct
             BOOL mMessagePassing;
             BOOL mLambdaCall;
         } sFunctionCall;
+        struct {
+            char mVarName[VAR_NAME_MAX];
+        } sLoadField;
+        struct {
+            char mVarName[VAR_NAME_MAX];
+        } sStoreField;
 
         struct {
             int mNumParams;
@@ -353,6 +360,7 @@ struct sNodeTreeStruct
             char mName[VAR_NAME_MAX];
             unsigned int mFields;
             BOOL mAnonymous;
+            BOOL mGenerics;
         } sStruct;
         struct {
             char mVarName[VAR_NAME_MAX];
@@ -382,7 +390,7 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
@@ -398,11 +406,16 @@ unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline);
 unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline);
 unsigned int sNodeTree_create_struct_fields(char* sname, int sline);
 unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
+unsigned int sNodeTree_create_generics_struct(char* struct_name, int num_generics, char** generics_types, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline);
 unsigned int sNodeTree_create_equals(unsigned int left, unsigned int right,  char* sname, int sline);
 unsigned int sNodeTree_create_not_equals(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int params, char* sname, int sline);
+unsigned int sNodeTree_create_store_field(char* var_name, unsigned int left_node, unsigned int right_node, char* sname, int sline);
+unsigned int sNodeTree_create_load_field(char* name, unsigned int left_node, char* sname, int sline);
+unsigned int sNodeTree_create_or_or(unsigned int left_node, unsigned int right_node, char* sname, int sline);
+unsigned int sNodeTree_create_and_and(unsigned int left_node, unsigned int right_node, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

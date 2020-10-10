@@ -1,13 +1,13 @@
-coroutine
-
-
-struct, union, enum
-load store field
+enum
 generics, method generics
-run co-routine
-subroutine header only all function is inline or generics
+compile generics function when calling function
 
 -----
 inline with heap
 co-routine with type
 
+coroutine
+struct, union, 
+load store field
+run co-routine
+subroutine header only all function is inline or generics
