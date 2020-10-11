@@ -1,6 +1,6 @@
+method generics
+mixin-layers of function
 enum
-generics, method generics
-compile generics function when calling function
 
 -----
 inline with heap
@@ -11,3 +11,5 @@ struct, union,
 load store field
 run co-routine
 subroutine header only all function is inline or generics
+generics
+compile generics function when calling function

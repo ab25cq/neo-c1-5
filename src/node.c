@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, BOOL method_generics, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -152,6 +152,11 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].uValue.sFunction.mStatic = static_;
     gNodes[node].uValue.sFunction.mCoroutine = FALSE;
     gNodes[node].uValue.sFunction.mGenerics = generics;
+    gNodes[node].uValue.sFunction.mMethodGenerics = method_generics;
+
+puts("XXX");
+puts(fun_name);
+printf("method_generics %d\n", method_generics);
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -595,7 +600,7 @@ void append_field_to_fields(unsigned int fields, char* name, char* type_name)
     }
 }
 
-unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline)
+unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL generics, BOOL anonymous, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -607,7 +612,7 @@ unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOO
     xstrncpy(gNodes[node].uValue.sStruct.mName, struct_name, VAR_NAME_MAX);
     gNodes[node].uValue.sStruct.mFields = fields;
     gNodes[node].uValue.sStruct.mAnonymous = anonymous;
-    gNodes[node].uValue.sStruct.mGenerics = FALSE;
+    gNodes[node].uValue.sStruct.mGenerics = generics;
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;

@@ -182,6 +182,11 @@ void {
     return(VOID); 
 }
 
+template {
+    strncpy(yylval.cval, yytext, 128);
+    return(TEMPLATE); 
+}
+
 if {
     strncpy(yylval.cval, yytext, 128);
     return(IF); 

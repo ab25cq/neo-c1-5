@@ -316,6 +316,7 @@ struct sNodeTreeStruct
             BOOL mStatic;
             BOOL mCoroutine;
             BOOL mGenerics;
+            BOOL mMethodGenerics;
         } sFunction;
         struct {
             char mFunName[VAR_NAME_MAX];
@@ -390,7 +391,7 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, BOOL method_generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
@@ -405,7 +406,7 @@ unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, c
 unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline);
 unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline);
 unsigned int sNodeTree_create_struct_fields(char* sname, int sline);
-unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
+unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL generics, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_generics_struct(char* struct_name, int num_generics, char** generics_types, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline);
@@ -441,6 +442,8 @@ struct sCompileInfoStruct
     sNodeType* function_result_type;
 
     void* right_value_objects;
+
+    sNodeType* generics_type;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

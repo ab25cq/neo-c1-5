@@ -85,9 +85,22 @@ struct GenericsData<T> {
     T b;
 };
 
-int GenericsData<T>::show(GenericsData<T>* self)
+int GenericsData<T>::show(GenericsData<T> self)
 {
+    T a;
+    a = 123;
+    T b = 234;
+
+    self.a = a;
+    self.b = b;
+
     printf("%d %d\n", self.a, self.b);
+
+    return 123;
+}
+
+template <M> M fun2(M a) {
+    return a + 1;
 }
 
 int main() 
@@ -120,12 +133,16 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
-    GenericsData<int> data;
+    GenericsData<int> data2;
 
-    data.a = 123;
-    data.b = 234;
+    data2.a = 123;
+    data2.b = 234;
 
-    xassert("load field and store test2", data.a == 123 && data.b == 234);
+    xassert("load field and store test2", data2.a == 123 && data2.b == 234);
+
+    xassert("generics fun test", data2.show() == 123);
+
+    xassert("method generics fun test", fun2(123) == 124);
 
     return 0; 
 }

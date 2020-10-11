@@ -24,6 +24,8 @@ int num_struct_generics_types;
 char struct_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 int num_function_generics_types;
 char function_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
+int num_method_generics_types;
+char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 unsigned int object;
 BOOL inline_;
 BOOL static_;
@@ -64,6 +66,7 @@ BOOL static_;
 %token <cval> ANDAND
 %token <cval> OROR
 %token <cval> LAMBDA
+%token <cval> TEMPLATE
 %token <cval> FUNCTION_POINTER
 %type <rval> program 
 %type <cval> type 
@@ -78,7 +81,7 @@ BOOL static_;
 %type <cval> function_generics_types 
 %type <cval> function_struct_type 
 %type <cval> function_result_type 
-%type <node> function block block_end statment node func_params func_params_start exp params elif_statment prepare_elif_statment method_params struct_ fields union_ function_generics_types_start;
+%type <node> function block block_end statment node func_params func_params_start exp params elif_statment prepare_elif_statment method_params struct_ fields union_ function_generics_types_start method_generics_types_start method_generics_type method_generics_types;
 
 %left ANDAND OROR
 %left EQEQ NOT_EQ
@@ -206,38 +209,66 @@ type:
     ;
 
 function_result_type:
-    type_name {
+    method_generics_types_start method_generics_type type_name {
         inline_ = FALSE;
         static_ = FALSE;
-        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncpy($$, $3, VAR_NAME_MAX);
     }
-    | type_name STAR {
+    | method_generics_types_start method_generics_type type_name STAR {
         inline_ = FALSE;
         static_ = FALSE;
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncpy($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $4, VAR_NAME_MAX);
     }
-    | type_name STAR '%' {
+    | method_generics_types_start method_generics_type type_name STAR '%' {
         inline_ = FALSE;
         static_ = FALSE;
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncpy($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $4, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
     }
-    | function_result_type_attribute type_name {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncpy($$, $2, VAR_NAME_MAX);
+    | method_generics_types_start method_generics_type function_result_type_attribute type_name {
+        xstrncpy($$, $3, VAR_NAME_MAX);
+        xstrncpy($$, $4, VAR_NAME_MAX);
     }
-    | function_result_type_attribute type_name STAR {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, $3, VAR_NAME_MAX);
+    | method_generics_types_start method_generics_type function_result_type_attribute type_name STAR {
+        xstrncpy($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $4, VAR_NAME_MAX);
+        xstrncat($$, $5, VAR_NAME_MAX);
     }
-    | function_result_type_attribute type_name STAR '%' {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, $3, VAR_NAME_MAX);
+    | method_generics_types_start method_generics_type function_result_type_attribute type_name STAR '%' {
+        xstrncpy($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $4, VAR_NAME_MAX);
+        xstrncat($$, $5, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
+    }
+    ;
+
+method_generics_type: {
+    }
+    | TEMPLATE '<' method_generics_types '>' {
+    }
+    ;
+
+method_generics_types_start: {
+    num_method_generics_types = 0;
+    }
+    ;
+
+method_generics_types: IDENTIFIER {
+        xstrncpy(method_generics_types[0], $1, VAR_NAME_MAX);
+
+        num_method_generics_types = 1;
+    }
+    | method_generics_types IDENTIFIER {
+        xstrncpy(method_generics_types[num_method_generics_types], $2, VAR_NAME_MAX);
+
+        num_method_generics_types++;
+
+        if(num_method_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow method generics types number\n");
+            exit(2);
+        }
     }
     ;
 
@@ -312,6 +343,13 @@ type_name: IDENTIFIER {
                 xstrncpy(type_name, buf, VAR_NAME_MAX);
             }
         }
+        for(i=0; i<num_method_generics_types; i++) {
+            if(strcmp(type_name, method_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "mgenerics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
     }
@@ -331,6 +369,13 @@ type_name: IDENTIFIER {
             if(strcmp(type_name, struct_generics_types[i]) == 0) {
                 char buf[VAR_NAME_MAX];
                 snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_method_generics_types; i++) {
+            if(strcmp(type_name, method_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "mgenerics%d", i);
                 xstrncpy(type_name, buf, VAR_NAME_MAX);
             }
         }
@@ -372,15 +417,17 @@ struct_:
             char* struct_name = $2;
             unsigned int fields = $8;
             BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, anonymous, gSName, gSLine);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
         }
         | STRUCT IDENTIFIER struct_generics_types_start '{' fields '}' ';' {
             char* struct_name = $2;
             unsigned int fields = $5;
             BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, anonymous, gSName, gSLine);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
         }
         ;
 
@@ -442,6 +489,11 @@ struct_generics_types: IDENTIFIER {
         xstrncpy(struct_generics_types[num_struct_generics_types], $2, VAR_NAME_MAX);
 
         num_struct_generics_types++;
+
+        if(num_struct_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow method generics types number\n");
+            exit(2);
+        }
     }
     ;
 
@@ -461,20 +513,36 @@ fields:  {
         ;
 
 function: 
-        function_result_type function_struct_type ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
+        function_result_type function_struct_type ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end 
+        {
             char* result_type = $1;
 
             char fun_name[VAR_NAME_MAX];
-            xstrncpy(fun_name, $2, VAR_NAME_MAX);
+
+            char* struct_name = $2;
+
+            char* p = strstr(struct_name, "<");
+
+            char struct_name2[VAR_NAME_MAX];
+
+            if(p) {
+                memcpy(struct_name2, struct_name, p - struct_name);
+                struct_name2[p-struct_name] = '\0';
+            }
+            else {
+                xstrncpy(struct_name2, struct_name, VAR_NAME_MAX);
+            }
+
+            xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
             xstrncat(fun_name, "_", VAR_NAME_MAX);
             xstrncat(fun_name, $5, VAR_NAME_MAX);
 
             unsigned int function_params = $8;
             unsigned int node_block = $11;
-printf("fun_name %s %d\n", fun_name, num_function_generics_types);
             BOOL generics = num_function_generics_types > 0;
+            BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, method_generics, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
             char* result_type = $1;
@@ -482,9 +550,9 @@ printf("fun_name %s %d\n", fun_name, num_function_generics_types);
             unsigned int function_params = $5;
             unsigned int node_block = $8;
             BOOL generics = FALSE;
+            BOOL method_generics = num_method_generics_types > 0;
 
-printf("fun_name %s %d\n", fun_name, num_function_generics_types);
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, num_method_generics_types, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $1;
