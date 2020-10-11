@@ -154,10 +154,6 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].uValue.sFunction.mGenerics = generics;
     gNodes[node].uValue.sFunction.mMethodGenerics = method_generics;
 
-puts("XXX");
-puts(fun_name);
-printf("method_generics %d\n", method_generics);
-
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
     gNodes[node].uValue.sFunction.mNumParams = gNodes[function_params].uValue.sFunctionParams.mNumParams;

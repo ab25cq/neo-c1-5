@@ -456,6 +456,7 @@ fun	a.c	/^int fun(int a, int b) {$/;"	f
 fun	code/HelloWorld.c	/^int fun() {$/;"	f
 fun	code/HelloWorld.c	/^int int::fun(int self) {$/;"	f
 fun2	code/HelloWorld.c	/^template <M> M fun2(M a) {$/;"	f
+fun3	code/HelloWorld.c	/^template <M> M fun3(M (*aaa)(char*), char* bbb) {$/;"	f
 fun_name	src/memalloc-stdc.c	/^    char fun_name[128];$/;"	m	struct:sHeapDebug	file:
 func_params	parser.tab.c	/^unsigned int func_params;$/;"	v
 func_params	src/parser.y	/^func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }$/;"	l

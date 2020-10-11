@@ -4,6 +4,7 @@ int exit(int rc);
 int printf(char* str, ...);
 void*% calloc(size_t nmemb, size_t size);
 void free(void *ptr);
+int atoi(const char* str);
 
 int fun() {
     puts("called fun");
@@ -103,6 +104,10 @@ template <M> M fun2(M a) {
     return a + 1;
 }
 
+template <M> M fun3(M (*aaa)(char*), char* bbb) {
+    return aaa(bbb);
+}
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -143,6 +148,8 @@ int main()
     xassert("generics fun test", data2.show() == 123);
 
     xassert("method generics fun test", fun2(123) == 124);
+
+    xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
     return 0; 
 }

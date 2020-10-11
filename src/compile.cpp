@@ -3139,9 +3139,28 @@ static BOOL craete_generics_function(char* real_fun_name2, sFunction* fun, sComp
 
 void solve_method_generics(char* node_type, char** method_generics_types)
 {
-    int n;
-    if(sscanf(node_type, "mgenerics%d", &n) == 1 && strcmp(method_generics_types[n], "") != 0) {
-        xstrncpy(node_type, method_generics_types[n], VAR_NAME_MAX);
+    int i;
+    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+        char generics_type_name[VAR_NAME_MAX];
+        snprintf(generics_type_name, VAR_NAME_MAX, "mgenerics%d", i);
+
+        char result_type[VAR_NAME_MAX];
+
+        char* p = node_type;
+        char* p2 = result_type;
+        while(*p) {
+            if(memcmp(p, generics_type_name, strlen(generics_type_name)) == 0) {
+                memcpy(p2, method_generics_types[i], strlen(method_generics_types[i]));
+                p += strlen(generics_type_name);
+                p2 += strlen(method_generics_types[i]);
+            }
+            else {
+                *p2++ = *p++;
+            }
+        }
+        *p2 = '\0';
+
+        xstrncpy(node_type, result_type, VAR_NAME_MAX);
     }
 }
 
@@ -3306,15 +3325,22 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             param_types[i] = clone_node_type(info->type);
             param_values[i] = *get_value_from_stack(-1);
         }
+        sNodeType* param_types2[PARAMS_MAX];
+        LVALUE param_values2[PARAMS_MAX];
+
+        for(i=0; i<num_params; i++) {
+            param_types2[i] = param_types[num_params-i-1];
+            param_values2[i] = param_values[num_params-i-1];
+        }
 
         sFunction fun;
         memset(&fun, 0, sizeof(sFunction));
 
         if(message_passing) {
-            info->generics_type = clone_node_type(param_types[0]);
+            info->generics_type = clone_node_type(param_types2[0]);
 
             char real_fun_name[VAR_NAME_MAX];
-            sCLClass* klass = param_types[0]->mClass;
+            sCLClass* klass = param_types2[0]->mClass;
 
             xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
             xstrncat(real_fun_name, "_", VAR_NAME_MAX);
@@ -3337,7 +3363,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 for(i=0; i<GENERICS_TYPES_MAX; i++) {
                     method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
                 }
-                determine_method_generics(method_generics_types, &fun, param_types);
+                determine_method_generics(method_generics_types, &fun, param_types2);
 
                 sFunction fun2 = fun;
 
@@ -3393,7 +3419,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 for(i=0; i<GENERICS_TYPES_MAX; i++) {
                     method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
                 }
-                determine_method_generics(method_generics_types, &fun, param_types);
+                determine_method_generics(method_generics_types, &fun, param_types2);
 
                 sFunction fun2 = fun;
 
