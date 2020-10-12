@@ -685,17 +685,17 @@ elif_statment:
     ;
 
 exp: node {
-        $$ = object = $1;
+        $$ = $1;
     }
-    | exp '+' exp      { $$ = object = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
-    | exp '-' exp    { $$ = object = sNodeTree_create_sub($1, $3, 0, gSName, gSLine); }
-    | exp STAR exp   { $$ = object = sNodeTree_create_mult($1, $3, 0, gSName, gSLine); }
-    | exp '/' exp    { $$ = object = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
-    | exp EQEQ exp   { $$ = object = sNodeTree_create_equals($1, $3, gSName, gSLine); }
-    | exp NOT_EQ exp { $$ = object = sNodeTree_create_not_equals($1, $3, gSName, gSLine); }
-    | exp ANDAND exp { $$ = object = sNodeTree_create_and_and($1, $3, gSName, gSLine); }
-    | exp OROR exp   { $$ = object = sNodeTree_create_or_or($1, $3, gSName, gSLine); }
-    | '(' exp ')'    { $$ = object = $2; }
+    | exp '+' exp      { $$ = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
+    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, 0, gSName, gSLine); }
+    | exp STAR exp   { $$ = sNodeTree_create_mult($1, $3, 0, gSName, gSLine); }
+    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
+    | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, gSLine); }
+    | exp NOT_EQ exp { $$ = sNodeTree_create_not_equals($1, $3, gSName, gSLine); }
+    | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, gSLine); }
+    | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, gSLine); }
+    | '(' exp ')'    { $$ = $2; }
     ;
 
 node: 
@@ -744,6 +744,7 @@ node:
             $$ = sNodeTree_create_function_call($3, params, TRUE, gSName, gSLine);
         }
         | exp '.' IDENTIFIER '(' method_params_start method_params ')' {
+            append_param_to_params($6, $1);
             $$ = sNodeTree_create_function_call($3, $6, TRUE, gSName, gSLine);
         }
         | exp '.' IDENTIFIER {
@@ -783,7 +784,6 @@ node:
 
 method_params_start: {
         params = sNodeTree_create_params(gSName, gSLine); 
-        append_param_to_params(params, object);
         };
 
 method_params :

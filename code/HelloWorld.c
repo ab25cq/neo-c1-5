@@ -100,6 +100,12 @@ int GenericsData<T>::show(GenericsData<T> self)
     return 123;
 }
 
+template <M> M GenericsData<T>::map(GenericsData<T>* self, M (*aaa)(T))
+{
+    self.a = 123;
+    return aaa(self.a);
+}
+
 template <M> M fun2(M a) {
     return a + 1;
 }
@@ -150,6 +156,8 @@ int main()
     xassert("method generics fun test", fun2(123) == 124);
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
+
+    xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
 
     return 0; 
 }

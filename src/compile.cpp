@@ -2720,7 +2720,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     sVar* var = get_variable_from_table(info->lv_table, var_name);
 
     if(var == NULL || var->mType == NULL) {
-        compile_err_msg(info, "undeclared variable %s", var_name);
+        compile_err_msg(info, "undeclared variable(1) %s", var_name);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -3116,7 +3116,7 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-static BOOL craete_generics_function(char* real_fun_name2, sFunction* fun, sCompileInfo* info) 
+static BOOL create_generics_function(char* real_fun_name2, sFunction* fun, sCompileInfo* info) 
 {
     sFunction generics_fun = *fun;
 
@@ -3349,12 +3349,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             fun = gFuncs[real_fun_name];
 
             if(!fun.existance) {
-                compile_err_msg(info, "Function not found %s\n", fun_name);
+                compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
 
-                return TRUE;
+                return FALSE;
             }
 
             if(fun.mMethodGenerics) {
@@ -3387,7 +3387,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
 
-                if(!craete_generics_function(real_fun_name2, &fun, info)) {
+                if(!create_generics_function(real_fun_name2, &fun, info)) {
                     return FALSE;
                 }
             }
@@ -3400,7 +3400,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
 
-                if(!craete_generics_function(real_fun_name2, &fun, info)) {
+                if(!create_generics_function(real_fun_name2, &fun, info)) {
                     return FALSE;
                 }
             }
@@ -3434,13 +3434,13 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 fun = fun2;
 
-                if(!craete_generics_function(fun_name, &fun, info)) {
+                if(!create_generics_function(fun_name, &fun, info)) {
                     return FALSE;
                 }
             }
 
             if(!fun.existance) {
-                compile_err_msg(info, "Function not found %s\n", fun_name);
+                compile_err_msg(info, "Function not found(2) %s\n", fun_name);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
@@ -4030,7 +4030,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
     sVar* var = get_variable_from_table(info->lv_table, var_name);
 
     if(var == NULL) {
-        compile_err_msg(info, "undeclared variable %s", var_name);
+        compile_err_msg(info, "undeclared variable(2) %s", var_name);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy

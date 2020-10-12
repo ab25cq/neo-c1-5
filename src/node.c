@@ -341,6 +341,25 @@ void append_param_to_params(unsigned int params, unsigned int param)
     }
 }
 
+void append_param_to_params_at_head(unsigned int params, unsigned int param)
+{
+    int num_params = gNodes[params].uValue.sParams.mNumParams;
+
+    gNodes[params].uValue.sParams.mNumParams++;
+
+    if(gNodes[params].uValue.sParams.mNumParams >= PARAMS_MAX)
+    {
+        fprintf(stderr, "overflow parametor number\n");
+        exit(2);
+    }
+
+    int i;
+    for(i=num_params-1; i>0; i--) {
+        gNodes[params].uValue.sParams.mParams[i] = gNodes[params].uValue.sParams.mParams[i-1];
+    }
+    gNodes[params].uValue.sParams.mParams[0] = param;
+}
+
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline)
 {
     unsigned int node = alloc_node();

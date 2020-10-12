@@ -38,6 +38,8 @@ source_filename = "Module stdin"
 @global_string.21 = private constant [4 x i8] c"123\00", align 1
 @gLVTable10 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string.22 = private constant [26 x i8] c"method generics fun test2\00", align 1
+@gLVTable11 = internal global [512 x i8*] zeroinitializer, align 8
+@global_string.23 = private constant [9 x i8] c"map test\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -334,16 +336,20 @@ cond_jump_end18:                                  ; preds = %cond_jump_then17, %
   %28 = call i32 @fun3(i32 (i8*)* @coroutine2, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.21, i32 0, i32 0))
   %eqtmpX26 = icmp eq i32 %28, 123
   call void @xassert(i8* getelementptr inbounds ([26 x i8], [26 x i8]* @global_string.22, i32 0, i32 0), i1 %eqtmpX26)
-  %29 = load i8*, i8** %b, align 8
-  %30 = ptrtoint i8* %29 to i64
-  %31 = icmp ne i64 %30, 0
-  br i1 %31, label %cond_then_block, label %cond_end
+  %data227 = load %GenericsData_int, %GenericsData_int* %data2, align 8
+  %29 = call i32 @GenericsData_int_map(%GenericsData_int %data227, i32 (i32)* @coroutine3)
+  %eqtmpX28 = icmp eq i32 %29, 124
+  call void @xassert(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @global_string.23, i32 0, i32 0), i1 %eqtmpX28)
+  %30 = load i8*, i8** %b, align 8
+  %31 = ptrtoint i8* %30 to i64
+  %32 = icmp ne i64 %31, 0
+  br i1 %32, label %cond_then_block, label %cond_end
 
 cond_then_block:                                  ; preds = %cond_jump_end18
   br label %cond_end
 
 cond_end:                                         ; preds = %cond_then_block, %cond_jump_end18
-  call void @free(i8* %29)
+  call void @free(i8* %30)
   ret i32 0
 }
 
@@ -450,4 +456,48 @@ entry:
   %bbb5 = load i8*, i8** %5, align 8
   %6 = call i32 %aaa4(i8* %bbb5)
   ret i32 %6
+}
+
+define internal i32 @coroutine3(i32 %c) {
+entry:
+  %andand_result_var = alloca i1
+  %andand_result_var1 = alloca i1
+  %c2 = alloca i32
+  store i32 %c, i32* %c2, align 4
+  %0 = bitcast i32* %c2 to i8*
+  store i8* %0, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable10, i32 0, i32 5), align 8
+  %1 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable10, i32 0, i32 5), align 8
+  %2 = bitcast i8* %1 to i32*
+  %c3 = load i32, i32* %2, align 4
+  %addtmp = add nsw i32 %c3, 1
+  ret i32 %addtmp
+}
+
+define i32 @GenericsData_int_map(%GenericsData_int %self, i32 (i32)* %aaa) {
+entry:
+  %andand_result_var = alloca i1
+  %andand_result_var1 = alloca i1
+  %self2 = alloca %GenericsData_int
+  store %GenericsData_int %self, %GenericsData_int* %self2, align 8
+  %0 = bitcast %GenericsData_int* %self2 to i8*
+  store i8* %0, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable11, i32 0, i32 0), align 8
+  %aaa3 = alloca i32 (i32)*
+  store i32 (i32)* %aaa, i32 (i32)** %aaa3, align 8
+  %1 = bitcast i32 (i32)** %aaa3 to i8*
+  store i8* %1, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable11, i32 0, i32 1), align 8
+  %2 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable11, i32 0, i32 0), align 8
+  %3 = bitcast i8* %2 to %GenericsData_int*
+  %self4 = load %GenericsData_int, %GenericsData_int* %3, align 8
+  %4 = getelementptr inbounds %GenericsData_int, %GenericsData_int* %3, i32 0, i32 0
+  store i32 123, i32* %4, align 4
+  %5 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable11, i32 0, i32 1), align 8
+  %6 = bitcast i8* %5 to i32 (i32)**
+  %aaa5 = load i32 (i32)*, i32 (i32)** %6, align 8
+  %7 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable11, i32 0, i32 0), align 8
+  %8 = bitcast i8* %7 to %GenericsData_int*
+  %self6 = load %GenericsData_int, %GenericsData_int* %8, align 8
+  %9 = getelementptr inbounds %GenericsData_int, %GenericsData_int* %8, i32 0, i32 0
+  %10 = load i32, i32* %9, align 4
+  %11 = call i32 %aaa5(i32 %10)
+  ret i32 %11
 }
