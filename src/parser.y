@@ -29,6 +29,7 @@ char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 unsigned int object;
 BOOL inline_;
 BOOL static_;
+BOOL inerit_;
 %}
 
 %union {
@@ -212,17 +213,20 @@ function_result_type:
     method_generics_types_start method_generics_type type_name {
         inline_ = FALSE;
         static_ = FALSE;
+        inherit_ = FALSE;
         xstrncpy($$, $3, VAR_NAME_MAX);
     }
     | method_generics_types_start method_generics_type type_name STAR {
         inline_ = FALSE;
         static_ = FALSE;
+        inherit_ = FALSE;
         xstrncpy($$, $3, VAR_NAME_MAX);
         xstrncat($$, $4, VAR_NAME_MAX);
     }
     | method_generics_types_start method_generics_type type_name STAR '%' {
         inline_ = FALSE;
         static_ = FALSE;
+        inherit_ = FALSE;
         xstrncpy($$, $3, VAR_NAME_MAX);
         xstrncat($$, $4, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
@@ -300,6 +304,7 @@ type_attribute: {
 function_result_type_attribute: { 
         inline_ = FALSE;
         static_ = FALSE;
+        inherit_ = FALSE;
         xstrncpy($$, "", VAR_NAME_MAX); 
     }
     | function_result_type_attribute CONST {
@@ -321,6 +326,10 @@ function_result_type_attribute: {
     | function_result_type_attribute INLINE {
         xstrncpy($$, $1, VAR_NAME_MAX); 
         inline_ = TRUE;
+    }
+    | function_result_type_attribute INHERIT {
+        xstrncpy($$, $1, VAR_NAME_MAX); 
+        inerit_ = TRUE;
     }
     ;
 
@@ -542,7 +551,7 @@ function:
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, method_generics, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
             char* result_type = $1;
@@ -552,19 +561,19 @@ function:
             BOOL generics = FALSE;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, generics, num_method_generics_types, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $5;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
         }
         | EXTERN function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $2;
             char* fun_name = $3;
             unsigned int function_params = $6;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, gSName, gSLine);
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
         }
         ;
 

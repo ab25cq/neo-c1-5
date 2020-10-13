@@ -313,6 +313,7 @@ struct sNodeTreeStruct
             unsigned int mNodeBlock;
             BOOL mVarArg;
             BOOL mInline;
+            BOOL mInherit;
             BOOL mStatic;
             BOOL mCoroutine;
             BOOL mGenerics;
@@ -391,13 +392,13 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, BOOL method_generics, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
 void append_param_to_params_at_head(unsigned int params, unsigned int param);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
-unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, char* sname, int sline);
+unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 unsigned int sNodeTree_create_block(char* sname, int sline);
 unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline);

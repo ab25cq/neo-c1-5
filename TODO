@@ -1,5 +1,5 @@
-method generics
 mixin-layers of function
+inherit void fun(void);
 enum
 
 -----
@@ -13,3 +13,4 @@ run co-routine
 subroutine header only all function is inline or generics
 generics
 compile generics function when calling function
+method generics

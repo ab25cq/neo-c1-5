@@ -134,7 +134,7 @@ unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigne
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL generics, BOOL method_generics, char* sname, int sline)
+unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -149,6 +149,7 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
 
     gNodes[node].uValue.sFunction.mVarArg = var_arg;
     gNodes[node].uValue.sFunction.mInline = inline_;
+    gNodes[node].uValue.sFunction.mInherit = inherit_;
     gNodes[node].uValue.sFunction.mStatic = static_;
     gNodes[node].uValue.sFunction.mCoroutine = FALSE;
     gNodes[node].uValue.sFunction.mGenerics = generics;
@@ -241,7 +242,7 @@ void append_param_to_function_params(unsigned int function_params, char* type_na
     }
 }
 
-unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, char* sname, int sline)
+unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -255,6 +256,10 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
     gNodes[node].mMiddle = 0;
 
     gNodes[node].uValue.sFunction.mVarArg = var_arg;
+    gNodes[node].uValue.sFunction.mInherit = inherite_;
+    gNodes[node].uValue.sFunction.mCoroutine = FALSE;
+    gNodes[node].uValue.sFunction.mGenerics = FALSE;
+    gNodes[node].uValue.sFunction.mMethodGenerics = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -559,6 +564,7 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
     gNodes[node].uValue.sFunction.mStatic = TRUE;
     gNodes[node].uValue.sFunction.mCoroutine = TRUE;
     gNodes[node].uValue.sFunction.mGenerics = FALSE;
+    gNodes[node].uValue.sFunction.mInherit = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 

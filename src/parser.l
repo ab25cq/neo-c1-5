@@ -182,6 +182,11 @@ void {
     return(VOID); 
 }
 
+inherit {
+    strncpy(yylval.cval, yytext, 128);
+    return(INHERIT); 
+}
+
 template {
     strncpy(yylval.cval, yytext, 128);
     return(TEMPLATE); 
