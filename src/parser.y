@@ -29,7 +29,7 @@ char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 unsigned int object;
 BOOL inline_;
 BOOL static_;
-BOOL inerit_;
+BOOL inherit_;
 %}
 
 %union {
@@ -69,6 +69,7 @@ BOOL inerit_;
 %token <cval> LAMBDA
 %token <cval> TEMPLATE
 %token <cval> FUNCTION_POINTER
+%token <cval> INHERIT
 %type <rval> program 
 %type <cval> type 
 %type <cval> type_name
@@ -329,7 +330,7 @@ function_result_type_attribute: {
     }
     | function_result_type_attribute INHERIT {
         xstrncpy($$, $1, VAR_NAME_MAX); 
-        inerit_ = TRUE;
+        inherit_ = TRUE;
     }
     ;
 

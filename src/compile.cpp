@@ -74,14 +74,17 @@ struct sFunctionStruct {
     BOOL mInline;
     BOOL mStatic;
     BOOL mCoroutine;
+    BOOL mInherit;
+    BOOL mExternal;
     unsigned int mNodeBlock;
     BOOL mGenerics;
     BOOL mMethodGenerics;
+    int mVersion;
 };
 
 typedef sFunctionStruct sFunction;
 
-std::map<std::string, sFunction> gFuncs;
+std::map<std::string, std::vector<sFunction>> gFuncs;
 
 ///////////////////////////////////////////////////////////////////////
 // type
@@ -981,8 +984,8 @@ Value* get_dummy_value(sNodeType* node_type, sCompileInfo* info)
 ///////////////////////////////////////////////////////////////////////
 BOOL function_existance(char* fun_name)
 {
-    sFunction fun = gFuncs[fun_name];
-    return fun.existance;
+    std::vector<sFunction> fun = gFuncs[fun_name];
+    return fun.size() != 0;
 }
 
 static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompileInfo* info)
@@ -996,12 +999,30 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
 
     BOOL var_arg = fun->mVarArg;
     BOOL inline_ = fun->mInline;
+    BOOL inherit_ = fun->mInherit;
     BOOL static_ = fun->mStatic;
     int num_params = fun->mNumParams;
     unsigned int node_block = fun->mNodeBlock;
     BOOL generics = fun->mGenerics;
     BOOL method_generics = fun->mGenerics;
     BOOL coroutine = fun->mCoroutine;
+    BOOL version = fun->mVersion;
+
+    if(version > 0) {
+        char version_str[128];
+        snprintf(version_str, 128, "_%d", version);
+
+        xstrncat(fun_name, version_str, VAR_NAME_MAX);
+    }
+
+/*
+    Function* llvm_entried_fun = TheModule->getFunction(fun_name);
+
+    if(llvm_entried_fun) {
+        fun->mLLVMFunction = llvm_entried_fun;
+        return TRUE;
+    }
+*/
 
     char param_types[PARAMS_MAX][VAR_NAME_MAX];
     char param_names[PARAMS_MAX][VAR_NAME_MAX];
@@ -1062,7 +1083,7 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
     return TRUE;
 }
 
-BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)
+BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)
 {
     sFunction fun;
 
@@ -1078,6 +1099,8 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
     fun.mGenerics = generics;
     fun.mMethodGenerics = method_generics;
     fun.mCoroutine = coroutine;
+    fun.mInherit = inherit_;
+    fun.mVersion = 0;
 
     int i;
     for(i=0; i<num_params; i++) {
@@ -1085,15 +1108,91 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
         xstrncpy(fun.mParamNames[i], param_names[i], VAR_NAME_MAX);
     }
 
-    if(!generics) {
-        if(!entry_llvm_function(&fun, NULL, info)) {
-            return FALSE;
-        }
+    if(!generics && !method_generics) {
+        if(inherit_) {
+            if(gFuncs[fun_name].size() == 0) {
+                compile_err_msg(info, "invalid inherit %s\n", fun_name);
+                return FALSE;
+            }
+            else {
+                int external_version = 0;
+                int fun_version = 0;
+                for(int i=0; i<gFuncs[fun_name].size(); i++) {
+                    sFunction fun = gFuncs[fun_name][i];
+                    if(fun.mExternal) {
+                        external_version++;
+                    }
+                    else {
+                        fun_version++;
+                    }
+                }
 
-        gFuncs[fun_name] = fun;
+                if(fun.mExternal) {
+                    fun.mVersion = external_version;
+                }
+                else {
+                    fun.mVersion = fun_version;
+                }
+            }
+
+            if(!entry_llvm_function(&fun, NULL, info)) {
+                return FALSE;
+            }
+
+            gFuncs[fun_name].push_back(fun);
+        }
+        else {
+            if(!entry_llvm_function(&fun, NULL, info)) {
+                return FALSE;
+            }
+
+            if(gFuncs[fun_name].size() == 0) {
+                gFuncs[fun_name].push_back(fun);
+            }
+            else {
+                compile_err_msg(info, "invalid inherit %s\n", fun_name);
+                return FALSE;
+            }
+        }
     }
     else {
-        gFuncs[fun_name] = fun;
+        if(inherit_) {
+            if(gFuncs[fun_name].size() == 0) {
+                compile_err_msg(info, "invalid inherit %s\n", fun_name);
+                return FALSE;
+            }
+            else {
+                int external_version = 0;
+                int fun_version = 0;
+                for(int i=0; i<gFuncs[fun_name].size(); i++) {
+                    sFunction fun = gFuncs[fun_name][i];
+                    if(fun.mExternal) {
+                        external_version++;
+                    }
+                    else {
+                        fun_version++;
+                    }
+                }
+
+                if(fun.mExternal) {
+                    fun.mVersion = external_version;
+                }
+                else {
+                    fun.mVersion = fun_version;
+                }
+
+                gFuncs[fun_name].push_back(fun);
+            }
+        }
+        else {
+            if(gFuncs[fun_name].size() == 0) {
+                gFuncs[fun_name].push_back(fun);
+            }
+            else {
+                compile_err_msg(info, "invalid inherit %s\n", fun_name);
+                return FALSE;
+            }
+        }
     }
 
     return TRUE;
@@ -1113,7 +1212,15 @@ BOOL call_function(const char* fun_name, Value** params, int num_params, const c
         snprintf(real_fun_name, VAR_NAME_MAX, "%s_%s", struct_name, fun_name);
     }
 
-    sFunction fun = gFuncs[real_fun_name];
+    sFunction fun;
+    if(gFuncs[real_fun_name].size() == 0) {
+        //compile_err_msg(info, "Function not found(%s)\n", real_fun_name);
+        //info->err_num++;
+        return TRUE;
+    }
+    else {
+        fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+    }
 
     sNodeType* param_types[PARAMS_MAX];
     memset(param_types, 0, sizeof(sNodeType*)*PARAMS_MAX);
@@ -1494,7 +1601,6 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
                     }
                 }
                 else {
-*/
                     char fun_name[BUFSIZ];
                     snprintf(fun_name, BUFSIZ, "finalize_%s", info->sname);
 
@@ -1504,6 +1610,7 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
                     sFunction fun = gFuncs[real_fun_name];
 //                }
 
+*/
 /*
                 if(!exist_finalize_method) {
                     LVALUE* llvm_stack = gLLVMStack;
@@ -2957,6 +3064,8 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
     BOOL generics = gNodes[node].uValue.sFunction.mGenerics;
     BOOL method_generics = gNodes[node].uValue.sFunction.mMethodGenerics;
+    BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
+    BOOL external = gNodes[node].uValue.sFunction.mExternal;
     
     char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
 
@@ -2971,12 +3080,12 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
     }
 
-    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, static_, node_block, generics, coroutine, method_generics, info)) {
+    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, info)) {
         return FALSE;
     }
 
     if(!generics && !method_generics) {
-        sFunction fun = gFuncs[fun_name];
+        sFunction fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
 
         if(!create_llvm_function(&fun, info)) {
             return FALSE;
@@ -2984,7 +3093,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     }
 
     if(coroutine) {
-        sFunction fun = gFuncs[fun_name];
+        sFunction fun = gFuncs[fun_name][0];
 
         Function* llvm_fun = fun.mLLVMFunction;
 
@@ -3024,6 +3133,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
     BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
+    BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
 
     sParserParam params[PARAMS_MAX];
 
@@ -3050,7 +3160,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         param_names[i] = param->mName;
     }
 
-    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, FALSE, 0, FALSE, FALSE, FALSE, info)) {
+    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, inherit_, FALSE, 0, FALSE, FALSE, FALSE, info)) {
         return FALSE;
     }
 
@@ -3130,9 +3240,9 @@ static BOOL create_generics_function(char* real_fun_name2, sFunction* fun, sComp
         return FALSE;
     }
 
-    gFuncs[real_fun_name2] = generics_fun;
+    gFuncs[real_fun_name2].push_back(generics_fun);
 
-    *fun = gFuncs[real_fun_name2];
+    *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
 
     return TRUE;
 }
@@ -3346,9 +3456,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             xstrncat(real_fun_name, "_", VAR_NAME_MAX);
             xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
-            fun = gFuncs[real_fun_name];
-
-            if(!fun.existance) {
+            if(gFuncs[real_fun_name].size() == 0) {
                 compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
                 info->err_num++;
 
@@ -3356,6 +3464,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 return FALSE;
             }
+
+            fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
 
             if(fun.mMethodGenerics) {
                 char* method_generics_types[GENERICS_TYPES_MAX];
@@ -3405,13 +3515,13 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 }
             }
             else {
-                fun = gFuncs[real_fun_name];
+                fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
             }
         }
         else {
             info->generics_type = NULL;
 
-            fun = gFuncs[fun_name];
+            fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
 
             if(fun.mMethodGenerics) {
                 char* method_generics_types[GENERICS_TYPES_MAX];

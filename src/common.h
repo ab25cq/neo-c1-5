@@ -314,6 +314,7 @@ struct sNodeTreeStruct
             BOOL mVarArg;
             BOOL mInline;
             BOOL mInherit;
+            BOOL mExternal;
             BOOL mStatic;
             BOOL mCoroutine;
             BOOL mGenerics;

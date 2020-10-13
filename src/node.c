@@ -154,6 +154,7 @@ unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_par
     gNodes[node].uValue.sFunction.mCoroutine = FALSE;
     gNodes[node].uValue.sFunction.mGenerics = generics;
     gNodes[node].uValue.sFunction.mMethodGenerics = method_generics;
+    gNodes[node].uValue.sFunction.mExternal = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -260,6 +261,7 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
     gNodes[node].uValue.sFunction.mCoroutine = FALSE;
     gNodes[node].uValue.sFunction.mGenerics = FALSE;
     gNodes[node].uValue.sFunction.mMethodGenerics = FALSE;
+    gNodes[node].uValue.sFunction.mExternal = TRUE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
@@ -565,6 +567,7 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
     gNodes[node].uValue.sFunction.mCoroutine = TRUE;
     gNodes[node].uValue.sFunction.mGenerics = FALSE;
     gNodes[node].uValue.sFunction.mInherit = FALSE;
+    gNodes[node].uValue.sFunction.mExternal = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
 
