@@ -729,7 +729,7 @@ node:
             BOOL existance = function_existance($1);
 
             if(existance) {
-                $$ = sNodeTree_create_function_call($1, 0, FALSE, gSName, gSLine);
+                $$ = sNodeTree_create_function_call($1, 0, FALSE, FALSE, gSName, gSLine);
             }
             else {
                 unsigned int node = sNodeTree_create_load_variable($1, gSName, gSLine);
@@ -740,7 +740,7 @@ node:
             BOOL existance = function_existance($1);
 
             if(existance) {
-                $$ = sNodeTree_create_function_call($1, $3, FALSE, gSName, gSLine);
+                $$ = sNodeTree_create_function_call($1, $3, FALSE, FALSE, gSName, gSLine);
             }
             else {
                 unsigned int node = sNodeTree_create_load_variable($1, gSName, gSLine);
@@ -751,11 +751,11 @@ node:
             params = sNodeTree_create_params(gSName, gSLine); 
             append_param_to_params(params, $1);
 
-            $$ = sNodeTree_create_function_call($3, params, TRUE, gSName, gSLine);
+            $$ = sNodeTree_create_function_call($3, params, TRUE, FALSE, gSName, gSLine);
         }
         | exp '.' IDENTIFIER '(' method_params_start method_params ')' {
             append_param_to_params($6, $1);
-            $$ = sNodeTree_create_function_call($3, $6, TRUE, gSName, gSLine);
+            $$ = sNodeTree_create_function_call($3, $6, TRUE, FALSE, gSName, gSLine);
         }
         | exp '.' IDENTIFIER {
             $$ = sNodeTree_create_load_field($3, $1, gSName, gSLine);

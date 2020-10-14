@@ -367,7 +367,7 @@ void append_param_to_params_at_head(unsigned int params, unsigned int param)
     gNodes[params].uValue.sParams.mParams[0] = param;
 }
 
-unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline)
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -382,6 +382,7 @@ unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params,
 
     gNodes[node].uValue.sFunctionCall.mMessagePassing = message_passing;
     gNodes[node].uValue.sFunctionCall.mLambdaCall = FALSE;
+    gNodes[node].uValue.sFunctionCall.mInherit = inherit_;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, fun_name, VAR_NAME_MAX);
 
@@ -733,6 +734,7 @@ unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int
 
     gNodes[node].uValue.sFunctionCall.mMessagePassing = FALSE;
     gNodes[node].uValue.sFunctionCall.mLambdaCall = TRUE;
+    gNodes[node].uValue.sFunctionCall.mInherit = FALSE;
 
     xstrncpy(gNodes[node].uValue.sFunctionCall.mFunName, "", VAR_NAME_MAX);
 

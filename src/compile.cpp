@@ -1083,6 +1083,29 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
     return TRUE;
 }
 
+void get_version(sFunction* fun, char* fun_name)
+{
+    int external_version = 0;
+    int fun_version = 0;
+    for(int i=0; i<gFuncs[fun_name].size(); i++) {
+        sFunction fun = gFuncs[fun_name][i];
+        if(fun.mExternal) {
+            external_version++;
+        }
+        else {
+            fun_version++;
+        }
+    }
+
+    if(fun->mExternal) {
+        fun->mVersion = external_version;
+    }
+    else {
+        fun->mVersion = fun_version;
+    }
+}
+
+
 BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)
 {
     sFunction fun;
@@ -1115,24 +1138,7 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
                 return FALSE;
             }
             else {
-                int external_version = 0;
-                int fun_version = 0;
-                for(int i=0; i<gFuncs[fun_name].size(); i++) {
-                    sFunction fun = gFuncs[fun_name][i];
-                    if(fun.mExternal) {
-                        external_version++;
-                    }
-                    else {
-                        fun_version++;
-                    }
-                }
-
-                if(fun.mExternal) {
-                    fun.mVersion = external_version;
-                }
-                else {
-                    fun.mVersion = fun_version;
-                }
+                get_version(&fun, fun_name);
             }
 
             if(!entry_llvm_function(&fun, NULL, info)) {
@@ -1149,10 +1155,6 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
             if(gFuncs[fun_name].size() == 0) {
                 gFuncs[fun_name].push_back(fun);
             }
-            else {
-                compile_err_msg(info, "invalid inherit %s\n", fun_name);
-                return FALSE;
-            }
         }
     }
     else {
@@ -1162,24 +1164,7 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
                 return FALSE;
             }
             else {
-                int external_version = 0;
-                int fun_version = 0;
-                for(int i=0; i<gFuncs[fun_name].size(); i++) {
-                    sFunction fun = gFuncs[fun_name][i];
-                    if(fun.mExternal) {
-                        external_version++;
-                    }
-                    else {
-                        fun_version++;
-                    }
-                }
-
-                if(fun.mExternal) {
-                    fun.mVersion = external_version;
-                }
-                else {
-                    fun.mVersion = fun_version;
-                }
+                get_version(&fun, fun_name);
 
                 gFuncs[fun_name].push_back(fun);
             }
@@ -1187,10 +1172,6 @@ BOOL add_function(char* fun_name, char* result_type_name, int num_params, char**
         else {
             if(gFuncs[fun_name].size() == 0) {
                 gFuncs[fun_name].push_back(fun);
-            }
-            else {
-                compile_err_msg(info, "invalid inherit %s\n", fun_name);
-                return FALSE;
             }
         }
     }
@@ -4317,6 +4298,8 @@ static BOOL compile_equals(unsigned int node, sCompileInfo* info)
 
     if(!type_identify(left_type, right_type)) {
         compile_err_msg(info, "Operand posibility failed");
+        show_node_type(left_type);
+        show_node_type(right_type);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy

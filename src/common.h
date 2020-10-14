@@ -326,6 +326,7 @@ struct sNodeTreeStruct
             unsigned mParams[PARAMS_MAX];
             BOOL mMessagePassing;
             BOOL mLambdaCall;
+            BOOL mInherit;
         } sFunctionCall;
         struct {
             char mVarName[VAR_NAME_MAX];
@@ -403,7 +404,7 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 unsigned int sNodeTree_create_block(char* sname, int sline);
 unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline);
-unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline);
+unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline);
 unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
 unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, char* sname, int sline);
 unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline);

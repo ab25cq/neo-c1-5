@@ -5,6 +5,7 @@ int printf(char* str, ...);
 void*% calloc(size_t nmemb, size_t size);
 void free(void *ptr);
 int atoi(const char* str);
+int atoi(const char* str);
 
 int fun() {
     puts("called fun");
@@ -114,6 +115,17 @@ template <M> M fun3(M (*aaa)(char*), char* bbb) {
     return aaa(bbb);
 }
 
+void inheritFun()
+{
+    puts("inheritFun version 1");
+}
+
+inherit void inheritFun()
+{
+//    inherit();
+    puts("inheritFun version 2");
+}
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -151,13 +163,15 @@ int main()
 
     xassert("load field and store test2", data2.a == 123 && data2.b == 234);
 
-    xassert("generics fun test", data2.show() == 123);
+    //xassert("generics fun test", data2.show() == 123);
 
     xassert("method generics fun test", fun2(123) == 124);
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
     xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
+
+    inheritFun();
 
     return 0; 
 }

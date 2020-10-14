@@ -330,17 +330,25 @@ append_param_to_function_params	src/node.c	/^void append_param_to_function_param
 append_param_to_params	src/node.c	/^void append_param_to_params(unsigned int params, unsigned int param)$/;"	f
 append_param_to_params_at_head	src/node.c	/^void append_param_to_params_at_head(unsigned int params, unsigned int param)$/;"	f
 arrange_stack	src/compile.cpp	/^void arrange_stack(sCompileInfo* info, int top)$/;"	f
+as_fn_append	config.status	/^  as_fn_append ()$/;"	f
 as_fn_append	configure	/^  as_fn_append ()$/;"	f
+as_fn_arith	config.status	/^  as_fn_arith ()$/;"	f
 as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
+as_fn_error	config.status	/^as_fn_error ()$/;"	f
 as_fn_error	configure	/^as_fn_error ()$/;"	f
+as_fn_executable_p	config.status	/^as_fn_executable_p ()$/;"	f
 as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
+as_fn_exit	config.status	/^as_fn_exit ()$/;"	f
 as_fn_exit	configure	/^as_fn_exit ()$/;"	f
 as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
+as_fn_mkdir_p	config.status	/^as_fn_mkdir_p ()$/;"	f
 as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
 as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
 as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
+as_fn_set_status	config.status	/^as_fn_set_status ()$/;"	f
 as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
 as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
+as_fn_unset	config.status	/^as_fn_unset ()$/;"	f
 as_fn_unset	configure	/^as_fn_unset ()$/;"	f
 auto_cast_posibility	src/node_type.c	/^BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type)$/;"	f
 b	code/HelloWorld.c	/^    T b;$/;"	m	struct:T	file:
@@ -520,8 +528,11 @@ get_variable_from_index	src/vtable.c	/^sVar* get_variable_from_index(sVarTable* 
 get_variable_from_table	src/vtable.c	/^sVar* get_variable_from_table(sVarTable* table, char* name)$/;"	f
 get_variable_from_this_table_only	src/vtable.c	/^sVar* get_variable_from_this_table_only(sVarTable* table, char* name)$/;"	f
 get_variable_index	src/vtable.c	/^int get_variable_index(sVarTable* table, char* name, BOOL* parent)$/;"	f
+get_version	src/compile.cpp	/^void get_version(sFunction* fun, char* fun_name)$/;"	f
 included_generics_type	src/node_type.c	/^BOOL included_generics_type(sNodeType* node_type, sCLClass* checked_class[], int* num_checked_class)$/;"	f
 includedir	Makefile	/^includedir=${prefix}\/include\/neo-c2$/;"	m
+inheritFun	code/HelloWorld.c	/^inherit void inheritFun()$/;"	f
+inheritFun	code/HelloWorld.c	/^void inheritFun()$/;"	f
 inherit_	parser.tab.c	/^BOOL inherit_;$/;"	v
 init_node_types	src/node_type.c	/^void init_node_types()$/;"	f
 init_nodes	src/node.c	/^void init_nodes()$/;"	f
@@ -618,6 +629,7 @@ mIfBlock	src/common.h	/^            unsigned int mIfBlock;$/;"	m	struct:sNodeTre
 mIfExp	src/common.h	/^            unsigned int mIfExp;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
 mIndex	src/common.h	/^    int mIndex;$/;"	m	struct:sVarStruct
 mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
 mInherit	src/compile.cpp	/^    BOOL mInherit;$/;"	m	struct:sFunctionStruct	file:
 mInitialized	src/common.h	/^    BOOL mInitialized;$/;"	m	struct:sClassTableStruct
 mInline	src/common.h	/^            BOOL mInline;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
@@ -806,7 +818,7 @@ sNodeTree_create_equals	src/node.c	/^unsigned int sNodeTree_create_equals(unsign
 sNodeTree_create_external_function	src/node.c	/^unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline)$/;"	f
 sNodeTree_create_false	src/node.c	/^unsigned int sNodeTree_create_false(char* sname, int sline)$/;"	f
 sNodeTree_create_function	src/node.c	/^unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)$/;"	f
-sNodeTree_create_function_call	src/node.c	/^unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, char* sname, int sline)$/;"	f
+sNodeTree_create_function_call	src/node.c	/^unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline)$/;"	f
 sNodeTree_create_function_params	src/node.c	/^unsigned int sNodeTree_create_function_params(char* sname, int sline)$/;"	f
 sNodeTree_create_if	src/node.c	/^unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline)$/;"	f
 sNodeTree_create_int_value	src/node.c	/^unsigned int sNodeTree_create_int_value(int value, char* sname, int sline)$/;"	f
