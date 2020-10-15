@@ -3298,6 +3298,7 @@ void determine_method_generics(char* method_generics_types[VAR_NAME_MAX], sFunct
 BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 {
     BOOL lambda_call = gNodes[node].uValue.sFunctionCall.mLambdaCall;
+    BOOL inherit_ = gNodes[node].uValue.sFunctionCall.mInherit;
 
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
     BOOL message_passing = gNodes[node].uValue.sFunctionCall.mMessagePassing;

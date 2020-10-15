@@ -757,6 +757,22 @@ node:
             append_param_to_params($6, $1);
             $$ = sNodeTree_create_function_call($3, $6, TRUE, FALSE, gSName, gSLine);
         }
+        | INHERIT '(' ')' {
+            $$ = sNodeTree_create_function_call("inherit", 0, FALSE, TRUE, gSName, gSLine);
+        }
+        | INHERIT '(' params ')' {
+            $$ = sNodeTree_create_function_call("inherit", $3, FALSE, TRUE, gSName, gSLine);
+        }
+        | exp '.' INHERIT '(' ')' {
+            params = sNodeTree_create_params(gSName, gSLine); 
+            append_param_to_params(params, $1);
+
+            $$ = sNodeTree_create_function_call("inherit", params, TRUE, TRUE, gSName, gSLine);
+        }
+        | exp '.' INHERIT '(' method_params_start method_params ')' {
+            append_param_to_params($6, $1);
+            $$ = sNodeTree_create_function_call("inherit", $6, TRUE, TRUE, gSName, gSLine);
+        }
         | exp '.' IDENTIFIER {
             $$ = sNodeTree_create_load_field($3, $1, gSName, gSLine);
         }
