@@ -1,7 +1,5 @@
-mixin-layers of function
-inherit void fun(void);
 enum
-
+operators
 -----
 inline with heap
 co-routine with type
@@ -14,3 +12,5 @@ subroutine header only all function is inline or generics
 generics
 compile generics function when calling function
 method generics
+mixin-layers of function
+inherit void fun(void);
