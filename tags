@@ -14,7 +14,7 @@ BLOCK_NUM_MAX	src/common.h	32;"	d
 BOOL	src/xfunc.h	7;"	d
 BUFFER_H	src/buffer.h	2;"	d
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
 CLASS_FLAGS_ANONYMOUS	src/common.h	62;"	d
 CLASS_FLAGS_ANONYMOUS_VAR_NAME	src/common.h	64;"	d
 CLASS_FLAGS_ENUM	src/common.h	63;"	d
@@ -36,7 +36,7 @@ CONST	parser.tab.h	/^    CONST = 269,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 260,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 260,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DESTDIR	Makefile	/^DESTDIR=\/usr\/local$/;"	m
 Data	code/HelloWorld.c	/^struct Data {$/;"	s	file:
 Data2	code/HelloWorld.c	/^union Data2 {$/;"	u	file:
@@ -126,6 +126,7 @@ STATIC	parser.tab.h	/^    STATIC = 274,$/;"	e	enum:yytokentype
 STRUCT	parser.tab.c	/^    STRUCT = 278,$/;"	e	enum:yytokentype	file:
 STRUCT	parser.tab.h	/^    STRUCT = 278,$/;"	e	enum:yytokentype
 STRUCT_FIELD_MAX	src/common.h	33;"	d
+T	code/HelloWorld.c	/^struct GenericsData2<T> {$/;"	s	file:
 T	code/HelloWorld.c	/^struct GenericsData<T> {$/;"	s	file:
 TEMPLATE	parser.tab.c	/^    TEMPLATE = 285,$/;"	e	enum:yytokentype	file:
 TEMPLATE	parser.tab.h	/^    TEMPLATE = 285,$/;"	e	enum:yytokentype

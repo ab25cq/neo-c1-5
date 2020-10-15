@@ -2400,6 +2400,11 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
         free_objects(info->lv_table, nullptr, info);
     }
 
+    if(info->err_num > 0) {
+        fprintf(stderr, "compile error\n");
+        exit(2);
+    }
+
     info->lv_table= lv_table;
 
     return TRUE;
@@ -2788,11 +2793,11 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-    Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
+//    Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
 
     std_move(var_address, var->mType, &rvalue, alloc, info);
 
-    Builder.CreateAlignedStore(rvalue2, var_address, alignment);
+    Builder.CreateAlignedStore(rvalue.value, var_address, alignment);
 
     info->type = right_type;
 
@@ -4394,6 +4399,8 @@ static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
 
     sNodeType* left_type = info->type;
 
+show_node_type(left_type);
+
     if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
         compile_err_msg(info, "This is not struct type");
         info->err_num++;
@@ -4559,6 +4566,10 @@ static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* left_type = clone_node_type(info->type);
+
+printf("%p\n", left_type->mClass);
+show_node_type(left_type);
+puts("BBB");
 
     if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
         compile_err_msg(info, "This is not struct type");

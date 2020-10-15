@@ -280,6 +280,7 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             while(1) {
                 node_type->mGenericsTypes[node_type->mNumGenericsTypes] = parse_class_name(p, p2, buf);
                 node_type->mNumGenericsTypes++;
+                *p2 = buf;
 
                 if(node_type->mNumGenericsTypes >= GENERICS_TYPES_MAX) 
                 {
@@ -293,7 +294,8 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
                 else if(**p == '>') {
                     (*p)++;
                     skip_spaces_for_parse_class_name(p);
-                    return node_type;
+
+                    break;
                 }
                 else {
                     return NULL;

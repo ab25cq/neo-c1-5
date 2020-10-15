@@ -101,7 +101,19 @@ int GenericsData<T>::show(GenericsData<T> self)
     return 123;
 }
 
-template <M> M GenericsData<T>::map(GenericsData<T>* self, M (*aaa)(T))
+struct GenericsData2<T> {
+    T a;
+};
+
+void GenericsData2<T>::fun(GenericsData2<T>* self)
+{
+    GenericsData<int> data;
+    data.a = 123;
+    data.b = 234;
+    data.show();
+}
+
+template <M> M GenericsData<T>::map(GenericsData<T> self, M (*aaa)(T))
 {
     self.a = 123;
     return aaa(self.a);
@@ -163,7 +175,7 @@ int main()
 
     xassert("load field and store test2", data2.a == 123 && data2.b == 234);
 
-    //xassert("generics fun test", data2.show() == 123);
+    xassert("generics fun test", data2.show() == 123);
 
     xassert("method generics fun test", fun2(123) == 124);
 
@@ -173,6 +185,10 @@ int main()
 
     inheritFun();
 
-    return 0; 
+    GenericsData2<int>* xyz = new GenericsData2<int>;
+
+    xyz.fun();
+
+    return 0;
 }
 
