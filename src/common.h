@@ -307,6 +307,7 @@ struct sNodeTreeStruct
         } sLoadVariable;
         struct {
             char mName[VAR_NAME_MAX];
+            char mBaseName[VAR_NAME_MAX];
             sParserParam mParams[PARAMS_MAX];
             int mNumParams;
             char mResultTypeName[VAR_NAME_MAX];
@@ -394,7 +395,7 @@ unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigne
 unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
+unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);

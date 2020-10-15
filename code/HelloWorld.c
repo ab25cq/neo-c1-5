@@ -138,6 +138,28 @@ inherit void inheritFun()
     puts("inheritFun version 2");
 }
 
+struct GenericsData3<T> {
+    T a;
+    T b;
+};
+
+void GenericsData3<T>::fun(GenericsData3<T> self)
+{
+    puts("GenericsData3<T>::fun version1");
+    GenericsData2<int>* xyz = new GenericsData2<int>;
+
+    xyz.fun();
+}
+
+inherit void GenericsData3<T>::fun(GenericsData3<T> self)
+{
+    self.inherit();
+    puts("GenericsData3<T>::fun version2");
+    GenericsData2<int>* xyz = new GenericsData2<int>;
+
+    xyz.fun();
+}
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -188,6 +210,10 @@ int main()
     GenericsData2<int>* xyz = new GenericsData2<int>;
 
     xyz.fun();
+
+    GenericsData3<int> xyz2;
+
+    xyz2.fun();
 
     return 0;
 }

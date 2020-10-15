@@ -547,12 +547,16 @@ function:
             xstrncat(fun_name, "_", VAR_NAME_MAX);
             xstrncat(fun_name, $5, VAR_NAME_MAX);
 
+            char fun_base_name[VAR_NAME_MAX];
+
+            xstrncpy(fun_base_name, $5, VAR_NAME_MAX);
+
             unsigned int function_params = $8;
             unsigned int node_block = $11;
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
             char* result_type = $1;
@@ -562,7 +566,7 @@ function:
             BOOL generics = FALSE;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, gSLine);
+            $$ = it = sNodeTree_create_function(fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, gSLine);
         }
         | function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
             char* result_type = $1;

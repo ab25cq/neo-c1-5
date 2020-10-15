@@ -127,6 +127,7 @@ STRUCT	parser.tab.c	/^    STRUCT = 278,$/;"	e	enum:yytokentype	file:
 STRUCT	parser.tab.h	/^    STRUCT = 278,$/;"	e	enum:yytokentype
 STRUCT_FIELD_MAX	src/common.h	33;"	d
 T	code/HelloWorld.c	/^struct GenericsData2<T> {$/;"	s	file:
+T	code/HelloWorld.c	/^struct GenericsData3<T> {$/;"	s	file:
 T	code/HelloWorld.c	/^struct GenericsData<T> {$/;"	s	file:
 TEMPLATE	parser.tab.c	/^    TEMPLATE = 285,$/;"	e	enum:yytokentype	file:
 TEMPLATE	parser.tab.h	/^    TEMPLATE = 285,$/;"	e	enum:yytokentype
@@ -309,7 +310,7 @@ ac_fn_c_try_link	configure	/^ac_fn_c_try_link ()$/;"	f
 ac_fn_c_try_run	configure	/^ac_fn_c_try_run ()$/;"	f
 add_field_to_struct	src/klass.c	/^void add_field_to_struct(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)$/;"	f
 add_field_to_union	src/klass.c	/^void add_field_to_union(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)$/;"	f
-add_function	src/compile.cpp	/^BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)$/;"	f
+add_function	src/compile.cpp	/^BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)$/;"	f
 add_typedef	src/typedef.c	/^void add_typedef(char* name, char* type_name)$/;"	f
 add_variable_to_table	src/vtable.c	/^BOOL add_variable_to_table(sVarTable* table, char* name, sNodeType* type_, void* llvm_value, int index, BOOL global, BOOL constant)$/;"	f
 address	src/compile.cpp	/^    Value* address;$/;"	m	struct:LVALUEStruct	file:
@@ -408,7 +409,7 @@ compile_union	src/compile.cpp	/^BOOL compile_union(unsigned int node, sCompileIn
 compiler_final	src/main.c	/^static void compiler_final()$/;"	f	file:
 compiler_init	src/main.c	/^static void compiler_init()$/;"	f	file:
 const_test	code/HelloWorld.c	/^bool const_test(const char* str) $/;"	f
-create_generics_function	src/compile.cpp	/^static BOOL create_generics_function(char* real_fun_name2, sFunction* fun, sCompileInfo* info) $/;"	f	file:
+create_generics_function	src/compile.cpp	/^static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, sCompileInfo* info) $/;"	f	file:
 create_internal_functions	src/compile.cpp	/^void create_internal_functions()$/;"	f
 create_llvm_function	src/compile.cpp	/^BOOL create_llvm_function(sFunction* fun, sCompileInfo* info)$/;"	f
 create_llvm_struct_type	src/compile.cpp	/^static BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_type, BOOL new_create, sCompileInfo* info)$/;"	f	file:
@@ -593,6 +594,8 @@ mAnonymous	src/common.h	/^            BOOL mAnonymous;$/;"	m	struct:sNodeTreeStr
 mArrayDimentionNum	src/common.h	/^    int mArrayDimentionNum;$/;"	m	struct:sNodeTypeStruct
 mArrayInitializeNum	src/common.h	/^    int mArrayInitializeNum;$/;"	m	struct:sNodeTypeStruct
 mArrayNum	src/common.h	/^    int mArrayNum[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTypeStruct
+mBaseName	src/common.h	/^            char mBaseName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mBaseName	src/compile.cpp	/^    char mBaseName[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mBlockLevel	src/common.h	/^    int mBlockLevel;$/;"	m	struct:sVarStruct
 mBlockLevel	src/common.h	/^    int mBlockLevel;$/;"	m	struct:sVarTableStruct
 mBuf	src/buffer.h	/^    char* mBuf;$/;"	m	struct:sBufStruct
@@ -626,6 +629,7 @@ mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::_
 mGlobal	src/common.h	/^    BOOL mGlobal;$/;"	m	struct:sVarStruct
 mHeap	src/common.h	/^    BOOL mHeap;$/;"	m	struct:sNodeTypeStruct
 mID	src/common.h	/^    int mID;$/;"	m	struct:sVarTableStruct
+mID	src/compile.cpp	/^    char mID[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mIfBlock	src/common.h	/^            unsigned int mIfBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
 mIfExp	src/common.h	/^            unsigned int mIfExp;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
 mIndex	src/common.h	/^    int mIndex;$/;"	m	struct:sVarStruct
@@ -818,7 +822,7 @@ sNodeTree_create_div	src/node.c	/^unsigned int sNodeTree_create_div(unsigned int
 sNodeTree_create_equals	src/node.c	/^unsigned int sNodeTree_create_equals(unsigned int left, unsigned int right,  char* sname, int sline)$/;"	f
 sNodeTree_create_external_function	src/node.c	/^unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline)$/;"	f
 sNodeTree_create_false	src/node.c	/^unsigned int sNodeTree_create_false(char* sname, int sline)$/;"	f
-sNodeTree_create_function	src/node.c	/^unsigned int sNodeTree_create_function(char* fun_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)$/;"	f
+sNodeTree_create_function	src/node.c	/^unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)$/;"	f
 sNodeTree_create_function_call	src/node.c	/^unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline)$/;"	f
 sNodeTree_create_function_params	src/node.c	/^unsigned int sNodeTree_create_function_params(char* sname, int sline)$/;"	f
 sNodeTree_create_if	src/node.c	/^unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline)$/;"	f

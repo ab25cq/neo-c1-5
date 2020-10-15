@@ -64,7 +64,9 @@ LVALUE* gLLVMStackHead;
 
 struct sFunctionStruct {
     bool existance;
+    char mID[VAR_NAME_MAX];
     char mName[VAR_NAME_MAX];
+    char mBaseName[VAR_NAME_MAX];
     Function* mLLVMFunction;
     char mResultTypeName[VAR_NAME_MAX];
     int mNumParams;
@@ -1106,13 +1108,15 @@ void get_version(sFunction* fun, char* fun_name)
 }
 
 
-BOOL add_function(char* fun_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)
+BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sCompileInfo* info)
 {
     sFunction fun;
 
     fun.existance = true;
 
     xstrncpy(fun.mName, fun_name, VAR_NAME_MAX);
+    xstrncpy(fun.mBaseName, fun_base_name, VAR_NAME_MAX);
+
     xstrncpy(fun.mResultTypeName, result_type_name, VAR_NAME_MAX);
     fun.mVarArg = var_arg;
     fun.mInline = inline_;
@@ -3043,6 +3047,10 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
 {
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+
+    char fun_base_name[VAR_NAME_MAX];
+    xstrncpy(fun_base_name, gNodes[node].uValue.sFunction.mBaseName, VAR_NAME_MAX);
+
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
     BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
     BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
@@ -3066,7 +3074,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
     }
 
-    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, info)) {
+    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, info)) {
         return FALSE;
     }
 
@@ -3117,6 +3125,8 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
 {
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+    char fun_base_name[VAR_NAME_MAX];
+    xstrncpy(fun_base_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
     BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
     BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
@@ -3146,7 +3156,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         param_names[i] = param->mName;
     }
 
-    if(!add_function(fun_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, inherit_, FALSE, 0, FALSE, FALSE, FALSE, info)) {
+    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, inherit_, FALSE, 0, FALSE, FALSE, FALSE, info)) {
         return FALSE;
     }
 
@@ -3212,10 +3222,25 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-static BOOL create_generics_function(char* real_fun_name2, sFunction* fun, sCompileInfo* info) 
+static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, sCompileInfo* info) 
 {
     sFunction generics_fun = *fun;
 
+    char real_fun_name2[VAR_NAME_MAX];
+
+    if(klass) {
+        xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
+
+        create_real_struct_name(real_fun_name2, VAR_NAME_MAX, info->generics_type->mNumGenericsTypes, info->generics_type->mGenericsTypes);
+
+        xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
+        xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
+    }
+    else {
+        xstrncpy(real_fun_name2, fun_name, VAR_NAME_MAX);
+    }
+
+    xstrncpy(generics_fun.mID, id, VAR_NAME_MAX);
     xstrncpy(generics_fun.mName, real_fun_name2, VAR_NAME_MAX);
 
     if(!entry_llvm_function(&generics_fun, info->generics_type, info)) {
@@ -3436,23 +3461,47 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         if(message_passing) {
             info->generics_type = clone_node_type(param_types2[0]);
 
-            char real_fun_name[VAR_NAME_MAX];
             sCLClass* klass = param_types2[0]->mClass;
 
-            xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
-            xstrncat(real_fun_name, "_", VAR_NAME_MAX);
-            xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
+            char real_fun_name[VAR_NAME_MAX];
 
-            if(gFuncs[real_fun_name].size() == 0) {
-                compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
-                info->err_num++;
+            if(inherit_) {
+                sFunction* current_function = (sFunction*)info->function;
 
-                info->type = create_node_type_with_class_name("int"); // dummy
+                xstrncpy(real_fun_name, current_function->mID, VAR_NAME_MAX);
+                sCLClass* klass = param_types2[0]->mClass;
 
-                return FALSE;
+                int current_version = current_function->mVersion;
+
+                if(gFuncs[real_fun_name].size() == 0 || gFuncs[real_fun_name].size() < current_version-1) {
+                    compile_err_msg(info, "Function not found(inherit) %s\n", real_fun_name);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return FALSE;
+                }
+
+                fun = gFuncs[real_fun_name][current_function->mVersion-1];
+
+                xstrncpy(fun_name, fun.mBaseName, VAR_NAME_MAX);
             }
+            else {
+                xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
+                xstrncat(real_fun_name, "_", VAR_NAME_MAX);
+                xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
-            fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+                if(gFuncs[real_fun_name].size() == 0) {
+                    compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return FALSE;
+                }
+
+                fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+            }
 
             if(fun.mMethodGenerics) {
                 char* method_generics_types[GENERICS_TYPES_MAX];
@@ -3476,28 +3525,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 fun = fun2;
 
-                char real_fun_name2[VAR_NAME_MAX];
-                xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
-
-                create_real_struct_name(real_fun_name2, VAR_NAME_MAX, info->generics_type->mNumGenericsTypes, info->generics_type->mGenericsTypes);
-
-                xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
-                xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
-
-                if(!create_generics_function(real_fun_name2, &fun, info)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info)) {
                     return FALSE;
                 }
             }
             else if(fun.mGenerics) {
-                char real_fun_name2[VAR_NAME_MAX];
-                xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
-
-                create_real_struct_name(real_fun_name2, VAR_NAME_MAX, info->generics_type->mNumGenericsTypes, info->generics_type->mGenericsTypes);
-
-                xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
-                xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
-
-                if(!create_generics_function(real_fun_name2, &fun, info)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info)) {
                     return FALSE;
                 }
             }
@@ -3555,7 +3588,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 fun = fun2;
 
-                if(!create_generics_function(fun_name, &fun, info)) {
+                if(!create_generics_function(fun_name, fun_name, NULL, &fun, info)) {
                     return FALSE;
                 }
             }
@@ -4424,8 +4457,6 @@ static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
 
     sNodeType* left_type = info->type;
 
-show_node_type(left_type);
-
     if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
         compile_err_msg(info, "This is not struct type");
         info->err_num++;
@@ -4591,10 +4622,6 @@ static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* left_type = clone_node_type(info->type);
-
-printf("%p\n", left_type->mClass);
-show_node_type(left_type);
-puts("BBB");
 
     if(!(left_type->mClass->mFlags & CLASS_FLAGS_STRUCT) && !(left_type->mClass->mFlags & CLASS_FLAGS_UNION)) {
         compile_err_msg(info, "This is not struct type");
