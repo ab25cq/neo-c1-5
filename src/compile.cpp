@@ -3508,7 +3508,31 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         else {
             info->generics_type = NULL;
 
-            fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+            //fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+            
+            if(inherit_) {
+                sFunction* current_function = (sFunction*)info->function;
+
+                char real_fun_name[VAR_NAME_MAX];
+
+                xstrncpy(real_fun_name, current_function->mName, VAR_NAME_MAX);
+                sCLClass* klass = param_types2[0]->mClass;
+
+                int current_version = current_function->mVersion;
+                if(gFuncs[fun_name].size() < current_version-1) {
+                    compile_err_msg(info, "Function not found(inherit) %s\n", fun_name);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return FALSE;
+                }
+
+                fun = gFuncs[real_fun_name][current_function->mVersion-1];
+            }
+            else {
+                fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+            }
 
             if(fun.mMethodGenerics) {
                 char* method_generics_types[GENERICS_TYPES_MAX];

@@ -256,6 +256,7 @@ define void @inheritFun_1() {
 entry:
   %andand_result_var = alloca i1
   %andand_result_var1 = alloca i1
+  call void @inheritFun()
   %0 = call i32 @puts(i8* getelementptr inbounds ([21 x i8], [21 x i8]* @global_string.9, i32 0, i32 0))
   ret void
 }

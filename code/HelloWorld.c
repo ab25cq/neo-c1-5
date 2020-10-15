@@ -134,7 +134,7 @@ void inheritFun()
 
 inherit void inheritFun()
 {
-//    inherit();
+    inherit();
     puts("inheritFun version 2");
 }
 
