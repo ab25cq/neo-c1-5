@@ -2682,16 +2682,19 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
+static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
 {
     char var_name[VAR_NAME_MAX];
     char type_name[VAR_NAME_MAX];
 
     xstrncpy(var_name, gNodes[node].uValue.sStoreVariable.mVarName, VAR_NAME_MAX);
     xstrncpy(type_name, gNodes[node].uValue.sStoreVariable.mTypeName, VAR_NAME_MAX);
-    BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
 
-    int right_node = gNodes[node].mRight;
+    BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
+    BOOL global = gNodes[node].uValue.sStoreVariable.mGlobal;
+
+    unsigned int right_node = gNodes[node].mRight;
+
     if(!compile(right_node, info)) {
         return FALSE;
     }
@@ -2702,9 +2705,11 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 
     int index = -1;
     if(alloc) {
+puts(type_name);
         sNodeType* var_type = create_node_type_with_class_name(type_name);
+
         if(var_type == NULL || var_type->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name %s\n", type_name);
+            compile_err_msg(info, "Invalid type name (%s)\n", type_name);
             return FALSE;
         }
 
@@ -2713,39 +2718,52 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
 
         BOOL readonly = FALSE;
         BOOL constant = FALSE;
-        BOOL global = FALSE;
+
         void* llvm_value = NULL;
-        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
-        {
-            compile_err_msg(info, "overflow variable table");
-            return FALSE;
+        if(global) {
+            if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
+            {
+                compile_err_msg(info, "overflow variable table");
+                return FALSE;
+            }
         }
-
-        Type* llvm_var_type;
-        if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
-        {
-            return TRUE;
+        else {
+            if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+            {
+                compile_err_msg(info, "overflow variable table");
+                return FALSE;
+            }
         }
-
-        int alignment = get_llvm_alignment_from_node_type(var_type);
-        
-        Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
-
-        sVar* var = get_variable_from_table(info->lv_table, var_name);
-
-        var->mLLVMValue = address;
-
-        BOOL parent = FALSE;
-        int index = get_variable_index(info->lv_table, var_name, &parent);
-
-        store_address_to_lvtable(index, address, info);
     }
 
     sVar* var = get_variable_from_table(info->lv_table, var_name);
-    sNodeType* var_type = var->mType;
 
-    if(auto_cast_posibility(var_type, right_type)) {
-        if(!cast_right_type_to_left_type(var_type, &right_type, &rvalue, info))
+    if(var == NULL) {
+        var = get_variable_from_table(info->gv_table, var_name);
+    }
+
+    if(var == NULL) {
+        compile_err_msg(info, "undeclared variable %s(2)", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    global = var->mGlobal;
+
+    /// type inference ///
+    sNodeType* left_type = NULL;
+    if(var->mType == NULL) {
+        left_type = clone_node_type(right_type);
+        var->mType = clone_node_type(right_type);
+    }
+    else {
+        left_type = clone_node_type(var->mType);
+    }
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
         {
             compile_err_msg(info, "Cast failed");
             info->err_num++;
@@ -2756,10 +2774,10 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!substitution_posibility(var_type, right_type, FALSE)) 
+    if(!substitution_posibility(left_type, right_type, FALSE)) 
     {
         compile_err_msg(info, "The different type between left type and right type. store variable. var name is %s", var_name);
-        show_node_type(var_type);
+        show_node_type(left_type);
         show_node_type(right_type);
         info->err_num++;
 
@@ -2768,28 +2786,11 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-
     Type* llvm_var_type;
-    if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
+    if(!create_llvm_type_from_node_type(&llvm_var_type, left_type, left_type, info))
     {
-        return TRUE;
-    }
-
-    int alignment = get_llvm_alignment_from_node_type(var_type);
-
-    BOOL parent = FALSE;
-    index = get_variable_index(info->lv_table, var_name, &parent);
-
-    Value* var_address;
-    if(parent && !var->mGlobal) {
-        var_address = load_address_to_lvtable(index, var_type, info);
-    }
-    else {
-        var_address = (Value*)var->mLLVMValue;
-    }
-
-    if(var_address == nullptr) {
-        compile_err_msg(info, "Invalid storing variable %s\n", var_name);
+        compile_err_msg(info, "Getting llvm type failed(1). var name is %s", var_name);
+        show_node_type(left_type);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -2797,13 +2798,191 @@ static BOOL compile_store_varialbe(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-//    Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
+    int alignment = get_llvm_alignment_from_node_type(left_type);
 
-    std_move(var_address, var->mType, &rvalue, alloc, info);
+    BOOL constant = var->mConstant;
+    BOOL static_ = var->mType->mStatic;
 
-    Builder.CreateAlignedStore(rvalue.value, var_address, alignment);
+    if(alloc) {
+         if(global) {
+            var->mLLVMValue = NULL;
 
-    info->type = right_type;
+            if(TheModule->getNamedGlobal(var_name) != nullptr)
+            {
+                TheModule->getNamedGlobal(var_name)->eraseFromParent();
+            }
+
+            GlobalVariable* address = new GlobalVariable(*TheModule, llvm_var_type, var->mConstant, GlobalValue::ExternalLinkage, 0, var_name);
+            address->setAlignment(alignment);
+
+            Value* rvalue2 = rvalue.value;
+
+            if(dyn_cast<Constant>(rvalue2)) {
+                Constant* rvalue3 = dyn_cast<Constant>(rvalue2);
+                address->setInitializer(rvalue3);
+            }
+            else {
+                compile_err_msg(info, "Invalid Global Variable Initializer. Require Constant Value");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            var->mLLVMValue = address;
+
+            info->type = clone_node_type(left_type);
+        }
+        else if(constant) {
+            Value* rvalue2 = rvalue.value;
+
+            if(dyn_cast<Constant>(rvalue2)) {
+                Constant* rvalue3 = dyn_cast<Constant>(rvalue2);
+
+                var->mLLVMValue = rvalue3;
+
+                info->type = clone_node_type(left_type);
+            }
+            else {
+                compile_err_msg(info, "Invalid Variable Initializer. Require Constant Value");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+        else if(static_) {
+            sFunction* function = (sFunction*)info->function;
+
+            char static_var_name[VAR_NAME_MAX*2];
+            snprintf(static_var_name, VAR_NAME_MAX*2, "%s_%s", function->mName, var_name);
+
+            if(var->mLLVMValue == NULL && TheModule->getNamedGlobal(static_var_name) == nullptr)
+            {
+                GlobalVariable* address = new GlobalVariable(*TheModule, llvm_var_type, var->mConstant, GlobalValue::ExternalLinkage, 0, static_var_name);
+                address->setAlignment(alignment);
+
+                Value* rvalue2 = rvalue.value;
+
+                if(dyn_cast<Constant>(rvalue2)) {
+                    Constant* rvalue3 = dyn_cast<Constant>(rvalue2);
+                    address->setInitializer(rvalue3);
+                }
+                else {
+                    compile_err_msg(info, "Invalid variable initializer. Require constant value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                var->mLLVMValue = address;
+
+                BOOL parent = FALSE;
+                int index = get_variable_index(info->lv_table, var_name, &parent);
+
+                store_address_to_lvtable(index, address, info);
+
+                info->type = clone_node_type(left_type);
+            }
+            else {
+                compile_err_msg(info, "Redifined static variable");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+        else {
+            Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
+
+            var->mLLVMValue = address;
+
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
+
+            store_address_to_lvtable(index, address, info);
+
+            sNodeType* var_type = left_type;
+
+            Value* var_address;
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
+
+            if(var_address == nullptr) {
+                compile_err_msg(info, "Invalid variable.store variable(3)");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
+
+            std_move(var_address, var->mType, &rvalue, alloc, info);
+
+            Builder.CreateAlignedStore(rvalue2, var_address, alignment);
+
+            info->type = clone_node_type(left_type);
+        }
+    }
+    else {
+        Value* var_address;
+
+        if(constant) {
+            compile_err_msg(info, "Variable(%s) is constant variable", var->mName);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+        else if(global) {
+            var_address = (Value*)var->mLLVMValue;
+        }
+        else if(static_) {
+            var_address = (Value*)var->mLLVMValue;
+        }
+        else {
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
+
+            sNodeType* var_type = left_type;
+
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
+        }
+
+        if(var_address == nullptr) {
+            compile_err_msg(info, "Invalid variable.store variable(4)");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        Value* rvalue2 = Builder.CreateCast(Instruction::BitCast, rvalue.value, llvm_var_type);
+
+        std_move(var_address, var->mType, &rvalue, alloc, info);
+
+        Builder.CreateAlignedStore(rvalue2, var_address, alignment);
+
+        info->type = clone_node_type(left_type);
+    }
 
     return TRUE;
 }
@@ -2815,6 +2994,10 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     xstrncpy(var_name, gNodes[node].uValue.sLoadVariable.mVarName, VAR_NAME_MAX);
 
     sVar* var = get_variable_from_table(info->lv_table, var_name);
+
+    if(var == NULL) {
+        var = get_variable_from_table(info->gv_table, var_name);
+    }
 
     if(var == NULL || var->mType == NULL) {
         compile_err_msg(info, "undeclared variable(1) %s", var_name);
@@ -2839,15 +3022,20 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     if(constant) {
     }
     else {
-        BOOL parent = FALSE;
-        int index = get_variable_index(info->lv_table, var_name, &parent);
-
         Value* var_address;
-        if(parent && !var->mGlobal) {
-            var_address = load_address_to_lvtable(index, var_type, info);
+        if(var->mGlobal) {
+            var_address = (Value*)var->mLLVMValue;
         }
         else {
-            var_address = (Value*)var->mLLVMValue;
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
+
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
         }
 
         if(var_address == nullptr && !info->no_output) {
@@ -4158,6 +4346,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
     char type_name[VAR_NAME_MAX];
     xstrncpy(type_name, gNodes[node].uValue.sDefineVariable.mTypeName, VAR_NAME_MAX);
     BOOL extern_ = gNodes[node].uValue.sDefineVariable.mExtern;
+    BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
 
     sNodeType* var_type = create_node_type_with_class_name(type_name);
     if(var_type == NULL || var_type->mClass == NULL) {
@@ -4170,23 +4359,42 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
     BOOL readonly = FALSE;
     BOOL constant = FALSE;
-    BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
     void* llvm_value = NULL;
     int index = -1;
-    if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
-    {
-        compile_err_msg(info, "overflow variable table");
-        return FALSE;
+    sVar* var;
+    if(global) {
+        if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            compile_err_msg(info, "overflow variable table");
+            return FALSE;
+        }
+
+        var = get_variable_from_table(info->gv_table, var_name);
+
+        if(var == NULL) {
+            compile_err_msg(info, "undeclared variable(2) %s", var_name);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
     }
+    else {
+        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            compile_err_msg(info, "overflow variable table");
+            return FALSE;
+        }
 
-    sVar* var = get_variable_from_table(info->lv_table, var_name);
+        var = get_variable_from_table(info->lv_table, var_name);
 
-    if(var == NULL) {
-        compile_err_msg(info, "undeclared variable(2) %s", var_name);
-        info->err_num++;
+        if(var == NULL) {
+            compile_err_msg(info, "undeclared variable(2) %s", var_name);
+            info->err_num++;
 
-        info->type = create_node_type_with_class_name("int"); // dummy
-        return TRUE;
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
     }
 
     Value* index_value = NULL;
@@ -4301,26 +4509,17 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             address->setInitializer(initializer);
 
             var->mLLVMValue = address;
-
-/*
-            BOOL parent = FALSE;
-            int index = get_variable_index(info->lv_table, var_name, &parent);
-
-            store_address_to_lvtable(index, address, info);
-*/
         }
     }
     else {
-        if(!info->no_output) {
-            Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
+        Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
 
-            var->mLLVMValue = address;
+        var->mLLVMValue = address;
 
-            BOOL parent = FALSE;
-            int index = get_variable_index(info->lv_table, var_name, &parent);
+        BOOL parent = FALSE;
+        int index = get_variable_index(info->lv_table, var_name, &parent);
 
-            store_address_to_lvtable(index, address, info);
-        }
+        store_address_to_lvtable(index, address, info);
     }
 
     info->type = var_type;
@@ -5041,7 +5240,7 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             break;
 
         case kNodeTypeStoreVariable:
-            if(!compile_store_varialbe(node, info)) {
+            if(!compile_store_variable(node, info)) {
                 return FALSE;
             }
             break;

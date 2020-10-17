@@ -192,6 +192,11 @@ template {
     return(TEMPLATE); 
 }
 
+enum {
+    strncpy(yylval.cval, yytext, 128);
+    return(ENUM); 
+}
+
 if {
     strncpy(yylval.cval, yytext, 128);
     return(IF); 

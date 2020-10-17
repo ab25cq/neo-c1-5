@@ -299,7 +299,7 @@ unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline)
     return node;
 }
 
-unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline)
+unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, BOOL global, char* sname, int sline)
 {
     unsigned node = alloc_node();
 
@@ -311,6 +311,7 @@ unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, un
     xstrncpy(gNodes[node].uValue.sStoreVariable.mVarName, var_name, VAR_NAME_MAX);
     xstrncpy(gNodes[node].uValue.sStoreVariable.mTypeName, type_name, VAR_NAME_MAX);
     gNodes[node].uValue.sStoreVariable.mAlloc = alloc;
+    gNodes[node].uValue.sStoreVariable.mGlobal = global;
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = right;

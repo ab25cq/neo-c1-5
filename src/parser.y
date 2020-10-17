@@ -30,6 +30,7 @@ unsigned int object;
 BOOL inline_ = FALSE;
 BOOL static_ = FALSE;
 BOOL inherit_ = FALSE;
+int enum_number = 0;
 %}
 
 %union {
@@ -68,6 +69,7 @@ BOOL inherit_ = FALSE;
 %token <cval> OROR
 %token <cval> LAMBDA
 %token <cval> TEMPLATE
+%token <cval> ENUM
 %token <cval> FUNCTION_POINTER
 %token <cval> INHERIT
 %type <cval> type 
@@ -78,7 +80,7 @@ BOOL inherit_ = FALSE;
 %type <cval> generics_types 
 %type <cval> function_generics_types 
 %type <cval> function_struct_type_name 
-%type <node> program function block block_end statment node function_params exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types;
+%type <node> program function block block_end statment node function_params exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields;
 
 %left ANDAND OROR
 %left EQEQ NOT_EQ
@@ -91,13 +93,21 @@ BOOL inherit_ = FALSE;
 program: function {
             $$ = compile($1, &cinfo);
         }
+        | global_variable {
+            $$ = compile($1, &cinfo);
+        }
         | struct_ {
             $$ = compile($1, &cinfo);
         }
         | union_ {
             $$ = compile($1, &cinfo);
         }
+        | enum_ {
+        }
         | program function {
+            $$ = compile($2, &cinfo);
+        }
+        | program global_variable {
             $$ = compile($2, &cinfo);
         }
         | program struct_ {
@@ -105,6 +115,8 @@ program: function {
         }
         | program union_ {
             $$ = compile($2, &cinfo);
+        }
+        | program enum_ {
         }
         ;
 
@@ -340,7 +352,77 @@ fields:  {
         | fields type_and_variable_name ';' { $$ = fields; append_field_to_fields(fields, variable_name, $2); }
         ;
 
-function: 
+enum_: ENUM '{' enum_fields '}' ';'
+    ;
+
+enum_fields: {
+        enum_number = 0;
+    }
+    | IDENTIFIER {
+        enum_number = 0;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $1;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
+
+        const char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | IDENTIFIER '=' INTNUM {
+        enum_number = $3;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $1;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
+
+        const char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | enum_fields ',' IDENTIFIER {
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $3;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
+
+        const char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | enum_fields ',' IDENTIFIER '=' INTNUM {
+        enum_number = $5;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $3;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
+
+        const char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    ;
+
+global_variable:
         type_and_variable_name ';' {
             char* type_name = $1;
             char* var_name = variable_name;
@@ -349,7 +431,16 @@ function:
 
             $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
         }
-        | type IDENTIFIER '(' function_params ')' ';' {
+        | type_and_variable_name '=' exp ';'  { 
+            BOOL alloc = TRUE;
+            BOOL global = TRUE;
+
+            $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
+        }
+        ;
+
+function: 
+        type IDENTIFIER '(' function_params ')' ';' {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -691,8 +782,18 @@ node:
         | IDENTIFIER {
             $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
         }
-        | type_and_variable_name '=' exp  { $$ = sNodeTree_create_store_variable(variable_name, $1, $3, TRUE, gSName, gSLine); }
-        | IDENTIFIER '=' exp { $$ = sNodeTree_create_store_variable($1, "", $3, FALSE, gSName, gSLine); }
+        | type_and_variable_name '=' exp  { 
+            BOOL alloc = TRUE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
+        }
+        | IDENTIFIER '=' exp { 
+            BOOL alloc = FALSE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable($1, "", $3, alloc, global, gSName, gSLine); 
+        }
 
         | IDENTIFIER '(' ')' {
             BOOL existance = function_existance($1);

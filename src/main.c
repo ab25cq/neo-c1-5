@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     memset(&cinfo, 0, sizeof(sCompileInfo));
 
-    cinfo.lv_table = init_var_table();
+    cinfo.gv_table = init_var_table();
 
     if(gSName[0] == '\0') {
         yyparse();

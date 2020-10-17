@@ -301,6 +301,7 @@ struct sNodeTreeStruct
             char mVarName[VAR_NAME_MAX];
             char mTypeName[VAR_NAME_MAX];
             BOOL mAlloc;
+            BOOL mGlobal;
         } sStoreVariable;
         struct {
             char mVarName[VAR_NAME_MAX];
@@ -400,7 +401,7 @@ unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
 void append_param_to_params_at_head(unsigned int params, unsigned int param);
-unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, char* sname, int sline);
+unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, BOOL global, char* sname, int sline);
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 unsigned int sNodeTree_create_block(char* sname, int sline);
@@ -439,6 +440,7 @@ struct sCompileInfoStruct
     void* lv_table_value;
 
     sVarTable* lv_table;
+    sVarTable* gv_table;
 
     char sname[PATH_MAX];
     int sline;

@@ -24,6 +24,14 @@ source_filename = "Module stdin"
 @global_string.8 = private constant [21 x i8] c"inheritFun version 1\00", align 1
 @gLVTable8 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string.9 = private constant [21 x i8] c"inheritFun version 2\00", align 1
+@gA = global i32 zeroinitializer, align 4
+@gB = global i32 123, align 4
+@kA = global i32 0, align 4
+@kB = global i32 1, align 4
+@kC = global i32 2, align 4
+@kA2 = global i32 123, align 4
+@kB2 = global i32 124, align 4
+@kC2 = global i32 125, align 4
 @gLVTable9 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string.10 = private constant [12 x i8] c"HELLO WORLD\00", align 1
 @global_string.11 = private constant [6 x i8] c"test1\00", align 1
@@ -59,6 +67,10 @@ source_filename = "Module stdin"
 @gLVTable20 = internal global [512 x i8*] zeroinitializer, align 8
 @gLVTable21 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string.36 = private constant [7 x i8] c"%d %d\0A\00", align 1
+@global_string.37 = private constant [16 x i8] c"global variable\00", align 1
+@global_string.38 = private constant [17 x i8] c"global variable2\00", align 1
+@global_string.39 = private constant [10 x i8] c"enum test\00", align 1
+@global_string.40 = private constant [11 x i8] c"enum test2\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -402,15 +414,76 @@ cond_end:                                         ; preds = %cond_then_block, %c
   store i8* %36, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable15, i32 0, i32 6), align 8
   %xyz230 = load %GenericsData3_int, %GenericsData3_int* %xyz2, align 8
   call void @GenericsData3_int_fun_1(%GenericsData3_int %xyz230)
+  store i32 1, i32* @gA, align 4
+  %gA = load i32, i32* @gA, align 4
+  %eqtmpX31 = icmp eq i32 %gA, 1
+  call void @xassert(i8* getelementptr inbounds ([16 x i8], [16 x i8]* @global_string.37, i32 0, i32 0), i1 %eqtmpX31)
+  %gB = load i32, i32* @gB, align 4
+  %eqtmpX32 = icmp eq i32 %gB, 123
+  call void @xassert(i8* getelementptr inbounds ([17 x i8], [17 x i8]* @global_string.38, i32 0, i32 0), i1 %eqtmpX32)
+  %kA = load i32, i32* @kA, align 4
+  %eqtmpX33 = icmp eq i32 %kA, 0
+  store i1 %eqtmpX33, i1* %andand_result_var, align 1
+  br i1 %eqtmpX33, label %cond_jump_then34, label %cond_jump_end35
+
+cond_jump_then34:                                 ; preds = %cond_end
+  %kB = load i32, i32* @kB, align 4
+  %eqtmpX36 = icmp eq i32 %kB, 1
+  %andand37 = and i1 %eqtmpX33, %eqtmpX36
+  store i1 %andand37, i1* %andand_result_var, align 1
+  br label %cond_jump_end35
+
+cond_jump_end35:                                  ; preds = %cond_jump_then34, %cond_end
+  %andand_result_value38 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value38, i1* %andand_result_var, align 1
+  br i1 %andand_result_value38, label %cond_jump_then39, label %cond_jump_end40
+
+cond_jump_then39:                                 ; preds = %cond_jump_end35
+  %kC = load i32, i32* @kC, align 4
+  %eqtmpX41 = icmp eq i32 %kC, 2
+  %andand42 = and i1 %andand_result_value38, %eqtmpX41
+  store i1 %andand42, i1* %andand_result_var, align 1
+  br label %cond_jump_end40
+
+cond_jump_end40:                                  ; preds = %cond_jump_then39, %cond_jump_end35
+  %andand_result_value43 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @global_string.39, i32 0, i32 0), i1 %andand_result_value43)
+  %kA2 = load i32, i32* @kA2, align 4
+  %eqtmpX44 = icmp eq i32 %kA2, 123
+  store i1 %eqtmpX44, i1* %andand_result_var, align 1
+  br i1 %eqtmpX44, label %cond_jump_then45, label %cond_jump_end46
+
+cond_jump_then45:                                 ; preds = %cond_jump_end40
+  %kB2 = load i32, i32* @kB2, align 4
+  %eqtmpX47 = icmp eq i32 %kB2, 124
+  %andand48 = and i1 %eqtmpX44, %eqtmpX47
+  store i1 %andand48, i1* %andand_result_var, align 1
+  br label %cond_jump_end46
+
+cond_jump_end46:                                  ; preds = %cond_jump_then45, %cond_jump_end40
+  %andand_result_value49 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value49, i1* %andand_result_var, align 1
+  br i1 %andand_result_value49, label %cond_jump_then50, label %cond_jump_end51
+
+cond_jump_then50:                                 ; preds = %cond_jump_end46
+  %kC2 = load i32, i32* @kC2, align 4
+  %eqtmpX52 = icmp eq i32 %kC2, 125
+  %andand53 = and i1 %andand_result_value49, %eqtmpX52
+  store i1 %andand53, i1* %andand_result_var, align 1
+  br label %cond_jump_end51
+
+cond_jump_end51:                                  ; preds = %cond_jump_then50, %cond_jump_end46
+  %andand_result_value54 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @global_string.40, i32 0, i32 0), i1 %andand_result_value54)
   %37 = load i8*, i8** %b, align 8
   %38 = ptrtoint i8* %37 to i64
   %39 = icmp ne i64 %38, 0
-  br i1 %39, label %cond_then_block31, label %cond_end32
+  br i1 %39, label %cond_then_block55, label %cond_end56
 
-cond_then_block31:                                ; preds = %cond_end
-  br label %cond_end32
+cond_then_block55:                                ; preds = %cond_jump_end51
+  br label %cond_end56
 
-cond_end32:                                       ; preds = %cond_then_block31, %cond_end
+cond_end56:                                       ; preds = %cond_then_block55, %cond_jump_end51
   call void @free(i8* %37)
   ret i32 0
 }

@@ -1,4 +1,3 @@
-enum
 operators
 -----
 inline with heap
@@ -14,3 +13,4 @@ compile generics function when calling function
 method generics
 mixin-layers of function
 inherit void fun(void);
+enum

@@ -161,9 +161,12 @@ inherit void GenericsData3<T>::fun(GenericsData3<T> self)
     xyz.fun();
 }
 
-//int gA;
+int gA;
+int gB = 123;
 
-//enum { kA, kB, kC };
+enum { kA, kB, kC };
+
+enum { kA2 = 123, kB2, kC2 };
 
 int main() 
 {
@@ -220,11 +223,13 @@ int main()
 
     xyz2.fun();
 
-//    xassert("enum test", kA == 0 && kB==1 && kC == 2);
+    gA = 1;
 
-    //gA = 1;
+    xassert("global variable", gA == 1);
+    xassert("global variable2", gB == 123);
 
-    //xassert("global variable", gA == 1);
+    xassert("enum test", kA == 0 && kB==1 && kC == 2);
+    xassert("enum test2", kA2 == 123 && kB2== 124 && kC2 == 125);
 
     return 0;
 }
