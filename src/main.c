@@ -41,6 +41,7 @@ void parser_err_msg(char* msg)
     output_num++;
 }
 
+extern sCompileInfo cinfo;
 extern int yyparse();
 
 int main(int argc, char** argv)
@@ -60,6 +61,10 @@ int main(int argc, char** argv)
     }
 
     gSLine = 1;
+
+    memset(&cinfo, 0, sizeof(sCompileInfo));
+
+    cinfo.lv_table = init_var_table();
 
     if(gSName[0] == '\0') {
         yyparse();

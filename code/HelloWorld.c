@@ -113,12 +113,6 @@ void GenericsData2<T>::fun(GenericsData2<T>* self)
     data.show();
 }
 
-template <M> M GenericsData<T>::map(GenericsData<T> self, M (*aaa)(T))
-{
-    self.a = 123;
-    return aaa(self.a);
-}
-
 template <M> M fun2(M a) {
     return a + 1;
 }
@@ -126,6 +120,13 @@ template <M> M fun2(M a) {
 template <M> M fun3(M (*aaa)(char*), char* bbb) {
     return aaa(bbb);
 }
+
+template <M> M GenericsData<T>::map(GenericsData<T> self, M (*aaa)(T))
+{
+    self.a = 123;
+    return aaa(self.a);
+}
+
 
 void inheritFun()
 {
@@ -159,6 +160,10 @@ inherit void GenericsData3<T>::fun(GenericsData3<T> self)
 
     xyz.fun();
 }
+
+//int gA;
+
+//enum { kA, kB, kC };
 
 int main() 
 {
@@ -214,6 +219,12 @@ int main()
     GenericsData3<int> xyz2;
 
     xyz2.fun();
+
+//    xassert("enum test", kA == 0 && kB==1 && kC == 2);
+
+    //gA = 1;
+
+    //xassert("global variable", gA == 1);
 
     return 0;
 }

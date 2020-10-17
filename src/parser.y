@@ -20,16 +20,16 @@ int elif_num;
 unsigned int fields;
 char variable_name[VAR_NAME_MAX];
 char type_params[VAR_NAME_MAX];
-int num_struct_generics_types;
+int num_struct_generics_types = 0;
 char struct_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-int num_function_generics_types;
+int num_function_generics_types = 0;
 char function_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-int num_method_generics_types;
+int num_method_generics_types = 0;
 char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 unsigned int object;
-BOOL inline_;
-BOOL static_;
-BOOL inherit_;
+BOOL inline_ = FALSE;
+BOOL static_ = FALSE;
+BOOL inherit_ = FALSE;
 %}
 
 %union {
@@ -70,20 +70,15 @@ BOOL inherit_;
 %token <cval> TEMPLATE
 %token <cval> FUNCTION_POINTER
 %token <cval> INHERIT
-%type <rval> program 
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
-%type <cval> function_result_type_attribute
 %type <cval> type_and_variable_name
-%type <cval> type_params_start
 %type <cval> type_params
 %type <cval> generics_types 
-%type <cval> function_struct_type_name 
 %type <cval> function_generics_types 
-%type <cval> function_struct_type 
-%type <cval> function_result_type 
-%type <node> function block block_end statment node func_params func_params_start exp params elif_statment prepare_elif_statment method_params struct_ fields union_ function_generics_types_start method_generics_types_start method_generics_type method_generics_types;
+%type <cval> function_struct_type_name 
+%type <node> program function block block_end statment node function_params exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types;
 
 %left ANDAND OROR
 %left EQEQ NOT_EQ
@@ -113,73 +108,6 @@ program: function {
         }
         ;
 
-type_and_variable_name: type IDENTIFIER {
-        char type_name[VAR_NAME_MAX];
-
-        xstrncpy(type_name, $1, VAR_NAME_MAX);
-    
-        xstrncpy($$, type_name, VAR_NAME_MAX);
-        xstrncpy(variable_name, $2, VAR_NAME_MAX);
-    }
-    | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params_start type_params ')' {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, " lambda(", VAR_NAME_MAX);
-        xstrncat($$, $7, VAR_NAME_MAX);
-        xstrncat($$, ")", VAR_NAME_MAX);
-
-        xstrncpy(variable_name, $3, VAR_NAME_MAX);
-    }
-    ;
-
-type_params_start: {
-    xstrncpy(type_params, "", VAR_NAME_MAX);
-    xstrncpy($$, type_params, VAR_NAME_MAX);
-    }
-    ;
-
-type_params: {
-        xstrncpy($$, type_params, VAR_NAME_MAX);
-    }
-    | type {
-        xstrncat(type_params, $1, VAR_NAME_MAX);
-        xstrncpy($$, type_params, VAR_NAME_MAX);
-    }
-    | type_params ',' type {
-        xstrncat(type_params, ",", VAR_NAME_MAX);
-        xstrncat(type_params, $3, VAR_NAME_MAX);
-        xstrncpy($$, type_params, VAR_NAME_MAX);
-    };
-
-function_struct_type:
-    function_struct_type_name {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-    }
-    | function_struct_type_name STAR {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-    }
-    | function_struct_type_name STAR '%' {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, "%", VAR_NAME_MAX);
-    }
-    | type_attribute function_struct_type_name {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncpy($$, $2, VAR_NAME_MAX);
-    }
-    | type_attribute function_struct_type_name STAR {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, $3, VAR_NAME_MAX);
-    }
-    | type_attribute function_struct_type_name STAR '%' {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, $3, VAR_NAME_MAX);
-        xstrncat($$, "%", VAR_NAME_MAX);
-    }
-    ;
-
 type:
     type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
@@ -199,7 +127,7 @@ type:
     }
     | type_attribute type_name STAR {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncpy($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
     }
     | type_attribute type_name STAR '%' {
@@ -210,75 +138,11 @@ type:
     }
     ;
 
-function_result_type:
-    method_generics_types_start method_generics_type type_name {
-        inline_ = FALSE;
-        static_ = FALSE;
-        inherit_ = FALSE;
-        xstrncpy($$, $3, VAR_NAME_MAX);
-    }
-    | method_generics_types_start method_generics_type type_name STAR {
-        inline_ = FALSE;
-        static_ = FALSE;
-        inherit_ = FALSE;
-        xstrncpy($$, $3, VAR_NAME_MAX);
-        xstrncat($$, $4, VAR_NAME_MAX);
-    }
-    | method_generics_types_start method_generics_type type_name STAR '%' {
-        inline_ = FALSE;
-        static_ = FALSE;
-        inherit_ = FALSE;
-        xstrncpy($$, $3, VAR_NAME_MAX);
-        xstrncat($$, $4, VAR_NAME_MAX);
-        xstrncat($$, "%", VAR_NAME_MAX);
-    }
-    | method_generics_types_start method_generics_type function_result_type_attribute type_name {
-        xstrncpy($$, $3, VAR_NAME_MAX);
-        xstrncpy($$, $4, VAR_NAME_MAX);
-    }
-    | method_generics_types_start method_generics_type function_result_type_attribute type_name STAR {
-        xstrncpy($$, $3, VAR_NAME_MAX);
-        xstrncat($$, $4, VAR_NAME_MAX);
-        xstrncat($$, $5, VAR_NAME_MAX);
-    }
-    | method_generics_types_start method_generics_type function_result_type_attribute type_name STAR '%' {
-        xstrncpy($$, $3, VAR_NAME_MAX);
-        xstrncat($$, $4, VAR_NAME_MAX);
-        xstrncat($$, $5, VAR_NAME_MAX);
-        xstrncat($$, "%", VAR_NAME_MAX);
-    }
-    ;
-
-method_generics_type: {
-    }
-    | TEMPLATE '<' method_generics_types '>' {
-    }
-    ;
-
-method_generics_types_start: {
-    num_method_generics_types = 0;
-    }
-    ;
-
-method_generics_types: IDENTIFIER {
-        xstrncpy(method_generics_types[0], $1, VAR_NAME_MAX);
-
-        num_method_generics_types = 1;
-    }
-    | method_generics_types IDENTIFIER {
-        xstrncpy(method_generics_types[num_method_generics_types], $2, VAR_NAME_MAX);
-
-        num_method_generics_types++;
-
-        if(num_method_generics_types >= GENERICS_TYPES_MAX) {
-            fprintf(stderr, "overflow method generics types number\n");
-            exit(2);
-        }
-    }
-    ;
-
 type_attribute: { 
         xstrncpy($$, "", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
     }
     | type_attribute CONST {
         xstrncpy($$, $1, VAR_NAME_MAX); 
@@ -299,36 +163,13 @@ type_attribute: {
     | type_attribute STATIC {
         xstrncpy($$, $1, VAR_NAME_MAX); 
         xstrncat($$, "static ", VAR_NAME_MAX); 
-    }
-    ;
-
-function_result_type_attribute: { 
-        inline_ = FALSE;
-        static_ = FALSE;
-        inherit_ = FALSE;
-        xstrncpy($$, "", VAR_NAME_MAX); 
-    }
-    | function_result_type_attribute CONST {
-        xstrncpy($$, $1, VAR_NAME_MAX); 
-        xstrncat($$, "const ", VAR_NAME_MAX); 
-    }
-    | function_result_type_attribute UNSIGNED {
-        xstrncpy($$, $1, VAR_NAME_MAX); 
-        xstrncat($$, "unsigned ", VAR_NAME_MAX); 
-    }
-    | function_result_type_attribute SIGNED {
-        xstrncpy($$, $1, VAR_NAME_MAX); 
-        xstrncat($$, "signed ", VAR_NAME_MAX); 
-    }
-    | function_result_type_attribute STATIC {
-        xstrncpy($$, $1, VAR_NAME_MAX); 
         static_ = TRUE;
     }
-    | function_result_type_attribute INLINE {
+    | type_attribute INLINE {
         xstrncpy($$, $1, VAR_NAME_MAX); 
         inline_ = TRUE;
     }
-    | function_result_type_attribute INHERIT {
+    | type_attribute INHERIT {
         xstrncpy($$, $1, VAR_NAME_MAX); 
         inherit_ = TRUE;
     }
@@ -401,46 +242,6 @@ type_name: IDENTIFIER {
     }
     ;
 
-function_struct_type_name: IDENTIFIER function_generics_types_start {
-        char type_name[VAR_NAME_MAX];
-        get_typedef($1, type_name);
-
-        xstrncpy($$, type_name, VAR_NAME_MAX);
-    }
-    | IDENTIFIER '<' function_generics_types_start function_generics_types '>' {
-        char type_name[VAR_NAME_MAX];
-        get_typedef($1, type_name);
-
-        xstrncat(type_name, "<", VAR_NAME_MAX);
-        xstrncat(type_name, $4, VAR_NAME_MAX);
-        xstrncat(type_name, ">", VAR_NAME_MAX);
-
-        xstrncpy($$, type_name, VAR_NAME_MAX);
-    }
-    | function_generics_types_start VOID {
-        xstrncpy($$, "void",  VAR_NAME_MAX);
-    }
-    ;
-
-struct_: 
-        STRUCT IDENTIFIER '<' struct_generics_types_start struct_generics_types '>' '{' fields '}' ';' {
-            char* struct_name = $2;
-            unsigned int fields = $8;
-            BOOL anonymous = FALSE;
-            BOOL generics = num_struct_generics_types > 0;
-
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
-        }
-        | STRUCT IDENTIFIER struct_generics_types_start '{' fields '}' ';' {
-            char* struct_name = $2;
-            unsigned int fields = $5;
-            BOOL anonymous = FALSE;
-            BOOL generics = FALSE;
-
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
-        }
-        ;
-
 generics_types: type {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
@@ -456,44 +257,70 @@ generics_types: type {
     }
     ;
 
-function_generics_types: type {
+type_and_variable_name: 
+    type IDENTIFIER {
         char type_name[VAR_NAME_MAX];
-        get_typedef($1, type_name);
 
-        xstrncpy(function_generics_types[num_function_generics_types], type_name, VAR_NAME_MAX);
-        num_function_generics_types++;
-
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+    
         xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_name, $2, VAR_NAME_MAX);
     }
-    | function_generics_types type {
-        char type_name[VAR_NAME_MAX];
-        get_typedef($2, type_name);
+    | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $6, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
 
-        xstrncpy($$, ",", VAR_NAME_MAX);
-        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_name, $3, VAR_NAME_MAX);
 
-        xstrncpy(function_generics_types[num_function_generics_types], type_name, VAR_NAME_MAX);
-        num_function_generics_types++;
-
-        if(num_function_generics_types >= GENERICS_TYPES_MAX) {
-            fprintf(stderr, "overflow generics type number\n");
-            exit(2);
-        }
+        xstrncpy(type_params, "", VAR_NAME_MAX);
     }
     ;
 
-function_generics_types_start: {
-    num_function_generics_types = 0;
+type_params: {
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+        xstrncpy($$, type_params, VAR_NAME_MAX);
+    }
+    | type {
+        xstrncpy(type_params, $1, VAR_NAME_MAX);
+        xstrncpy($$, type_params, VAR_NAME_MAX);
+    }
+    | type_params ',' type {
+        xstrncat(type_params, ",", VAR_NAME_MAX);
+        xstrncat(type_params, $3, VAR_NAME_MAX);
+        xstrncpy($$, type_params, VAR_NAME_MAX);
     };
 
-struct_generics_types_start: {
-    num_struct_generics_types = 0;
-    };
+union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
+            unsigned int fields = $4;
+            BOOL anonymous = FALSE;
 
-struct_generics_types: IDENTIFIER {
-        xstrncpy(struct_generics_types[0], $1, VAR_NAME_MAX);
+            $$ = sNodeTree_create_union(union_name, fields, anonymous, gSName, gSLine);
+        }
+        ;
 
-        num_struct_generics_types = 1;
+struct_: 
+        STRUCT IDENTIFIER '<' struct_generics_types '>' '{' fields '}' ';' {
+            char* struct_name = $2;
+            unsigned int fields = $7;
+            BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+        }
+        | STRUCT IDENTIFIER '{' fields '}' ';' {
+            char* struct_name = $2;
+            unsigned int fields = $4;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+        }
+        ;
+
+struct_generics_types: {
+        num_struct_generics_types = 0;
     }
     | struct_generics_types IDENTIFIER {
         xstrncpy(struct_generics_types[num_struct_generics_types], $2, VAR_NAME_MAX);
@@ -507,23 +334,62 @@ struct_generics_types: IDENTIFIER {
     }
     ;
 
-union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
-            unsigned int fields = $4;
-            BOOL anonymous = FALSE;
-
-            $$ = sNodeTree_create_union(union_name, fields, anonymous, gSName, gSLine);
-        }
-        ;
-
 fields:  { 
             fields = sNodeTree_create_struct_fields(gSName, gSLine); $$ = fields; 
         }
-        | type_and_variable_name ';' { fields = sNodeTree_create_struct_fields(gSName, gSLine); append_field_to_fields(fields, variable_name, $1); $$ = fields; }
         | fields type_and_variable_name ';' { $$ = fields; append_field_to_fields(fields, variable_name, $2); }
         ;
 
 function: 
-        function_result_type function_struct_type ':' ':' IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end 
+        type_and_variable_name ';' {
+            char* type_name = $1;
+            char* var_name = variable_name;
+            BOOL global = TRUE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+        }
+        | type IDENTIFIER '(' function_params ')' ';' {
+            char* result_type = $1;
+            char* fun_name = $2;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type IDENTIFIER '(' function_params ')' ';' {
+            char* result_type = $2;
+            char* fun_name = $3;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type IDENTIFIER '(' function_params ')' '{' block '}' block_end {
+            char* result_type = $1;
+            char* fun_name = $2;
+            unsigned int function_params = $4;
+            unsigned int node_block = $7;
+            BOOL generics = FALSE;
+            BOOL method_generics = FALSE;
+
+            $$ = it = sNodeTree_create_function(fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type function_struct_type_name ':' ':' IDENTIFIER '(' function_params ')' '{' block '}' block_end 
         {
             char* result_type = $1;
 
@@ -551,50 +417,149 @@ function:
 
             xstrncpy(fun_base_name, $5, VAR_NAME_MAX);
 
-            unsigned int function_params = $8;
-            unsigned int node_block = $11;
+            unsigned int function_params = $7;
+            unsigned int node_block = $10;
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
             $$ = it = sNodeTree_create_function(fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
         }
-        | function_result_type IDENTIFIER '(' func_params_start func_params ')' '{' block '}' block_end {
-            char* result_type = $1;
-            char* fun_name = $2;
-            unsigned int function_params = $5;
-            unsigned int node_block = $8;
+        | TEMPLATE '<' method_generics_types '>' type IDENTIFIER '(' function_params ')' '{' block '}' block_end {
+            char* result_type = $5;
+            char* fun_name = $6;
+            unsigned int function_params = $8;
+            unsigned int node_block = $11;
             BOOL generics = FALSE;
             BOOL method_generics = num_method_generics_types > 0;
 
             $$ = it = sNodeTree_create_function(fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
         }
-        | function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
-            char* result_type = $1;
-            char* fun_name = $2;
-            unsigned int function_params = $5;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
-        }
-        | EXTERN function_result_type IDENTIFIER '(' func_params_start func_params ')' ';' {
-            char* result_type = $2;
-            char* fun_name = $3;
-            unsigned int function_params = $6;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, gSLine);
+        | TEMPLATE '<' method_generics_types '>' type function_struct_type_name ':' ':' IDENTIFIER '(' function_params ')' '{' block '}' block_end 
+        {
+            char* result_type = $5;
+
+            char fun_name[VAR_NAME_MAX];
+
+            char* struct_name = $6;
+
+            char* p = strstr(struct_name, "<");
+
+            char struct_name2[VAR_NAME_MAX];
+
+            if(p) {
+                memcpy(struct_name2, struct_name, p - struct_name);
+                struct_name2[p-struct_name] = '\0';
+            }
+            else {
+                xstrncpy(struct_name2, struct_name, VAR_NAME_MAX);
+            }
+
+            xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
+            xstrncat(fun_name, "_", VAR_NAME_MAX);
+            xstrncat(fun_name, $9, VAR_NAME_MAX);
+
+            char fun_base_name[VAR_NAME_MAX];
+
+            xstrncpy(fun_base_name, $9, VAR_NAME_MAX);
+
+            unsigned int function_params = $11;
+            unsigned int node_block = $14;
+            BOOL generics = num_function_generics_types > 0;
+            BOOL method_generics = num_method_generics_types > 0;
+
+            $$ = it = sNodeTree_create_function(fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, gSLine);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
         }
         ;
 
-func_params_start: {
-        var_arg = FALSE;
+function_params: { 
+            func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; var_arg = FALSE; 
         }
-        ;
-
-func_params:       { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
-        | VOID { func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; }
-        | type_and_variable_name { func_params = sNodeTree_create_function_params(gSName, gSLine); append_param_to_function_params(func_params, $1, variable_name); $$ = func_params; }
-        | func_params ',' type_and_variable_name { $$ = func_params; append_param_to_function_params(func_params, $3, variable_name); }
-        | func_params ',' '.' '.' '.' {
+        | VOID { 
+            func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; 
+        }
+        | type_and_variable_name {
+            func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; var_arg = FALSE; append_param_to_function_params(func_params, $1, variable_name);
+        }
+        | function_params ',' type_and_variable_name { $$ = func_params; append_param_to_function_params(func_params, $3, variable_name); }
+        | function_params ',' '.' '.' '.' {
             var_arg = TRUE;
         }
         ;
+
+
+method_generics_types: {
+        num_method_generics_types = 0;
+    }
+    | method_generics_types IDENTIFIER {
+        xstrncpy(method_generics_types[num_method_generics_types], $2, VAR_NAME_MAX);
+
+        num_method_generics_types++;
+
+        if(num_method_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow method generics types number\n");
+            exit(2);
+        }
+    }
+    ;
+
+function_struct_type_name: IDENTIFIER {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($1, type_name);
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
+    | IDENTIFIER '<' function_generics_types '>' {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($1, type_name);
+
+        xstrncat(type_name, "<", VAR_NAME_MAX);
+        xstrncat(type_name, $3, VAR_NAME_MAX);
+        xstrncat(type_name, ">", VAR_NAME_MAX);
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+    }
+    ;
+
+
+function_generics_types: {
+        num_function_generics_types = 0;
+    }
+    | function_generics_types type {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($2, type_name);
+
+        xstrncpy($$, ",", VAR_NAME_MAX);
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+
+        xstrncpy(function_generics_types[num_function_generics_types], type_name, VAR_NAME_MAX);
+        num_function_generics_types++;
+
+        if(num_function_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow generics type number\n");
+            exit(2);
+        }
+    }
+    ;
+
 
 block:  statment                  { 
             prev_block = block;
@@ -757,9 +722,9 @@ node:
 
             $$ = sNodeTree_create_function_call($3, params, TRUE, FALSE, gSName, gSLine);
         }
-        | exp '.' IDENTIFIER '(' method_params_start method_params ')' {
-            append_param_to_params($6, $1);
-            $$ = sNodeTree_create_function_call($3, $6, TRUE, FALSE, gSName, gSLine);
+        | exp '.' IDENTIFIER '(' params ')' {
+            append_param_to_params($5, $1);
+            $$ = sNodeTree_create_function_call($3, $5, TRUE, FALSE, gSName, gSLine);
         }
         | INHERIT '(' ')' {
             $$ = sNodeTree_create_function_call("inherit", 0, FALSE, TRUE, gSName, gSLine);
@@ -773,9 +738,9 @@ node:
 
             $$ = sNodeTree_create_function_call("inherit", params, TRUE, TRUE, gSName, gSLine);
         }
-        | exp '.' INHERIT '(' method_params_start method_params ')' {
-            append_param_to_params($6, $1);
-            $$ = sNodeTree_create_function_call("inherit", $6, TRUE, TRUE, gSName, gSLine);
+        | exp '.' INHERIT '(' params ')' {
+            append_param_to_params($5, $1);
+            $$ = sNodeTree_create_function_call("inherit", $5, TRUE, TRUE, gSName, gSLine);
         }
         | exp '.' IDENTIFIER {
             $$ = sNodeTree_create_load_field($3, $1, gSName, gSLine);
@@ -800,10 +765,10 @@ node:
 
             $$ = sNodeTree_create_clone(exp, gSName, gSLine);
         }
-        | type LAMBDA '(' func_params_start func_params ')' '{' block '}' block_end {
+        | type LAMBDA '(' function_params ')' '{' block '}' block_end {
             char* result_type_name = $1;
-            unsigned int function_params = $5;
-            unsigned int node_block = $8;
+            unsigned int function_params = $4;
+            unsigned int node_block = $7;
 
             $$ = sNodeTree_create_coroutine(function_params, result_type_name, node_block, var_arg, gSName, gSLine);
         }
@@ -812,19 +777,20 @@ node:
         }
         ;
 
-method_params_start: {
+params: { 
         params = sNodeTree_create_params(gSName, gSLine); 
-        };
-
-method_params :
-        exp { append_param_to_params(params, $1); $$ = params; }
-        | exp ',' method_params { $$ = params; append_param_to_params(params, $1); }
-        ;
-
-params :       { params = sNodeTree_create_params(gSName, gSLine); $$ = params; }
-        | exp { params = sNodeTree_create_params(gSName, gSLine); append_param_to_params(params, $1); $$ = params; }
-        | exp ',' params { $$ = params; append_param_to_params(params, $1); }
-        ;
+        $$ = params; 
+    }
+    | exp { 
+        params = sNodeTree_create_params(gSName, gSLine); 
+        append_param_to_params(params, $1); 
+        $$ = params; 
+    }
+    | exp ',' params { 
+        append_param_to_params(params, $1); 
+        $$ = params; 
+    }
+    ;
 
 %%
 int yyerror(char *msg)

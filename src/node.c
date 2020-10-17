@@ -169,6 +169,7 @@ unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsi
     }
 
     xstrncpy(gNodes[node].uValue.sFunction.mResultTypeName, result_type_name, VAR_NAME_MAX);
+
     gNodes[node].uValue.sFunction.mNodeBlock = node_block;
 
     return node;

@@ -3541,8 +3541,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         else {
             info->generics_type = NULL;
 
-            //fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
-            
             if(inherit_) {
                 sFunction* current_function = (sFunction*)info->function;
 
@@ -3606,7 +3604,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         /// cast and type checking ///
         if(!fun.mVarArg) {
             if(fun.mNumParams != num_params) {
-                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                compile_err_msg(info, "Calling function parametor number is invalid %s(left %d, right %d)\n", fun_name, fun.mNumParams, num_params);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
@@ -4304,10 +4302,12 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
             var->mLLVMValue = address;
 
+/*
             BOOL parent = FALSE;
             int index = get_variable_index(info->lv_table, var_name, &parent);
 
             store_address_to_lvtable(index, address, info);
+*/
         }
     }
     else {
