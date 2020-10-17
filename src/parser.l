@@ -168,6 +168,11 @@ char* p;
     return(OROR); 
 }
 
+"::" {
+    strncpy(yylval.cval, yytext, 128);
+    return(METHOD_MARK); 
+}
+
 [=+\-\*\/;\(\)\{\},\.:%\[\]\!<>] { 
     return(yytext[0]); 
 }

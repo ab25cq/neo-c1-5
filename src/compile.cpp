@@ -2705,7 +2705,6 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
 
     int index = -1;
     if(alloc) {
-puts(type_name);
         sNodeType* var_type = create_node_type_with_class_name(type_name);
 
         if(var_type == NULL || var_type->mClass == NULL) {

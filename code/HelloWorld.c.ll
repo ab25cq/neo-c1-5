@@ -5,6 +5,9 @@ source_filename = "Module stdin"
 %GenericsData_int = type { i32, i32 }
 %GenericsData2_int = type { i32 }
 %GenericsData3_int = type { i32, i32 }
+%anonmous_struct0 = type { i32, i32 }
+%anonmous_union0 = type { i32 }
+%Data3 = type { i64, i32 }
 
 @gLVTable0 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string = private constant [11 x i8] c"called fun\00", align 1
@@ -71,6 +74,9 @@ source_filename = "Module stdin"
 @global_string.38 = private constant [17 x i8] c"global variable2\00", align 1
 @global_string.39 = private constant [10 x i8] c"enum test\00", align 1
 @global_string.40 = private constant [11 x i8] c"enum test2\00", align 1
+@global_string.41 = private constant [22 x i8] c"anonymous struct test\00", align 1
+@global_string.42 = private constant [27 x i8] c"anonyumous_union_data test\00", align 1
+@global_string.43 = private constant [16 x i8] c"struct bit test\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -475,16 +481,83 @@ cond_jump_then50:                                 ; preds = %cond_jump_end46
 cond_jump_end51:                                  ; preds = %cond_jump_then50, %cond_jump_end46
   %andand_result_value54 = load i1, i1* %andand_result_var, align 1
   call void @xassert(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @global_string.40, i32 0, i32 0), i1 %andand_result_value54)
-  %37 = load i8*, i8** %b, align 8
-  %38 = ptrtoint i8* %37 to i64
-  %39 = icmp ne i64 %38, 0
-  br i1 %39, label %cond_then_block55, label %cond_end56
+  %anonyumous_struct_data = alloca %anonmous_struct0
+  %37 = bitcast %anonmous_struct0* %anonyumous_struct_data to i8*
+  store i8* %37, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 7), align 8
+  %anonyumous_struct_data55 = load %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, align 8
+  %38 = getelementptr inbounds %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, i32 0, i32 0
+  store i32 123, i32* %38, align 4
+  %anonyumous_struct_data56 = load %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, align 8
+  %39 = getelementptr inbounds %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, i32 0, i32 1
+  store i32 234, i32* %39, align 4
+  %anonyumous_struct_data57 = load %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, align 8
+  %40 = getelementptr inbounds %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, i32 0, i32 0
+  %41 = load i32, i32* %40, align 4
+  %eqtmpX58 = icmp eq i32 %41, 123
+  store i1 %eqtmpX58, i1* %andand_result_var, align 1
+  br i1 %eqtmpX58, label %cond_jump_then59, label %cond_jump_end60
 
-cond_then_block55:                                ; preds = %cond_jump_end51
-  br label %cond_end56
+cond_jump_then59:                                 ; preds = %cond_jump_end51
+  %anonyumous_struct_data61 = load %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, align 8
+  %42 = getelementptr inbounds %anonmous_struct0, %anonmous_struct0* %anonyumous_struct_data, i32 0, i32 1
+  %43 = load i32, i32* %42, align 4
+  %eqtmpX62 = icmp eq i32 %43, 234
+  %andand63 = and i1 %eqtmpX58, %eqtmpX62
+  store i1 %andand63, i1* %andand_result_var, align 1
+  br label %cond_jump_end60
 
-cond_end56:                                       ; preds = %cond_then_block55, %cond_jump_end51
-  call void @free(i8* %37)
+cond_jump_end60:                                  ; preds = %cond_jump_then59, %cond_jump_end51
+  %andand_result_value64 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([22 x i8], [22 x i8]* @global_string.41, i32 0, i32 0), i1 %andand_result_value64)
+  %anonyumous_union_data = alloca %anonmous_union0
+  %44 = bitcast %anonmous_union0* %anonyumous_union_data to i8*
+  store i8* %44, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 8), align 8
+  %anonyumous_union_data65 = load %anonmous_union0, %anonmous_union0* %anonyumous_union_data, align 8
+  %45 = bitcast %anonmous_union0* %anonyumous_union_data to i32*
+  store i32 123, i32* %45, align 4
+  %anonyumous_union_data66 = load %anonmous_union0, %anonmous_union0* %anonyumous_union_data, align 8
+  %46 = bitcast %anonmous_union0* %anonyumous_union_data to i32*
+  %47 = load i32, i32* %46, align 4
+  %eqtmpX67 = icmp eq i32 %47, 123
+  call void @xassert(i8* getelementptr inbounds ([27 x i8], [27 x i8]* @global_string.42, i32 0, i32 0), i1 %eqtmpX67)
+  %data3 = alloca %Data3
+  %48 = bitcast %Data3* %data3 to i8*
+  store i8* %48, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 9), align 8
+  %data368 = load %Data3, %Data3* %data3, align 8
+  %49 = getelementptr inbounds %Data3, %Data3* %data3, i32 0, i32 0
+  store i64 123, i64* %49, align 4
+  %data369 = load %Data3, %Data3* %data3, align 8
+  %50 = getelementptr inbounds %Data3, %Data3* %data3, i32 0, i32 1
+  store i32 234, i32* %50, align 4
+  %data370 = load %Data3, %Data3* %data3, align 8
+  %51 = getelementptr inbounds %Data3, %Data3* %data3, i32 0, i32 0
+  %52 = load i64, i64* %51, align 4
+  %eqtmpX71 = icmp eq i64 %52, 123
+  store i1 %eqtmpX71, i1* %andand_result_var, align 1
+  br i1 %eqtmpX71, label %cond_jump_then72, label %cond_jump_end73
+
+cond_jump_then72:                                 ; preds = %cond_jump_end60
+  %data374 = load %Data3, %Data3* %data3, align 8
+  %53 = getelementptr inbounds %Data3, %Data3* %data3, i32 0, i32 1
+  %54 = load i32, i32* %53, align 4
+  %eqtmpX75 = icmp eq i32 %54, 234
+  %andand76 = and i1 %eqtmpX71, %eqtmpX75
+  store i1 %andand76, i1* %andand_result_var, align 1
+  br label %cond_jump_end73
+
+cond_jump_end73:                                  ; preds = %cond_jump_then72, %cond_jump_end60
+  %andand_result_value77 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([16 x i8], [16 x i8]* @global_string.43, i32 0, i32 0), i1 %andand_result_value77)
+  %55 = load i8*, i8** %b, align 8
+  %56 = ptrtoint i8* %55 to i64
+  %57 = icmp ne i64 %56, 0
+  br i1 %57, label %cond_then_block78, label %cond_end79
+
+cond_then_block78:                                ; preds = %cond_jump_end73
+  br label %cond_end79
+
+cond_end79:                                       ; preds = %cond_then_block78, %cond_jump_end73
+  call void @free(i8* %55)
   ret i32 0
 }
 

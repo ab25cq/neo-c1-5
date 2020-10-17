@@ -72,6 +72,7 @@ int enum_number = 0;
 %token <cval> ENUM
 %token <cval> FUNCTION_POINTER
 %token <cval> INHERIT
+%token <cval> METHOD_MARK
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -147,6 +148,38 @@ type:
         xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
+    }
+    | STRUCT '{' fields '}' {
+            static int anonyomous_struct_num = 0;
+            char buf[VAR_NAME_MAX];
+            snprintf(buf, VAR_NAME_MAX, "anonmous_struct%d", anonyomous_struct_num);
+            anonyomous_struct_num++;
+            char* struct_name = buf;
+            unsigned int fields = $3;
+            BOOL anonymous = TRUE;
+            BOOL generics = FALSE;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+
+            compile(node, &cinfo);
+
+            xstrncpy($$, buf, VAR_NAME_MAX);
+    }
+    | UNION '{' fields '}' {
+            static int anonyomous_union_num = 0;
+            char buf[VAR_NAME_MAX];
+           
+            snprintf(buf, VAR_NAME_MAX, "anonmous_union%d", anonyomous_union_num);
+            anonyomous_union_num++;
+            char* union_name = buf;
+            unsigned int fields = $3;
+            BOOL anonymous = TRUE;
+
+            unsigned int node = sNodeTree_create_union(union_name, fields, anonymous, gSName, gSLine);
+
+            compile(node, &cinfo);
+
+            xstrncpy($$, buf, VAR_NAME_MAX);
     }
     ;
 
@@ -274,6 +307,20 @@ type_and_variable_name:
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+    }
+    | type IDENTIFIER ':' INTNUM {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, ":", VAR_NAME_MAX);
+
+        char buf[128];
+        snprintf(buf, 128, "%d", $4);
+
+        xstrncat(type_name, buf, VAR_NAME_MAX);
     
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_name, $2, VAR_NAME_MAX);
@@ -480,7 +527,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type function_struct_type_name ':' ':' IDENTIFIER '(' function_params ')' '{' block '}' block_end 
+        | type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' '{' block '}' block_end 
         {
             char* result_type = $1;
 
@@ -502,14 +549,14 @@ function:
 
             xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
             xstrncat(fun_name, "_", VAR_NAME_MAX);
-            xstrncat(fun_name, $5, VAR_NAME_MAX);
+            xstrncat(fun_name, $4, VAR_NAME_MAX);
 
             char fun_base_name[VAR_NAME_MAX];
 
-            xstrncpy(fun_base_name, $5, VAR_NAME_MAX);
+            xstrncpy(fun_base_name, $4, VAR_NAME_MAX);
 
-            unsigned int function_params = $7;
-            unsigned int node_block = $10;
+            unsigned int function_params = $6;
+            unsigned int node_block = $9;
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
@@ -537,7 +584,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | TEMPLATE '<' method_generics_types '>' type function_struct_type_name ':' ':' IDENTIFIER '(' function_params ')' '{' block '}' block_end 
+        | TEMPLATE '<' method_generics_types '>' type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' '{' block '}' block_end 
         {
             char* result_type = $5;
 
@@ -559,14 +606,14 @@ function:
 
             xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
             xstrncat(fun_name, "_", VAR_NAME_MAX);
-            xstrncat(fun_name, $9, VAR_NAME_MAX);
+            xstrncat(fun_name, $8, VAR_NAME_MAX);
 
             char fun_base_name[VAR_NAME_MAX];
 
-            xstrncpy(fun_base_name, $9, VAR_NAME_MAX);
+            xstrncpy(fun_base_name, $8, VAR_NAME_MAX);
 
-            unsigned int function_params = $11;
-            unsigned int node_block = $14;
+            unsigned int function_params = $10;
+            unsigned int node_block = $13;
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 

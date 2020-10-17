@@ -168,6 +168,11 @@ enum { kA, kB, kC };
 
 enum { kA2 = 123, kB2, kC2 };
 
+struct Data3 {
+    int a:8;
+    int b:4;
+};
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -230,6 +235,26 @@ int main()
 
     xassert("enum test", kA == 0 && kB==1 && kC == 2);
     xassert("enum test2", kA2 == 123 && kB2== 124 && kC2 == 125);
+
+    struct { int a; int b; } anonyumous_struct_data;
+
+    anonyumous_struct_data.a = 123;
+    anonyumous_struct_data.b = 234;
+
+    xassert("anonymous struct test", anonyumous_struct_data.a == 123 && anonyumous_struct_data.b == 234);
+
+    union { int a; int b; } anonyumous_union_data;
+
+    anonyumous_union_data.a = 123;
+
+    xassert("anonyumous_union_data test" ,anonyumous_union_data.b == 123);
+
+    Data3 data3;
+
+    data3.a = 123;
+    data3.b = 234;
+
+    xassert("struct bit test", data3.a == 123 && data3.b == 234);
 
     return 0;
 }

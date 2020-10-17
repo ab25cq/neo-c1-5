@@ -359,6 +359,9 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
         else if(**p == ')') {
             break;
         }
+        else if(**p == ':') {
+            break;
+        }
         else {
             char* pp = *p2;
             *pp = **p;
@@ -372,10 +375,26 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
         char* pp = *p2;
         *pp = '\0';
 
+        int bit = 0;
+        if(**p == ':') {
+            (*p) ++;
+            bit = 0;
+
+            while(**p >= '0' && **p <= '9') {
+                bit = bit * 10 + (**p - '0');
+                (*p)++;
+            }
+            skip_spaces_for_parse_class_name(p);
+        }
+
         node_type->mClass = get_class(buf);
 
         if(node_type->mClass == NULL) {
             return NULL;
+        }
+
+        if(bit > 0) {
+            node_type->mSizeNum = bit;
         }
     }
 
