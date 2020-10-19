@@ -138,11 +138,6 @@ char* p;
     }
 }
 
-[\*]+ {
-    strncpy(yylval.cval, yytext, 128);
-    return(STAR); 
-}
-
 == {
     strncpy(yylval.cval, yytext, 128);
     return(EQEQ); 
@@ -153,11 +148,6 @@ char* p;
     return(NOT_EQ); 
 }
 
-\([ \t\n]*\* {
-    strncpy(yylval.cval, yytext, 128);
-    return(FUNCTION_POINTER); 
-}
-
 "&&" {
     strncpy(yylval.cval, yytext, 128);
     return(ANDAND); 
@@ -166,6 +156,11 @@ char* p;
 "||" {
     strncpy(yylval.cval, yytext, 128);
     return(OROR); 
+}
+
+\([ \t]*\*  {
+    strncpy(yylval.cval, yytext, 128);
+    return(FUNCTION_POINTER); 
 }
 
 ">=" {
@@ -211,6 +206,46 @@ char* p;
 "-=" {
     strncpy(yylval.cval, yytext, 128);
     return(MINUS_EQ); 
+}
+
+"*=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MULT_EQ); 
+}
+
+"/=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(DIV_EQ); 
+}
+
+"%=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MOD_EQ); 
+}
+
+"&=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(AND_EQ); 
+}
+
+"^=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(XOR_EQ); 
+}
+
+"|=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(OR_EQ); 
+}
+
+"<<=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT_EQ); 
+}
+
+">>=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT_EQ); 
 }
 
 [=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~] { 

@@ -1049,11 +1049,11 @@ unsigned int sNodeTree_create_refference(unsigned int left, char* sname, int sli
     return node;
 }
 
-unsigned int sNodeTree_create_plus_plus(unsigned int left, unsigned int right, char* sname, int sline)
+unsigned int sNodeTree_create_plus_eq(unsigned int left, unsigned int right, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
-    gNodes[node].mNodeType = kNodeTypePlusPlus;
+    gNodes[node].mNodeType = kNodeTypePlusEq;
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
@@ -1065,11 +1065,139 @@ unsigned int sNodeTree_create_plus_plus(unsigned int left, unsigned int right, c
     return node;
 }
 
-unsigned int sNodeTree_create_minus_minus(unsigned int left, unsigned int right, char* sname, int sline)
+unsigned int sNodeTree_create_minus_eq(unsigned int left, unsigned int right, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
-    gNodes[node].mNodeType = kNodeTypeMinusMinus;
+    gNodes[node].mNodeType = kNodeTypeMinusEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_mult_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeMultEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_div_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeDivEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_mod_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeModEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_and_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeAndEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_xor_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeXorEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_or_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeOrEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_lshift_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeLShiftEq;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = right;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_rshift_eq(unsigned int left, unsigned int right, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeRShiftEq;
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;

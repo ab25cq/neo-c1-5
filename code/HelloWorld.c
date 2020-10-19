@@ -294,6 +294,27 @@ int main()
 
     xassert("inc test2", strcmp(str2, "ABC") == 0);
 
+    (*str2) += 2;
+
+    xassert("inc test3", strcmp(str2, "CBC") == 0);
+
+    int comma = 1, 2;
+
+    xassert("comma test", comma == 2);
+
+    int plus_plus = 1;
+
+    xassert("plus_plus test", ++plus_plus == 2);
+    xassert("plus_plus test", plus_plus == 2);
+
+    xassert("minus minus test test", --plus_plus == 1 && plus_plus == 1);
+
+    int mult_eq = 12;
+
+    mult_eq *= 2;
+
+    xassert("mult eq test", mult_eq == 24);
+
     return 0;
 }
 
