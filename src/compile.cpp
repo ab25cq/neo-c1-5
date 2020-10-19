@@ -2511,6 +2511,21 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
+    if(!(left_type->mPointerNum > 0 && is_number_type(right_type)))
+    {
+        if(auto_cast_posibility(left_type, right_type)) {
+            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+            {
+                compile_err_msg(info, "Cast failed");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+    }
+
     if(left_type->mArrayDimentionNum == 1 && is_number_type(right_type))
     {
         left_type->mArrayDimentionNum = 0;
@@ -2586,7 +2601,8 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
 
         info->type = clone_node_type(left_type2);
     }
-    else if(left_type->mPointerNum > 0 && is_number_type(right_type)) {
+    else if(left_type->mPointerNum > 0 && is_number_type(right_type))
+    {
         Value* left_value = Builder.CreateCast(Instruction::PtrToInt, lvalue.value, IntegerType::get(TheContext, 64));
 
         Value* right_value;
@@ -2646,18 +2662,6 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
     }
     else if(is_number_type(left_type) && is_number_type(right_type))
     {
-        if(auto_cast_posibility(left_type, right_type)) {
-            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
-            {
-                compile_err_msg(info, "Cast failed");
-                info->err_num++;
-
-                info->type = create_node_type_with_class_name("int"); // dummy
-
-                return TRUE;
-            }
-        }
-
         LVALUE llvm_value;
 
         llvm_value.value = Builder.CreateAdd(lvalue.value, rvalue.value, "addtmp", false, true);
@@ -2674,6 +2678,693 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
     }
     else {
         compile_err_msg(info, "invalid type for operator +");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_sub(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(!(left_type->mPointerNum > 0 && is_number_type(right_type)))
+    {
+        if(auto_cast_posibility(left_type, right_type)) {
+            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+            {
+                compile_err_msg(info, "Cast failed");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+    }
+
+    if(left_type->mArrayDimentionNum == 1 && is_number_type(right_type))
+    {
+        left_type->mArrayDimentionNum = 0;
+        left_type->mPointerNum++;
+
+        Type* llvm_left_type;
+        if(!create_llvm_type_from_node_type(&llvm_left_type, left_type, left_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed(10)");
+            show_node_type(left_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        Value* left_value = Builder.CreateCast(Instruction::BitCast, lvalue.address, llvm_left_type);
+        Value* left_value2 = Builder.CreateCast(Instruction::PtrToInt, left_value, IntegerType::get(TheContext, 64));
+
+        Value* right_value;
+        if(type_identify_with_class_name(right_type, "long")) {
+            right_value = rvalue.value;
+        }
+        else {
+            if(right_type->mPointerNum > 0 || right_type->mArrayDimentionNum > 0) {
+                right_value = Builder.CreateCast(Instruction::PtrToInt, rvalue.value, IntegerType::get(TheContext, 64), "sextX-p");
+            }
+            else {
+                right_value = Builder.CreateCast(Instruction::SExt, rvalue.value, IntegerType::get(TheContext, 64), "sextX");
+            }
+        }
+
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, left_type, left_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed(10)");
+            show_node_type(left_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        sNodeType* left_type3 = clone_node_type(left_type);
+        left_type3->mPointerNum--;
+
+        uint64_t alloc_size = 0;
+        if(!get_size_from_node_type(&alloc_size, left_type3, left_type3, info))
+        {
+            return FALSE;
+        }
+
+        Value* alloc_size_value = ConstantInt::get(Type::getInt64Ty(TheContext), alloc_size);
+
+        right_value = Builder.CreateMul(right_value, alloc_size_value, "multtmp", false, true);
+
+        sNodeType* left_type2 = clone_node_type(left_type);
+        left_type2->mHeap = FALSE;
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateSub(left_value, right_value, "subtmp", false, true);
+        llvm_value.value = Builder.CreateCast(Instruction::IntToPtr, llvm_value.value, llvm_var_type, "IntTOPtr3a");
+        llvm_value.type = clone_node_type(left_type2);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = clone_node_type(left_type2);
+    }
+    else if((left_type->mPointerNum > 0 || left_type->mArrayDimentionNum == 1) && (right_type->mPointerNum > 0 || right_type->mArrayDimentionNum == 1))
+    {
+        Value* left_value = Builder.CreateCast(Instruction::PtrToInt, lvalue.value, IntegerType::get(TheContext, 64));
+        Value* right_value = Builder.CreateCast(Instruction::PtrToInt, rvalue.value, IntegerType::get(TheContext, 64));
+
+        sNodeType* node_type = create_node_type_with_class_name("long");
+
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, node_type, node_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed(10)");
+            show_node_type(left_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateSub(left_value, right_value, "subtmp", false, true);
+        llvm_value.value = Builder.CreateCast(Instruction::BitCast, llvm_value.value, llvm_var_type);
+        llvm_value.type = clone_node_type(node_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = clone_node_type(node_type);
+    }
+    else if(left_type->mPointerNum > 0 && is_number_type(right_type))
+    {
+        Value* left_value = Builder.CreateCast(Instruction::PtrToInt, lvalue.value, IntegerType::get(TheContext, 64));
+
+        Value* right_value;
+        if(type_identify_with_class_name(right_type, "long")) {
+            right_value = rvalue.value;
+        }
+        else {
+            if(right_type->mPointerNum > 0 || right_type->mArrayDimentionNum > 0) {
+                right_value = Builder.CreateCast(Instruction::PtrToInt, rvalue.value, IntegerType::get(TheContext, 64), "sextY-p");
+            }
+            else {
+                right_value = Builder.CreateCast(Instruction::SExt, rvalue.value, IntegerType::get(TheContext, 64), "sextY");
+            }
+        }
+
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, left_type, left_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed(10)");
+            show_node_type(left_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        sNodeType* left_type3 = clone_node_type(left_type);
+        left_type3->mPointerNum--;
+
+        uint64_t alloc_size = 0;
+        if(!get_size_from_node_type(&alloc_size, left_type3, left_type3, info))
+        {
+            return FALSE;
+        }
+
+        Value* alloc_size_value = ConstantInt::get(Type::getInt64Ty(TheContext), alloc_size);
+
+        right_value = Builder.CreateMul(right_value, alloc_size_value, "multtmp", false, true);
+
+        sNodeType* left_type2 = clone_node_type(left_type);
+        left_type2->mHeap = FALSE;
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateSub(left_value, right_value, "subtmp", false, true);
+        llvm_value.value = Builder.CreateCast(Instruction::IntToPtr, llvm_value.value, llvm_var_type, "IntTOPtr4b");
+        llvm_value.type = clone_node_type(left_type2);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = clone_node_type(left_type2);
+    }
+    else if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateSub(lvalue.value, rvalue.value, "subttmp", false, true);
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator -");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_mult(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(!(left_type->mPointerNum > 0 && is_number_type(right_type)))
+    {
+        if(auto_cast_posibility(left_type, right_type)) {
+            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+            {
+                compile_err_msg(info, "Cast failed");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateMul(lvalue.value, rvalue.value, "multtmp", false, true);
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator *");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_div(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        if(left_type->mUnsigned) {
+            llvm_value.value = Builder.CreateUDiv(lvalue.value, rvalue.value, "divtmp");
+        }
+        else {
+            llvm_value.value = Builder.CreateSDiv(lvalue.value, rvalue.value, "divtmp");
+        }
+        llvm_value.type = clone_node_type(left_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator /");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_mod(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        if(left_type->mUnsigned) {
+            llvm_value.value = Builder.CreateURem(lvalue.value, rvalue.value, "remtmp");
+        }
+        else {
+            llvm_value.value = Builder.CreateSRem(lvalue.value, rvalue.value, "remtmp");
+        }
+        llvm_value.type = clone_node_type(left_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator /");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_lshift(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateShl(lvalue.value, rvalue.value, "lshifttmp");
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator <<");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_rshift(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateAShr(lvalue.value, rvalue.value, "rshifttmp");
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator >>");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_or(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateOr(lvalue.value, rvalue.value, "ortmp");
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator |");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_and(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateAnd(lvalue.value, rvalue.value, "andtmp");
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator &");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+    }
+
+    return TRUE;
+}
+
+
+static BOOL compile_xor(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(is_number_type(left_type) && is_number_type(right_type))
+    {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateXor(lvalue.value, rvalue.value, "xortmp");
+        llvm_value.type = clone_node_type(right_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(2, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = llvm_value.type;
+    }
+    else {
+        compile_err_msg(info, "invalid type for operator ^");
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -5188,6 +5879,757 @@ static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_gt(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify(left_type, right_type)) {
+        compile_err_msg(info, "Operand posibility failed");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE llvm_value;
+    if(left_type->mUnsigned || right_type->mUnsigned) {
+        llvm_value.value = Builder.CreateICmpUGT(lvalue.value, rvalue.value, "getmp");
+    }
+    else {
+        llvm_value.value = Builder.CreateICmpSGT(lvalue.value, rvalue.value, "gttmp");
+    }
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    dec_stack_ptr(2, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_lt(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify(left_type, right_type)) {
+        compile_err_msg(info, "Operand posibility failed");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE llvm_value;
+    if(left_type->mUnsigned || right_type->mUnsigned) {
+        llvm_value.value = Builder.CreateICmpULT(lvalue.value, rvalue.value, "letmp");
+    }
+    else {
+        llvm_value.value = Builder.CreateICmpSLT(lvalue.value, rvalue.value, "letmp");
+    }
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    dec_stack_ptr(2, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_ge(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify(left_type, right_type)) {
+        compile_err_msg(info, "Operand posibility failed");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE llvm_value;
+    if(left_type->mUnsigned || right_type->mUnsigned) {
+        llvm_value.value = Builder.CreateICmpUGE(lvalue.value, rvalue.value, "getmp");
+    }
+    else {
+        llvm_value.value = Builder.CreateICmpSGE(lvalue.value, rvalue.value, "getmp");
+    }
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    dec_stack_ptr(2, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_le(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    int right_node = gNodes[node].mRight;
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify(left_type, right_type)) {
+        compile_err_msg(info, "Operand posibility failed");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE llvm_value;
+    if(left_type->mUnsigned || right_type->mUnsigned) {
+        llvm_value.value = Builder.CreateICmpULE(lvalue.value, rvalue.value, "leeqtmp");
+    }
+    else {
+        llvm_value.value = Builder.CreateICmpSLE(lvalue.value, rvalue.value, "leeqtmp");
+    }
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    dec_stack_ptr(2, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_logical_denial(unsigned int node, sCompileInfo* info)
+{
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, left_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &left_type, &lvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(left_type, "bool")) {
+        compile_err_msg(info, "Left expression is not bool type");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    LVALUE rvalue;
+    rvalue.value = ConstantInt::get(Type::getInt1Ty(TheContext), 0);
+    rvalue.type = nullptr;
+    rvalue.address = nullptr;
+    rvalue.var = nullptr;
+    rvalue.binded_value = FALSE;
+    rvalue.load_field = FALSE;
+
+    LVALUE llvm_value;
+    llvm_value.value = Builder.CreateICmpEQ(lvalue.value, rvalue.value, "logical denial");
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    dec_stack_ptr(1, info);
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL compile_complement(unsigned int node, sCompileInfo* info)
+{
+    int expression_node = gNodes[node].mLeft;
+
+    if(!compile(expression_node, info))
+    {
+        return FALSE;
+    }
+
+    sNodeType* left_node_type = clone_node_type(info->type);
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    
+    if(type_identify_with_class_name(left_node_type, "char"))
+    {
+        LVALUE rvalue;
+        rvalue.value = ConstantInt::get(Type::getInt8Ty(TheContext), (uint8_t)0xFF);
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateXor(lvalue.value, rvalue.value, "xortmp");
+        llvm_value.type = clone_node_type(left_node_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(1, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type= left_node_type;
+    }
+    else if(type_identify_with_class_name(left_node_type, "short"))
+    {
+        LVALUE rvalue;
+        rvalue.value = ConstantInt::get(Type::getInt16Ty(TheContext), (uint16_t)0xFFFF);
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateXor(lvalue.value, rvalue.value, "xortmp");
+        llvm_value.type = clone_node_type(left_node_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(1, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type= left_node_type;
+    }
+    else if(type_identify_with_class_name(left_node_type, "int"))
+    {
+        LVALUE rvalue;
+        rvalue.value = ConstantInt::get(Type::getInt32Ty(TheContext), (uint32_t)0xFFFFFFFF);
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateXor(lvalue.value, rvalue.value, "xortmp");
+        llvm_value.type = clone_node_type(left_node_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(1, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type= left_node_type;
+    }
+    else if(type_identify_with_class_name(left_node_type, "long"))
+    {
+        LVALUE rvalue;
+        rvalue.value = ConstantInt::get(Type::getInt64Ty(TheContext), (uint64_t)0xFFFFFFFFFFFFFFFF);
+
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateXor(lvalue.value, rvalue.value, "xortmp");
+        llvm_value.type = clone_node_type(left_node_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(1, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type= left_node_type;
+    }
+    else {
+        compile_err_msg(info, "Invalid type for operator ~");
+        info->err_num++;
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_dereffernce(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    sNodeType* derefference_type = clone_node_type(left_type);
+
+    if(derefference_type->mPointerNum == 0) {
+        compile_err_msg(info, "This is not pointer type1(%s)", derefference_type->mClass->mName);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    int alignment = get_llvm_alignment_from_node_type(derefference_type);
+
+    derefference_type->mPointerNum--;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    LVALUE llvm_value;
+    llvm_value.value = Builder.CreateAlignedLoad(lvalue.value, alignment, "derefference_value");
+    llvm_value.type = derefference_type;
+    llvm_value.address = lvalue.value;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = derefference_type;
+
+    return TRUE;
+}
+
+static BOOL compile_reffernce(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    if(info->no_output) {
+        sNodeType* left_type = info->type;
+
+        sNodeType* refference_type = clone_node_type(left_type);
+
+        refference_type->mPointerNum++;
+
+        info->type = refference_type;
+    }
+    else {
+        if(lvalue.address == nullptr) {
+            compile_err_msg(info, "Can't get address of this value on & operator");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+
+        sNodeType* left_type = info->type;
+
+        sNodeType* refference_type = clone_node_type(left_type);
+
+        refference_type->mPointerNum++;
+
+        LVALUE llvm_value;
+        llvm_value.value = lvalue.address;
+        llvm_value.type = refference_type;
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        info->type = refference_type;
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_plus_plus(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    if(left_type->mPointerNum > 0) {
+        left_type->mPointerNum--;
+
+        if(derefference && left_type->mPointerNum == 0) {
+            int alignment = get_llvm_alignment_from_node_type(left_type);
+
+            Value* address = lvalue.value;
+
+            Type* llvm_left_type;
+            if(!create_llvm_type_from_node_type(&llvm_left_type, left_type, left_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(left_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* left_value = address;
+            Value* left_value2 = Builder.CreateCast(Instruction::PtrToInt, left_value, IntegerType::get(TheContext, 64));
+
+            Value* right_value;
+            if(type_identify_with_class_name(right_type, "long")) {
+                right_value = rvalue.value;
+            }
+            else {
+                if(right_type->mPointerNum > 0 || right_type->mArrayDimentionNum > 0) {
+                    right_value = Builder.CreateCast(Instruction::PtrToInt, rvalue.value, IntegerType::get(TheContext, 64), "sextZ-p");
+                }
+                else {
+                    right_value = Builder.CreateCast(Instruction::SExt, rvalue.value, IntegerType::get(TheContext, 64), "sextZ");
+                }
+            }
+
+            uint64_t alloc_size = 0;
+            if(!get_size_from_node_type(&alloc_size, left_type, left_type, info))
+            {
+                return FALSE;
+            }
+
+            Value* alloc_size_value = ConstantInt::get(Type::getInt64Ty(TheContext), alloc_size);
+
+            right_value = Builder.CreateMul(right_value, alloc_size_value, "multtmp", false, true);
+
+            Value* value = Builder.CreateAdd(left_value2, right_value, "adddtmp", false, true);
+            value = Builder.CreateCast(Instruction::IntToPtr, value, PointerType::get(llvm_left_type,0), "IntTOPtr5c");
+            Builder.CreateAlignedStore(value, lvalue.address, alignment);
+        }
+        else {
+            int alignment = get_llvm_alignment_from_node_type(left_type);
+
+            if(auto_cast_posibility(left_type, right_type)) {
+                if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+                {
+                    compile_err_msg(info, "Cast failed");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+            }
+
+            Value* address = lvalue.value;
+
+            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+            Value* add_rvalue = rvalue.value;
+
+            Value* value = Builder.CreateAdd(add_lvalue, add_rvalue, "addtmp", false, true);
+
+            Builder.CreateAlignedStore(value, address, alignment);
+        }
+    }
+    else {
+        int alignment = get_llvm_alignment_from_node_type(left_type);
+
+        if(auto_cast_posibility(left_type, right_type)) {
+            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+            {
+                compile_err_msg(info, "Cast failed");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+
+        if(!info->no_output) {
+            Value* address = lvalue.address;
+
+            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+            Value* add_rvalue = rvalue.value;
+
+            Value* value = Builder.CreateAdd(add_lvalue, add_rvalue, "addtmp", false, true);
+
+            Builder.CreateAlignedStore(value, address, 8);
+        }
+    }
+
+    return TRUE;
+}
+
+static BOOL compile_minus_minus(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    if(left_type->mPointerNum > 0) {
+        left_type->mPointerNum--;
+
+        if(derefference && left_type->mPointerNum == 0) {
+            int alignment = get_llvm_alignment_from_node_type(left_type);
+
+            Value* address = lvalue.value;
+
+            Type* llvm_left_type;
+            if(!create_llvm_type_from_node_type(&llvm_left_type, left_type, left_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(left_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* left_value = address;
+            Value* left_value2 = Builder.CreateCast(Instruction::PtrToInt, left_value, IntegerType::get(TheContext, 64));
+
+            Value* right_value;
+            if(type_identify_with_class_name(right_type, "long")) {
+                right_value = rvalue.value;
+            }
+            else {
+                if(right_type->mPointerNum > 0 || right_type->mArrayDimentionNum > 0) {
+                    right_value = Builder.CreateCast(Instruction::PtrToInt, rvalue.value, IntegerType::get(TheContext, 64), "sext3-p");
+                }
+                else {
+                    right_value = Builder.CreateCast(Instruction::SExt, rvalue.value, IntegerType::get(TheContext, 64), "sext3");
+                }
+            }
+
+            uint64_t alloc_size = 0;
+            if(!get_size_from_node_type(&alloc_size, left_type, left_type, info))
+            {
+                return FALSE;
+            }
+
+            Value* alloc_size_value = ConstantInt::get(Type::getInt64Ty(TheContext), alloc_size);
+
+            right_value = Builder.CreateMul(right_value, alloc_size_value, "multtmp", false, true);
+
+            Value* value = Builder.CreateSub(left_value2, right_value, "subtmp", false, true);
+            value = Builder.CreateCast(Instruction::IntToPtr, value, PointerType::get(llvm_left_type,0), "IntTOPtr6d");
+            Builder.CreateAlignedStore(value, lvalue.address, alignment);
+        }
+        else {
+            int alignment = get_llvm_alignment_from_node_type(left_type);
+
+            if(auto_cast_posibility(left_type, right_type)) {
+                if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+                {
+                    compile_err_msg(info, "Cast failed");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+            }
+
+            Value* address = lvalue.value;
+
+            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+            Value* add_rvalue = rvalue.value;
+
+            Value* value = Builder.CreateSub(add_lvalue, add_rvalue, "subtmp", false, true);
+
+            Builder.CreateAlignedStore(value, address, alignment);
+        }
+    }
+    else {
+        int alignment = get_llvm_alignment_from_node_type(left_type);
+
+        if(auto_cast_posibility(left_type, right_type)) {
+            if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+            {
+                compile_err_msg(info, "Cast failed");
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+
+        if(!info->no_output) {
+            Value* address = lvalue.address;
+
+            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+            Value* add_rvalue = rvalue.value;
+
+            Value* value = Builder.CreateSub(add_lvalue, add_rvalue, "addtmp", false, true);
+
+            Builder.CreateAlignedStore(value, address, 8);
+        }
+    }
+
+    return TRUE;
+}
+
+
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -5227,12 +6669,27 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             break;
 
         case kNodeTypeSub:
+            if(!compile_sub(node, info)) {
+                return FALSE;
+            }
             break;
 
         case kNodeTypeMult:
+            if(!compile_mult(node, info)) {
+                return FALSE;
+            }
             break;
 
         case kNodeTypeDiv:
+            if(!compile_div(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeMod:
+            if(!compile_mod(node, info)) {
+                return FALSE;
+            }
             break;
 
         case kNodeTypeBlock:
@@ -5342,6 +6799,96 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeOrOr:
             if(!compile_or_or(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeGT:
+            if(!compile_gt(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLT:
+            if(!compile_lt(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeGE:
+            if(!compile_ge(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLE:
+            if(!compile_le(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLShift:
+            if(!compile_lshift(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeRShift:
+            if(!compile_rshift(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeOr:
+            if(!compile_or(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeAnd:
+            if(!compile_and(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeXor:
+            if(!compile_xor(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLogicalDenial:
+            if(!compile_logical_denial(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeComplement:
+            if(!compile_complement(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeRefference:
+            if(!compile_reffernce(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeDerefference:
+            if(!compile_dereffernce(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypePlusPlus:
+            if(!compile_plus_plus(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeMinusMinus:
+            if(!compile_minus_minus(node, info)) {
                 return FALSE;
             }
             break;

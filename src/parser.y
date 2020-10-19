@@ -73,6 +73,10 @@ int enum_number = 0;
 %token <cval> FUNCTION_POINTER
 %token <cval> INHERIT
 %token <cval> METHOD_MARK
+%token <cval> PLUS_PLUS
+%token <cval> PLUS_EQ
+%token <cval> MINUS_MINUS
+%token <cval> MINUS_EQ
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -83,10 +87,17 @@ int enum_number = 0;
 %type <cval> function_struct_type_name 
 %type <node> program function block block_end statment node function_params exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields;
 
-%left ANDAND OROR
-%left EQEQ NOT_EQ
+%left OROR
+%left ANDAND
+%left '|'
+%left '^'
+%left '&'
+%left EQEQ NOT_EQ 
+%left '<' '>' GTEQ LTEQ
+%left LSHIFT RSHIFT
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
+%left '!' '~'
 
 %start program
 
@@ -325,6 +336,18 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_name, $2, VAR_NAME_MAX);
     }
+/*
+    | type '(' STAR IDENTIFIER ')' '(' type_params ')' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $7, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_name, $4, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+    }
+*/
     | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
@@ -399,7 +422,8 @@ fields:  {
         | fields type_and_variable_name ';' { $$ = fields; append_field_to_fields(fields, variable_name, $2); }
         ;
 
-enum_: ENUM '{' enum_fields '}' ';'
+enum_: ENUM '{' enum_fields '}' ';' {
+    }
     ;
 
 enum_fields: {
@@ -413,7 +437,7 @@ enum_fields: {
         char* var_name = $1;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
 
-        const char* type_name = "int";
+        char* type_name = "int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
 
@@ -429,7 +453,7 @@ enum_fields: {
         char* var_name = $1;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
 
-        const char* type_name = "int";
+        char* type_name = "int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
 
@@ -443,7 +467,7 @@ enum_fields: {
         char* var_name = $3;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
 
-        const char* type_name = "int";
+        char* type_name = "int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
 
@@ -459,7 +483,7 @@ enum_fields: {
         char* var_name = $3;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, gSLine);
 
-        const char* type_name = "int";
+        char* type_name = "int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, gSLine); 
 
@@ -804,15 +828,27 @@ elif_statment:
 exp: node {
         $$ = $1;
     }
-    | exp '+' exp      { $$ = sNodeTree_create_add($1, $3, 0, gSName, gSLine); }
-    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, 0, gSName, gSLine); }
-    | exp STAR exp   { $$ = sNodeTree_create_mult($1, $3, 0, gSName, gSLine); }
-    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, 0, gSName, gSLine); }
+    | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, gSLine); }
+    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, gSName, gSLine); }
+    | exp STAR exp   { $$ = sNodeTree_create_mult($1, $3,  gSName, gSLine); }
+    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, gSLine); }
+    | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, gSLine); }
     | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, gSLine); }
-    | exp NOT_EQ exp { $$ = sNodeTree_create_not_equals($1, $3, gSName, gSLine); }
+    | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, gSLine); }
+    | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, gSLine); }
+    | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, gSLine); }
+    | exp LTEQ exp   { $$ = sNodeTree_create_le($1, $3, gSName, gSLine); }
     | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, gSLine); }
     | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, gSLine); }
+    | exp LSHIFT exp { $$ = sNodeTree_create_lshift($1, $3, gSName, gSLine); }
+    | exp RSHIFT exp { $$ = sNodeTree_create_rshift($1, $3, gSName, gSLine); }
+    | exp '|' exp    { $$ = sNodeTree_create_or($1, $3, gSName, gSLine); }
+    | exp '^' exp    { $$ = sNodeTree_create_xor($1, $3, gSName, gSLine); }
+    | exp '&' exp    { $$ = sNodeTree_create_and($1, $3, gSName, gSLine); }
     | '(' exp ')'    { $$ = $2; }
+    | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, gSLine); }
+    | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, gSLine); }
+    | '&' node       { $$ = sNodeTree_create_refference($2, gSName, gSLine); }
     ;
 
 node: 
@@ -893,8 +929,14 @@ node:
         | exp '.' IDENTIFIER {
             $$ = sNodeTree_create_load_field($3, $1, gSName, gSLine);
         }
+        | exp '-' '>' IDENTIFIER {
+            $$ = sNodeTree_create_load_field($4, $1, gSName, gSLine);
+        }
         | exp '.' IDENTIFIER '=' exp  { 
             $$ = sNodeTree_create_store_field($3, $1, $5, gSName, gSLine); 
+        }
+        | exp '-' '>' IDENTIFIER '=' exp  { 
+            $$ = sNodeTree_create_store_field($4, $1, $6, gSName, gSLine); 
         }
         | NEW type {
             char* type_name = $2;
@@ -922,6 +964,132 @@ node:
         }
         | exp '(' params ')' {
             $$ = sNodeTree_create_lambda_call($1, $3, gSName, gSLine);
+        }
+        | STAR '(' exp ')'     { 
+            $$ = sNodeTree_create_derefference($3, gSName, gSLine); 
+
+            int i;
+            for(i=0; i<strlen($1)-1; i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, gSLine); 
+            }
+        }
+        | STAR IDENTIFIER     { 
+            $$ = sNodeTree_create_load_variable($2, gSName, gSLine);
+
+            int i;
+            for(i=0; i<strlen($1); i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, gSLine); 
+            }
+        }
+        | IDENTIFIER PLUS_PLUS { 
+            $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, gSLine);
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, gSLine);
+
+            BOOL alloc = FALSE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, gSLine); 
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, gSLine);
+        }
+        | IDENTIFIER PLUS_EQ exp { 
+            $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int int_value = $3;
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, gSLine);
+
+            BOOL alloc = FALSE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, gSLine); 
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, gSLine);
+        }
+        | '(' exp ')' PLUS_PLUS { 
+            unsigned int left = $2;
+            unsigned int right = sNodeTree_create_int_value(1, gSName, gSLine);
+
+            $$ = sNodeTree_create_plus_plus(left, right, gSName, gSLine);
+        }
+        | '(' exp ')' PLUS_EQ exp { 
+            unsigned int left = $2;
+            unsigned int right = $5;
+
+            $$ = sNodeTree_create_plus_plus(left, right, gSName, gSLine);
+        }
+        | FUNCTION_POINTER IDENTIFIER ')' PLUS_PLUS {
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, gSLine);
+            left = sNodeTree_create_derefference(left, gSName, gSLine); 
+
+            unsigned int right = sNodeTree_create_int_value(1, gSName, gSLine);
+
+            $$ = sNodeTree_create_plus_plus(left, right, gSName, gSLine);
+        }
+        | FUNCTION_POINTER IDENTIFIER ')' PLUS_EQ exp {
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, gSLine);
+            left = sNodeTree_create_derefference(left, gSName, gSLine); 
+            unsigned int right = $4;
+
+            $$ = sNodeTree_create_plus_plus(left, right, gSName, gSLine);
+        }
+        | IDENTIFIER MINUS_MINUS { 
+            $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, gSLine); 
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, gSLine);
+
+            BOOL alloc = FALSE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, gSLine); 
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, gSLine);
+        }
+        | IDENTIFIER MINUS_EQ exp { 
+            $$ = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int int_value = $3;
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, gSLine);
+
+            BOOL alloc = FALSE;
+            BOOL global = FALSE;
+
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, gSLine); 
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, gSLine);
+        }
+        | FUNCTION_POINTER IDENTIFIER ')' MINUS_MINUS {
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, gSLine);
+            left = sNodeTree_create_derefference(left, gSName, gSLine); 
+
+            unsigned int right = sNodeTree_create_int_value(1, gSName, gSLine);
+
+            $$ = sNodeTree_create_minus_minus(left, right, gSName, gSLine);
+        }
+        | FUNCTION_POINTER IDENTIFIER ')' MINUS_EQ exp {
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, gSLine);
+            left = sNodeTree_create_derefference(left, gSName, gSLine); 
+            unsigned int right = $4;
+
+            $$ = sNodeTree_create_minus_minus(left, right, gSName, gSLine);
+        }
+        | '(' exp ')' MINUS_MINUS { 
+            unsigned int left = $2;
+            unsigned int right = sNodeTree_create_int_value(1, gSName, gSLine);
+
+            $$ = sNodeTree_create_minus_minus(left, right, gSName, gSLine);
+        }
+        | '(' exp ')' MINUS_EQ exp { 
+            unsigned int left = $2;
+            unsigned int right = $5;
+
+            $$ = sNodeTree_create_minus_minus(left, right, gSName, gSLine);
         }
         ;
 

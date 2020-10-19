@@ -271,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusPlus, kNodeTypeMinusMinus };
 
 struct sNodeTreeStruct 
 {
@@ -392,10 +392,16 @@ unsigned int sNodeTree_create_int_value(int value, char* sname, int sline);
 unsigned int sNodeTree_create_true(char* sname, int sline);
 unsigned int sNodeTree_create_false(char* sname, int sline);
 unsigned int sNodeTree_create_if(unsigned int if_exp, unsigned int if_block, int elif_num, unsigned int* elif_exps, unsigned int* elif_blocks, unsigned int else_block, char* sname, int sline);
-unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
-unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, unsigned int middle, char* sname, int sline);
+unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_sub(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_mult(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_div(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_lshift(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_rshift(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_mod(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_or(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_xor(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_and(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
@@ -423,6 +429,16 @@ unsigned int sNodeTree_create_store_field(char* var_name, unsigned int left_node
 unsigned int sNodeTree_create_load_field(char* name, unsigned int left_node, char* sname, int sline);
 unsigned int sNodeTree_create_or_or(unsigned int left_node, unsigned int right_node, char* sname, int sline);
 unsigned int sNodeTree_create_and_and(unsigned int left_node, unsigned int right_node, char* sname, int sline);
+unsigned int sNodeTree_create_gt(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_lt(unsigned int left, unsigned int right,  char* sname, int sline);
+unsigned int sNodeTree_create_ge(unsigned int left, unsigned int right,  char* sname, int sline);
+unsigned int sNodeTree_create_le(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_logical_denial(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_complement(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_derefference(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_refference(unsigned int left, char* sname, int sline);
+unsigned int sNodeTree_create_plus_plus(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_minus_minus(unsigned int left, unsigned int right, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp

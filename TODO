@@ -1,8 +1,29 @@
-operators
+operator
+[]
+a++
++=
+a--
+-=
+++a
+--a
+*=
+/=
+%=
+&=
+^=
+|=
+<<=
+>>=
+
+sizeof
+cast
+,
 
 preprocesser
 
 __ASM_NAME__ など
+
+operators
 
 include stdio.h
 -----

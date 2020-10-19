@@ -168,16 +168,68 @@ char* p;
     return(OROR); 
 }
 
+">=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(GTEQ); 
+}
+
+"<=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LTEQ); 
+}
+
 "::" {
     strncpy(yylval.cval, yytext, 128);
     return(METHOD_MARK); 
 }
 
-[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>] { 
+"<<" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT); 
+}
+
+">>" {
+    strncpy(yylval.cval, yytext, 128);
+    return(RSHIFT); 
+}
+
+"++" {
+    strncpy(yylval.cval, yytext, 128);
+    return(PLUS_PLUS); 
+}
+
+"+=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(PLUS_EQ); 
+}
+
+"--" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MINUS_MINUS); 
+}
+
+"-=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MINUS_EQ); 
+}
+
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~] { 
     return(yytext[0]); 
 }
 
-[0-9]+ { 
+0[0-9]+ {
+    int value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ {
+    int value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+[0-9]* { 
     sscanf(yytext, "%d", &yylval.ival);
     return(INTNUM); 
 }

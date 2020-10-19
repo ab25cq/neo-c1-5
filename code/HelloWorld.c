@@ -7,6 +7,8 @@ void free(void *ptr);
 int atoi(const char* str);
 int atoi(const char* str);
 
+int strcmp(const char* str1, const char* str2);
+
 int fun() {
     puts("called fun");
     return 2;
@@ -255,6 +257,42 @@ int main()
     data3.b = 234;
 
     xassert("struct bit test", data3.a == 123 && data3.b == 234);
+
+    xassert("gt lt ge le", 1 > 0 && 2 <= 2 && 3 < 4 && 1 <= 1);
+
+    xassert("shift", (2 >> 1) == 1 && (2 << 1) == 4);
+    xassert("and or xor", (1 & 1) && (1 | 0) && (1 ^ 0));
+
+    Data3*% data3_2 = new Data3;
+
+    data3_2->a = 234;
+    data3_2->b = 345;
+
+    xassert("struct bit test2", data3_2->a == 234 && data3_2->b == 345);
+
+    xassert("logical denial", !0);
+
+    char compl_a = 0xFFFE;
+    xassert("complement ", ~compl_a == 1);
+
+    int data4 = 123;
+    int* p_data4 = &data4;
+
+    xassert("pointer", *p_data4 == 123);
+
+    int** pp_data4 = &p_data4;
+
+    xassert("pointer2", **pp_data4 == 123);
+
+    char* str2 = new char[128];
+    strcpy(str2, "ABC");
+    (*str2) ++;
+
+    xassert("inc test", strcmp(str2, "BBC") == 0);
+
+    (*str2) --;
+
+    xassert("inc test2", strcmp(str2, "ABC") == 0);
 
     return 0;
 }
