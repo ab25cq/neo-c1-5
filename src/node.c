@@ -1209,6 +1209,50 @@ unsigned int sNodeTree_create_rshift_eq(unsigned int left, unsigned int right, c
     return node;
 }
 
+unsigned int sNodeTree_create_load_array_element(unsigned int array, unsigned int index_node[], int num_dimention, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeLoadElement;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sLoadElement.mArrayDimentionNum = num_dimention;
+    int i;
+    for(i=0; i<num_dimention; i++) {
+        gNodes[node].uValue.sLoadElement.mIndex[i] = index_node[num_dimention-i-1];
+    }
+
+    gNodes[node].mLeft = array;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_store_element(unsigned int array, unsigned int index_node[], int num_dimention, unsigned int right_node, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeStoreElement;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sStoreElement.mArrayDimentionNum = num_dimention;
+    int i;
+    for(i=0; i<num_dimention; i++) {
+        gNodes[node].uValue.sStoreElement.mIndex[i] = index_node[num_dimention-i-1];
+    }
+
+    gNodes[node].mLeft = array;
+    gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

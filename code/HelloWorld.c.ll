@@ -97,6 +97,19 @@ source_filename = "Module stdin"
 @global_string.61 = private constant [15 x i8] c"plus_plus test\00", align 1
 @global_string.62 = private constant [22 x i8] c"minus minus test test\00", align 1
 @global_string.63 = private constant [13 x i8] c"mult eq test\00", align 1
+@global_string.64 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.65 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.66 = private constant [11 x i8] c"array test\00", align 1
+@global_string.67 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.68 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.69 = private constant [12 x i8] c"array test2\00", align 1
+@global_string.70 = private constant [12 x i8] c"array test3\00", align 1
+@global_string.71 = private constant [12 x i8] c"array test4\00", align 1
+@global_string.72 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.73 = private constant [4 x i8] c"DEF\00", align 1
+@global_string.74 = private constant [4 x i8] c"ABC\00", align 1
+@global_string.75 = private constant [4 x i8] c"DEF\00", align 1
+@global_string.76 = private constant [12 x i8] c"array test5\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -778,27 +791,118 @@ cond_jump_end142:                                 ; preds = %cond_jump_then141, 
   %mult_eq148 = load i32, i32* %mult_eq, align 4
   %eqtmpX149 = icmp eq i32 %mult_eq148, 24
   call void @xassert(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @global_string.63, i32 0, i32 0), i1 %eqtmpX149)
-  %81 = load %Data3*, %Data3** %data3_2, align 8
-  %82 = ptrtoint %Data3* %81 to i64
-  %83 = icmp ne i64 %82, 0
-  br i1 %83, label %cond_then_block150, label %cond_end151
+  %array = alloca [100 x i8]
+  %81 = bitcast [100 x i8]* %array to i8*
+  store i8* %81, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 19), align 8
+  %array150 = load [100 x i8], [100 x i8]* %array, align 1
+  %82 = bitcast [100 x i8]* %array to i8*
+  %83 = call i8* @strcpy(i8* %82, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.64, i32 0, i32 0))
+  %array151 = load [100 x i8], [100 x i8]* %array, align 1
+  %84 = bitcast [100 x i8]* %array to i8*
+  %85 = call i32 @strcmp(i8* %84, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.65, i32 0, i32 0))
+  %eqtmpX152 = icmp eq i32 %85, 0
+  call void @xassert(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @global_string.66, i32 0, i32 0), i1 %eqtmpX152)
+  %array_num = alloca i32
+  %86 = bitcast i32* %array_num to i8*
+  store i8* %86, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 20), align 8
+  store i32 128, i32* %array_num, align 4
+  %array_num153 = load i32, i32* %array_num, align 4
+  %array2 = alloca i8*
+  %87 = bitcast i8** %array2 to i8*
+  store i8* %87, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 21), align 8
+  %element_memory = alloca i8, i32 %array_num153
+  store i8* %element_memory, i8** %array2, align 8
+  %array2154 = load i8*, i8** %array2, align 1
+  %88 = call i8* @strcpy(i8* %array2154, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.67, i32 0, i32 0))
+  %array2155 = load i8*, i8** %array2, align 1
+  %89 = call i32 @strcmp(i8* %array2155, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.68, i32 0, i32 0))
+  %eqtmpX156 = icmp eq i32 %89, 0
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.69, i32 0, i32 0), i1 %eqtmpX156)
+  %array3 = alloca [3 x i32]
+  %90 = bitcast [3 x i32]* %array3 to i8*
+  store i8* %90, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 22), align 8
+  %array3157 = load [3 x i32], [3 x i32]* %array3, align 4
+  %91 = bitcast [3 x i32]* %array3 to i32*
+  %element_addressC = getelementptr i32, i32* %91, i32 0
+  store i32 123, i32* %element_addressC, align 4
+  %array3158 = load [3 x i32], [3 x i32]* %array3, align 4
+  %92 = bitcast [3 x i32]* %array3 to i32*
+  %element_address = getelementptr i32, i32* %92, i32 0
+  %element = load i32, i32* %element_address, align 4
+  %eqtmpX159 = icmp eq i32 %element, 123
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.70, i32 0, i32 0), i1 %eqtmpX159)
+  %array4 = alloca [3 x [3 x i32]]
+  %93 = bitcast [3 x [3 x i32]]* %array4 to i8*
+  store i8* %93, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 23), align 8
+  %array4160 = load [3 x [3 x i32]], [3 x [3 x i32]]* %array4, align 4
+  %94 = getelementptr inbounds [3 x [3 x i32]], [3 x [3 x i32]]* %array4, i32 1, i32 2
+  %95 = getelementptr inbounds [3 x i32], [3 x i32]* %94, i32 2
+  %96 = bitcast [3 x i32]* %95 to i32*
+  store i32 123, i32* %96, align 4
+  %array4161 = load [3 x [3 x i32]], [3 x [3 x i32]]* %array4, align 4
+  %97 = getelementptr inbounds [3 x [3 x i32]], [3 x [3 x i32]]* %array4, i32 1, i32 2
+  %98 = getelementptr inbounds [3 x i32], [3 x i32]* %97, i32 2
+  %99 = bitcast [3 x i32]* %98 to i32*
+  %element162 = load i32, i32* %99, align 4
+  %eqtmpX163 = icmp eq i32 %element162, 123
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.71, i32 0, i32 0), i1 %eqtmpX163)
+  %array5 = alloca [100 x [10 x i8]]
+  %100 = bitcast [100 x [10 x i8]]* %array5 to i8*
+  store i8* %100, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 24), align 8
+  %array5164 = load [100 x [10 x i8]], [100 x [10 x i8]]* %array5, align 1
+  %101 = getelementptr inbounds [100 x [10 x i8]], [100 x [10 x i8]]* %array5, i32 0
+  %102 = bitcast [100 x [10 x i8]]* %101 to i8*
+  %element165 = load i8, i8* %102, align 1
+  %103 = call i8* @strcpy(i8* %102, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.72, i32 0, i32 0))
+  %array5166 = load [100 x [10 x i8]], [100 x [10 x i8]]* %array5, align 1
+  %104 = getelementptr inbounds [100 x [10 x i8]], [100 x [10 x i8]]* %array5, i32 1
+  %105 = bitcast [100 x [10 x i8]]* %104 to i8*
+  %element167 = load i8, i8* %105, align 1
+  %106 = call i8* @strcpy(i8* %105, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.73, i32 0, i32 0))
+  %array5168 = load [100 x [10 x i8]], [100 x [10 x i8]]* %array5, align 1
+  %107 = getelementptr inbounds [100 x [10 x i8]], [100 x [10 x i8]]* %array5, i32 0
+  %108 = bitcast [100 x [10 x i8]]* %107 to i8*
+  %element169 = load i8, i8* %108, align 1
+  %109 = call i32 @strcmp(i8* %108, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.74, i32 0, i32 0))
+  %eqtmpX170 = icmp eq i32 %109, 0
+  store i1 %eqtmpX170, i1* %andand_result_var, align 1
+  br i1 %eqtmpX170, label %cond_jump_then171, label %cond_jump_end172
 
-cond_then_block150:                               ; preds = %cond_jump_end142
-  br label %cond_end151
+cond_jump_then171:                                ; preds = %cond_jump_end142
+  %array5173 = load [100 x [10 x i8]], [100 x [10 x i8]]* %array5, align 1
+  %110 = getelementptr inbounds [100 x [10 x i8]], [100 x [10 x i8]]* %array5, i32 1
+  %111 = bitcast [100 x [10 x i8]]* %110 to i8*
+  %element174 = load i8, i8* %111, align 1
+  %112 = call i32 @strcmp(i8* %111, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.75, i32 0, i32 0))
+  %eqtmpX175 = icmp eq i32 %112, 0
+  %andand176 = and i1 %eqtmpX170, %eqtmpX175
+  store i1 %andand176, i1* %andand_result_var, align 1
+  br label %cond_jump_end172
 
-cond_end151:                                      ; preds = %cond_then_block150, %cond_jump_end142
-  %84 = bitcast %Data3* %81 to i8*
-  call void @free(i8* %84)
-  %85 = load i8*, i8** %b, align 8
-  %86 = ptrtoint i8* %85 to i64
-  %87 = icmp ne i64 %86, 0
-  br i1 %87, label %cond_then_block152, label %cond_end153
+cond_jump_end172:                                 ; preds = %cond_jump_then171, %cond_jump_end142
+  %andand_result_value177 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.76, i32 0, i32 0), i1 %andand_result_value177)
+  %113 = load %Data3*, %Data3** %data3_2, align 8
+  %114 = ptrtoint %Data3* %113 to i64
+  %115 = icmp ne i64 %114, 0
+  br i1 %115, label %cond_then_block178, label %cond_end179
 
-cond_then_block152:                               ; preds = %cond_end151
-  br label %cond_end153
+cond_then_block178:                               ; preds = %cond_jump_end172
+  br label %cond_end179
 
-cond_end153:                                      ; preds = %cond_then_block152, %cond_end151
-  call void @free(i8* %85)
+cond_end179:                                      ; preds = %cond_then_block178, %cond_jump_end172
+  %116 = bitcast %Data3* %113 to i8*
+  call void @free(i8* %116)
+  %117 = load i8*, i8** %b, align 8
+  %118 = ptrtoint i8* %117 to i64
+  %119 = icmp ne i64 %118, 0
+  br i1 %119, label %cond_then_block180, label %cond_end181
+
+cond_then_block180:                               ; preds = %cond_end179
+  br label %cond_end181
+
+cond_end181:                                      ; preds = %cond_then_block180, %cond_end179
+  call void @free(i8* %117)
   ret i32 0
 }
 

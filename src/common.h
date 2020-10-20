@@ -271,7 +271,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement };
 
 struct sNodeTreeStruct 
 {
@@ -374,6 +374,15 @@ struct sNodeTreeStruct
             BOOL mGlobal;
             BOOL mExtern;
         } sDefineVariable;
+        struct {
+            unsigned int mIndex[ARRAY_DIMENTION_MAX];
+            int mArrayDimentionNum;
+        } sStoreElement;
+
+        struct {
+            unsigned int mIndex[ARRAY_DIMENTION_MAX];
+            int mArrayDimentionNum;
+        } sLoadElement;
     } uValue;
 };
 
@@ -439,6 +448,8 @@ unsigned int sNodeTree_create_derefference(unsigned int left, char* sname, int s
 unsigned int sNodeTree_create_refference(unsigned int left, char* sname, int sline);
 unsigned int sNodeTree_create_plus_eq(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_minus_eq(unsigned int left, unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_load_array_element(unsigned int array, unsigned int index_node[], int num_dimention, char* sname, int sline);
+unsigned int sNodeTree_create_store_element(unsigned int array, unsigned int index_node[], int num_dimention, unsigned int right_node, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp
@@ -476,6 +487,8 @@ void dec_stack_ptr(int value, sCompileInfo* info);
 BOOL compile(unsigned int node, sCompileInfo* info);
 void llvm_init();
 void llvm_final();
+
+BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sCompileInfo* cinfo);
 
 extern BOOL gNCDebug;
 

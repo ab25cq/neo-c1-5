@@ -1,7 +1,15 @@
 cast
 
-array []
 array initializer
+
+for
+switch
+while
+do, while
+
+'a'
+'\0'
+
 
 sizeof
 
@@ -51,3 +59,4 @@ strcut Data {
 <<=
 >>=
 
+array []

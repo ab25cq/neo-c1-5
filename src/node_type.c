@@ -307,19 +307,40 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             while(**p == '[') {
                 (*p)++;
 
-                int n = 0;
-                while(isdigit(**p)) {
-                    n = n * 10 + (**p - '0');
+                if(**p == '!') {
                     (*p)++;
-                }
 
-                node_type->mArrayNum[node_type->mArrayDimentionNum++] = n;
+                    int n = 0;
+                    while(isdigit(**p)) {
+                        n = n * 10 + (**p - '0');
+                        (*p)++;
+                    }
 
-                if(**p == ']') {
-                    (*p)++;
+                    node_type->mDynamicArrayNum = n;
+
+                    if(**p == ']') {
+                        (*p)++;
+                    }
+                    else {
+                        return NULL;
+                    }
+                    break;
                 }
                 else {
-                    return NULL;
+                    int n = 0;
+                    while(isdigit(**p)) {
+                        n = n * 10 + (**p - '0');
+                        (*p)++;
+                    }
+
+                    node_type->mArrayNum[node_type->mArrayDimentionNum++] = n;
+
+                    if(**p == ']') {
+                        (*p)++;
+                    }
+                    else {
+                        return NULL;
+                    }
                 }
             }
         }

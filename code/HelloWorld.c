@@ -315,6 +315,39 @@ int main()
 
     xassert("mult eq test", mult_eq == 24);
 
+    char array[100];
+
+    strcpy(array, "ABC");
+
+    xassert("array test", strcmp(array, "ABC") == 0);
+
+    int array_num = 128;
+
+    char array2[array_num];
+
+    strcpy(array2, "ABC");
+
+    xassert("array test2", strcmp(array2, "ABC") == 0);
+
+    int array3[3];
+
+    array3[0] = 123;
+
+    xassert("array test3", array3[0] == 123);
+
+    int array4[3][3];
+
+    array4[1][2] = 123;
+
+    xassert("array test4", array4[1][2] == 123);
+
+    char array5[10][100];
+
+    strcpy(array5[0], "ABC");
+    strcpy(array5[1], "DEF");
+
+    xassert("array test5", strcmp(array5[0], "ABC") == 0 && strcmp(array5[1], "DEF") == 0);
+
     return 0;
 }
 

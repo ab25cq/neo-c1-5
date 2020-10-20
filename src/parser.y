@@ -31,6 +31,8 @@ BOOL inline_ = FALSE;
 BOOL static_ = FALSE;
 BOOL inherit_ = FALSE;
 int enum_number = 0;
+int array_element_num_dimention = 0;
+unsigned int array_element_index_node[ARRAY_DIMENTION_MAX];
 %}
 
 %union {
@@ -93,7 +95,9 @@ int enum_number = 0;
 %type <cval> function_generics_types 
 %type <cval> function_struct_type_name 
 %type <cval> pointer
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields;
+%type <cval> array_type
+%type <cval> const_array_type
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields, array_element;
 
 %left OROR
 %left ANDAND
@@ -339,6 +343,24 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_name, $2, VAR_NAME_MAX);
     }
+    | type IDENTIFIER array_type {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, $3, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+    }
+    | type IDENTIFIER const_array_type {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, $3, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+    }
     | type IDENTIFIER ':' INTNUM {
         char type_name[VAR_NAME_MAX];
 
@@ -362,6 +384,28 @@ type_and_variable_name:
         xstrncpy(variable_name, $3, VAR_NAME_MAX);
 
         xstrncpy(type_params, "", VAR_NAME_MAX);
+    }
+    ;
+
+array_type: '[' exp ']' {
+        snprintf($$, VAR_NAME_MAX, "[!%d]", $2);
+    }
+    | array_type '[' exp ']' {
+        char buf[VAR_NAME_MAX];
+        snprintf(buf, VAR_NAME_MAX, "[!%d]", $3);
+
+        xstrncat($$, buf, VAR_NAME_MAX);
+    }
+    ;
+
+const_array_type: '[' INTNUM ']' {
+        snprintf($$, VAR_NAME_MAX, "[%d]", $2);
+    }
+    | const_array_type '[' INTNUM ']' {
+        char buf[VAR_NAME_MAX];
+        snprintf(buf, VAR_NAME_MAX, "[%d]", $3);
+
+        xstrncat($$, buf, VAR_NAME_MAX);
     }
     ;
 
@@ -891,6 +935,25 @@ node:
             $$ = sNodeTree_create_store_variable($1, "", $3, alloc, global, gSName, gSLine); 
         }
 
+        | IDENTIFIER array_element {
+            unsigned int array = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int* index_node = array_element_index_node;
+            int num_dimention = array_element_num_dimention;
+
+            $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, gSLine);
+        }
+        | IDENTIFIER array_element '=' comma_exp {
+            unsigned int array = sNodeTree_create_load_variable($1, gSName, gSLine);
+
+            unsigned int* index_node = array_element_index_node;
+            int num_dimention = array_element_num_dimention;
+
+            unsigned int right_node = $4;
+
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, gSLine);
+        }
+
         | IDENTIFIER '(' ')' {
             BOOL existance = function_existance($1);
 
@@ -1333,6 +1396,27 @@ node:
             $$ = sNodeTree_create_rshift_eq(left, right, gSName, gSLine);
         }
         ;
+
+array_element: '[' exp ']' {
+        array_element_num_dimention = 0;
+        array_element_index_node[array_element_num_dimention] = $2;
+        array_element_num_dimention++;
+
+        if(array_element_num_dimention >= ARRAY_DIMENTION_MAX) {
+            fprintf(stderr, "overflow array dimention number\n");
+            exit(2);
+        }
+    }
+    | '[' exp ']' array_element {
+        array_element_index_node[array_element_num_dimention] = $2;
+        array_element_num_dimention++;
+
+        if(array_element_num_dimention >= ARRAY_DIMENTION_MAX) {
+            fprintf(stderr, "overflow array dimention number\n");
+            exit(2);
+        }
+    }
+    ;
 
 params: { 
         params = sNodeTree_create_params(gSName, gSLine); 

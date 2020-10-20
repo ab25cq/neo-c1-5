@@ -1,15 +1,8 @@
-int fun(int a, int b) {
-    return a + b;
-}
-
-enum { kA = 123, kB, kC };
 
 int main() {
-    int (*aaa)(int,int) = fun;
+    int a[3][3];
 
-    aaa(1,2);
-
-    printf("kA %d kB %d kC %d\n", kA, kB, kC);
+    a[1][2] = 123;
 
     return 0;
 }

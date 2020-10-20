@@ -2414,6 +2414,34 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
     return TRUE;
 }
 
+///////////////////////////////////////////////////////////////////////
+// extra
+///////////////////////////////////////////////////////////////////////
+BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sCompileInfo* cinfo)
+{
+    if(!compile(array_size_node, cinfo)) {
+        return FALSE;
+    }
+
+    sNodeType* node_type = cinfo->type;
+
+    LVALUE llvm_value = *get_value_from_stack(-1);
+
+    dec_stack_ptr(1, cinfo);
+
+    Value* value = llvm_value.value;
+
+    ConstantInt* constant_value;
+
+    if(constant_value = dyn_cast<ConstantInt>(value)) {
+        *array_size = constant_value->getSExtValue();
+    }
+    else {
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////
 // main
@@ -5116,21 +5144,23 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
         dec_stack_ptr(1, info);
     }
 
-    Type* llvm_var_type;
-    if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
-    {
-        compile_err_msg(info, "Getting llvm type failed");
-        show_node_type(var_type);
-        info->err_num++;
-
-        info->type = create_node_type_with_class_name("int"); // dummy
-
-        return TRUE;
-    }
-
-    int alignment = get_llvm_alignment_from_node_type(var_type);
-
     if(var_type->mDynamicArrayNum != 0) {
+        var_type->mPointerNum++;
+
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed");
+            show_node_type(var_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        int alignment = get_llvm_alignment_from_node_type(var_type);
+
         Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
         if(!info->no_output) {
             var->mLLVMValue = address;
@@ -5170,6 +5200,20 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
     else if(global) {
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed");
+            show_node_type(var_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        int alignment = get_llvm_alignment_from_node_type(var_type);
+
         if(extern_) {
             if(var->mLLVMValue == NULL && TheModule->getNamedGlobal(var_name) == nullptr)
             {
@@ -5202,6 +5246,20 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
         }
     }
     else {
+        Type* llvm_var_type;
+        if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
+        {
+            compile_err_msg(info, "Getting llvm type failed");
+            show_node_type(var_type);
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        int alignment = get_llvm_alignment_from_node_type(var_type);
+
         Value* address = Builder.CreateAlloca(llvm_var_type, 0, var_name);
 
         var->mLLVMValue = address;
@@ -7072,6 +7130,439 @@ static BOOL compile_rshift_eq(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
+{
+    int num_dimention = gNodes[node].uValue.sLoadElement.mArrayDimentionNum;
+    int i;
+    unsigned int index_node[ARRAY_DIMENTION_MAX];
+    for(i=0; i<num_dimention; i++) {
+        index_node[i] = gNodes[node].uValue.sLoadElement.mIndex[i];
+    }
+    /// compile left node ///
+    unsigned int lnode = gNodes[node].mLeft;
+
+    if(!compile(lnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    sVar* var = lvalue.var;
+
+    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0) 
+    {
+        compile_err_msg(info, "neo-c can't get an element from this type.");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    /// compile middle node ///
+    LVALUE rvalue[ARRAY_DIMENTION_MAX];
+    for(i=0; i<num_dimention; i++) {
+        unsigned int mnode = index_node[i];
+
+        if(!compile(mnode, info)) {
+            return FALSE;
+        }
+
+        sNodeType* middle_type = info->type;
+
+        rvalue[i] = *get_value_from_stack(-1);
+
+        sNodeType* int_type = create_node_type_with_class_name("int");
+
+        if(!cast_right_type_to_left_type(int_type, &middle_type, &rvalue[i], info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        if(!type_identify_with_class_name(middle_type, "int")) {
+            compile_err_msg(info, "Type of index should be number");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    /// generate code ///
+    sNodeType* var_type = clone_node_type(left_type);
+
+    if(var_type->mArrayDimentionNum > 0) {
+        var_type->mArrayDimentionNum-=num_dimention;
+    }
+    else {
+        var_type->mPointerNum--;
+    }
+
+    //if(var_type->mPointerNum == 0) {
+        var_type->mHeap = FALSE;
+    //}
+
+    /// go ///
+    Value* element_value;
+    Value* load_element_addresss;
+    if(!info->no_output) {
+        if(left_type->mArrayDimentionNum == 1) {
+            sNodeType* var_type2 = clone_node_type(var_type);
+            var_type2->mPointerNum++;
+
+            Type* llvm_var_type;
+            if(!create_llvm_type_from_node_type(&llvm_var_type, var_type2, var_type2, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type2);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* lvalue2 = Builder.CreateCast(Instruction::BitCast, lvalue.address, llvm_var_type);
+            load_element_addresss = Builder.CreateGEP(lvalue2, rvalue[0].value, "element_address");
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+        }
+        else if(left_type->mArrayDimentionNum > 1) {
+            Value* lvalue2 = lvalue.address;
+
+            load_element_addresss = lvalue2;
+
+            for(i=0; i<num_dimention; i++) {
+                Value* indices[num_dimention-i];
+
+                int j;
+                for(j=i; j<num_dimention; j++) {
+                    indices[j-i] = rvalue[j].value;
+                }
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, num_dimention-i));
+            }
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum = 1;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+
+        }
+/*
+        else if(left_type->mArrayDimentionNum > 1) {
+            int i;
+            Value* lvalue2 = lvalue.address;
+
+            load_element_addresss = lvalue2;
+
+printf("left_type->mArrayDimentionNum %d\n", left_type->mArrayDimentionNum);
+
+            Value* indices[left_type->mArrayDimentionNum+1];
+
+            int j;
+            for(j=0; j<left_type->mArrayDimentionNum-num_dimention; j++) {
+                indices[j] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+            }
+            int k=0;
+            for(; j<left_type->mArrayDimentionNum; j++, k++) {
+                indices[j] = rvalue[k].value;
+            }
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, left_type->mArrayDimentionNum));
+
+            for(j=0; j<left_type->mArrayDimentionNum; j++) {
+                indices[j] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+            }
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, left_type->mArrayDimentionNum));
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum -= num_dimention;
+            var_type3->mPointerNum+=2;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            if(var_type3->mPointerNum == 0) {
+                element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+            }
+            else {
+                load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+                element_value = load_element_addresss;
+            }
+        }
+*/
+        else {
+            Value* lvalue2 = lvalue.value;
+
+            load_element_addresss = lvalue2;
+
+            for(i=0; i<num_dimention; i++) {
+                load_element_addresss = Builder.CreateGEP(load_element_addresss, rvalue[i].value, "element_addressB");
+            }
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+        }
+
+        LVALUE llvm_value;
+        llvm_value.value = element_value;
+        llvm_value.type = clone_node_type(var_type);
+        llvm_value.address = load_element_addresss;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
+
+        dec_stack_ptr(1+num_dimention, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+    }
+
+    info->type = clone_node_type(var_type);
+
+    return TRUE;
+}
+
+static BOOL compile_store_element(unsigned int node, sCompileInfo* info)
+{
+    int num_dimention = gNodes[node].uValue.sStoreElement.mArrayDimentionNum;
+    int i;
+    unsigned int index_node[ARRAY_DIMENTION_MAX];
+    for(i=0; i<num_dimention; i++) {
+        index_node[i] = gNodes[node].uValue.sStoreElement.mIndex[i];
+    }
+
+    /// compile left node ///
+    unsigned int lnode = gNodes[node].mLeft;
+
+    if(!compile(lnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+
+    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0) 
+    {
+        compile_err_msg(info, "neo-c can't get an element from this type.");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    /// compile middle node ///
+    LVALUE mvalue[ARRAY_DIMENTION_MAX];
+
+    for(i=0; i<num_dimention; i++) {
+        unsigned int mnode = index_node[i];
+
+        if(!compile(mnode, info)) {
+            return FALSE;
+        }
+
+        sNodeType* middle_type = info->type;
+
+        LVALUE llvm_value = *get_value_from_stack(-1);
+
+        sNodeType* int_type = create_node_type_with_class_name("int");
+
+        if(!cast_right_type_to_left_type(int_type, &middle_type, &llvm_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        if(!type_identify_with_class_name(middle_type, "int")) {
+            compile_err_msg(info, "Type of index should be number");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        mvalue[i] = *get_value_from_stack(-1);
+    }
+
+    /// compile right node ///
+    unsigned int rnode = gNodes[node].mRight;
+
+    if(!compile(rnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+
+    sNodeType* var_type = clone_node_type(left_type);
+
+    if(var_type->mArrayDimentionNum > 0) {
+        var_type->mArrayDimentionNum--;
+        //var_type->mPointerNum++;
+    }
+    else {
+        var_type->mPointerNum--;
+    }
+    var_type->mHeap = right_type->mHeap;
+
+    if(auto_cast_posibility(var_type, right_type)) {
+        if(!cast_right_type_to_left_type(var_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!substitution_posibility(var_type, right_type, FALSE)) 
+    {
+        compile_err_msg(info, "The different type between left type and right type, store element");
+        show_node_type(var_type);
+        show_node_type(right_type);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    /// generate code ///
+    if(info->no_output) {
+    }
+    else {
+        Value* lvalue2;
+        if(left_type->mArrayDimentionNum == 1) {
+            sNodeType* var_type2 = clone_node_type(var_type);
+            var_type2->mPointerNum++;
+
+            Type* llvm_var_type;
+            if(!create_llvm_type_from_node_type(&llvm_var_type, var_type2, var_type2, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(11)");
+                show_node_type(var_type2);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* lvalue2 = Builder.CreateCast(Instruction::BitCast, lvalue.address, llvm_var_type);
+            Value* load_element_addresss = Builder.CreateGEP(lvalue2, mvalue[0].value, "element_addressC");
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+        }
+        else if(left_type->mArrayDimentionNum > 1) {
+            Value* load_element_addresss = lvalue.address;
+            for(i=0; i<num_dimention; i++) {
+                Value* indices[num_dimention-i];
+
+                int j;
+                for(j=i; j<num_dimention; j++) {
+                    indices[j-i] = mvalue[j].value;
+                }
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, num_dimention-i));
+            }
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum = 1;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+        }
+        else {
+            Value* lvalue2 = lvalue.value;
+
+            Value* element_address = lvalue2;
+            for(i=0; i<num_dimention; i++) {
+                element_address = Builder.CreateGEP(element_address, mvalue[i].value, "element_addressD");
+            }
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            BOOL alloc = FALSE;
+            std_move(element_address, var_type, &rvalue, alloc, info);
+
+            Builder.CreateAlignedStore(rvalue.value, element_address, alignment);
+        }
+
+        dec_stack_ptr(2+num_dimention, info);
+        push_value_to_stack_ptr(&rvalue, info);
+    }
+
+    info->type = clone_node_type(right_type);
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -7373,6 +7864,18 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeRShiftEq:
             if(!compile_rshift_eq(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeLoadElement:
+            if(!compile_load_element(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeStoreElement:
+            if(!compile_store_element(node, info)) {
                 return FALSE;
             }
             break;
