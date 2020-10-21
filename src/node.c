@@ -70,6 +70,24 @@ unsigned int sNodeTree_create_int_value(int value, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_char_value(char value, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeCharValue;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.mCharValue = value;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_add(unsigned int left, unsigned int right, char* sname, int sline)
 {
     unsigned node = alloc_node();
@@ -1248,6 +1266,28 @@ unsigned int sNodeTree_create_store_element(unsigned int array, unsigned int ind
 
     gNodes[node].mLeft = array;
     gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_array_initializer(int left, char* var_name, int num_array_value, unsigned int* array_values, BOOL global, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeArrayInitializer;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sArrayInitializer.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].uValue.sArrayInitializer.mNumArrayValue = num_array_value;
+    memcpy(gNodes[node].uValue.sArrayInitializer.mArrayValues, array_values, sizeof(unsigned int)*INIT_ARRAY_MAX);
+    gNodes[node].uValue.sArrayInitializer.mGlobal = global;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
 
     return node;

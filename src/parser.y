@@ -31,12 +31,15 @@ BOOL inline_ = FALSE;
 BOOL static_ = FALSE;
 BOOL inherit_ = FALSE;
 int enum_number = 0;
-int array_element_num_dimention = 0;
-unsigned int array_element_index_node[ARRAY_DIMENTION_MAX];
+int array_index_num_dimention = 0;
+unsigned int array_index_index_node[ARRAY_DIMENTION_MAX];
+unsigned int array_values[INIT_ARRAY_MAX];
+int num_array_value;
 %}
 
 %union {
     int ival;
+    char char_val;
     unsigned int node;
     char cval[128];
     char sval[512];
@@ -44,6 +47,7 @@ unsigned int array_element_index_node[ARRAY_DIMENTION_MAX];
 }
 
 %token <ival> INTNUM 
+%token <char_val> CHARNUM 
 %token <cval> IDENTIFIER
 %token <sval> CSTRING
 %token <cval> VOID
@@ -97,7 +101,7 @@ unsigned int array_element_index_node[ARRAY_DIMENTION_MAX];
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields, array_element;
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields, array_index, array_value;
 
 %left OROR
 %left ANDAND
@@ -551,6 +555,68 @@ global_variable:
 
             $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
         }
+
+        | type IDENTIFIER const_array_type '=' '{' array_value '}' ';' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = TRUE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
+        | type IDENTIFIER '[' ']' '=' '{' array_value '}' ';' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+
+            char buf[128];
+            snprintf(buf, 128, "[%d]", num_array_value);
+            xstrncat(type_name, buf, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = TRUE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
+        | type IDENTIFIER const_array_type '=' CSTRING ';' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = TRUE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            unsigned int array_values[512];
+
+            if(strlen($5) >= 512) {
+                fprintf(stderr, "overflow c string length\n");
+                exit(2);
+            }
+
+            int i;
+            for(i=0; i<strlen($5); i++) {
+                array_values[i] = sNodeTree_create_char_value($5[i], gSName, gSLine);
+            }
+            array_values[i] = sNodeTree_create_char_value('\0', gSName, gSLine);
+
+            int num_array_value = strlen($5) + 1;
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
+
         | type_and_variable_name '=' exp ';'  { 
             BOOL alloc = TRUE;
             BOOL global = TRUE;
@@ -558,6 +624,29 @@ global_variable:
             $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
         }
         ;
+
+array_value: exp {
+        num_array_value = 0;
+        array_values[num_array_value++] = $1;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $1;
+    }
+    | array_value ',' exp {
+        array_values[num_array_value++] = $3;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $3;
+    }
+    ;
 
 function: 
         type IDENTIFIER '(' function_params ')' ';' {
@@ -910,6 +999,7 @@ exp: node {
 
 node: 
         INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
+        | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, gSLine); }
         | CSTRING {
             $$ = it = sNodeTree_create_c_string($1, gSName, gSLine);
         }
@@ -928,6 +1018,67 @@ node:
 
             $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
         }
+        | type IDENTIFIER const_array_type '=' '{' array_value '}' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = FALSE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
+        | type IDENTIFIER '[' ']' '=' '{' array_value '}' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+
+            char buf[128];
+            snprintf(buf, 128, "[%d]", num_array_value);
+
+            xstrncat(type_name, buf, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = FALSE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
+        | type IDENTIFIER const_array_type '=' CSTRING { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = FALSE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            unsigned int array_values[512];
+
+            if(strlen($5) >= 512) {
+                fprintf(stderr, "overflow c string length\n");
+                exit(2);
+            }
+
+            int i;
+            for(i=0; i<strlen($5); i++) {
+                array_values[i] = sNodeTree_create_char_value($5[i], gSName, gSLine);
+            }
+            array_values[i] = sNodeTree_create_char_value('\0', gSName, gSLine);
+
+            int num_array_value = strlen($5) + 1;
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
+        }
         | IDENTIFIER '=' comma_exp { 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
@@ -935,19 +1086,19 @@ node:
             $$ = sNodeTree_create_store_variable($1, "", $3, alloc, global, gSName, gSLine); 
         }
 
-        | IDENTIFIER array_element {
+        | IDENTIFIER array_index {
             unsigned int array = sNodeTree_create_load_variable($1, gSName, gSLine);
 
-            unsigned int* index_node = array_element_index_node;
-            int num_dimention = array_element_num_dimention;
+            unsigned int* index_node = array_index_index_node;
+            int num_dimention = array_index_num_dimention;
 
             $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, gSLine);
         }
-        | IDENTIFIER array_element '=' comma_exp {
+        | IDENTIFIER array_index '=' comma_exp {
             unsigned int array = sNodeTree_create_load_variable($1, gSName, gSLine);
 
-            unsigned int* index_node = array_element_index_node;
-            int num_dimention = array_element_num_dimention;
+            unsigned int* index_node = array_index_index_node;
+            int num_dimention = array_index_num_dimention;
 
             unsigned int right_node = $4;
 
@@ -1397,21 +1548,21 @@ node:
         }
         ;
 
-array_element: '[' exp ']' {
-        array_element_num_dimention = 0;
-        array_element_index_node[array_element_num_dimention] = $2;
-        array_element_num_dimention++;
+array_index: '[' exp ']' {
+        array_index_num_dimention = 0;
+        array_index_index_node[array_index_num_dimention] = $2;
+        array_index_num_dimention++;
 
-        if(array_element_num_dimention >= ARRAY_DIMENTION_MAX) {
+        if(array_index_num_dimention >= ARRAY_DIMENTION_MAX) {
             fprintf(stderr, "overflow array dimention number\n");
             exit(2);
         }
     }
-    | '[' exp ']' array_element {
-        array_element_index_node[array_element_num_dimention] = $2;
-        array_element_num_dimention++;
+    | '[' exp ']' array_index {
+        array_index_index_node[array_index_num_dimention] = $2;
+        array_index_num_dimention++;
 
-        if(array_element_num_dimention >= ARRAY_DIMENTION_MAX) {
+        if(array_index_num_dimention >= ARRAY_DIMENTION_MAX) {
             fprintf(stderr, "overflow array dimention number\n");
             exit(2);
         }

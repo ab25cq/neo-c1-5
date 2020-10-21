@@ -1,23 +1,16 @@
-cast
-
-array initializer
 
 for
 switch
 while
 do, while
 
-'a'
-'\0'
-
+cast
 
 sizeof
 
 preprocesser
 
 __ASM_NAME__ など
-
-operators
 
 include stdio.h
 -----
@@ -60,3 +53,10 @@ strcut Data {
 >>=
 
 array []
+
+array initializer
+'a'
+'\0'
+
+operators
+

@@ -175,6 +175,12 @@ struct Data3 {
     int b:4;
 };
 
+int gArray[3] = { 1, 2, 3 };
+
+char gArray2[3] = "AB";
+
+int gArray3[] = { 1, 2, 3 };
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -347,6 +353,30 @@ int main()
     strcpy(array5[1], "DEF");
 
     xassert("array test5", strcmp(array5[0], "ABC") == 0 && strcmp(array5[1], "DEF") == 0);
+
+    xassert("array initializer test", gArray[0] == 1 && gArray[1] == 2 && gArray[2] == 3);
+
+    int array6[3] = { 1, 2, 3 };
+
+    xassert("array initializer test2", array6[0] == 1 && array6[1] == 2 && array6[2] == 3);
+
+    char array7[3] = "AB";
+
+    xassert("array initializer test3", strcmp(array7, "AB") == 0);
+
+    xassert("array initializer test4", strcmp(gArray2, "AB") == 0);
+
+    xassert("array initializer test5", gArray3[0] == 1 && gArray3[1] == 2 && gArray3[2] == 3);
+
+    int array8[] = { 1, 2, 3 };
+
+    xassert("array initializer test6", array8[0] == 1 && array8[1] == 2 && array8[2] == 3);
+
+    char ccc = '\n';
+    char ccc2 = 'a';
+    char ccc3 = '\0';
+
+    xassert("char test", ccc == '\n' && ccc2 == 'a' && ccc3 == '\0');
 
     return 0;
 }

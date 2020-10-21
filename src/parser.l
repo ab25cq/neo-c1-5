@@ -269,6 +269,46 @@ char* p;
     return(INTNUM); 
 }
 
+\'.\' {
+    sscanf(yytext, "'%c'", &yylval.char_val);
+    return(CHARNUM); 
+}
+
+\'\\\\' {
+    yylval.char_val = '\\';
+    return(CHARNUM); 
+}
+
+\'\\0' {
+    yylval.char_val = 0;
+    return(CHARNUM); 
+}
+
+\'\\n\' {
+    yylval.char_val = '\n';
+    return(CHARNUM); 
+}
+
+\'\\t\' {
+    yylval.char_val = '\t';
+    return(CHARNUM); 
+}
+
+\'\\r\' {
+    yylval.char_val = '\r';
+    return(CHARNUM); 
+}
+
+\'\\b\' {
+    yylval.char_val = '\b';
+    return(CHARNUM); 
+}
+
+\'\\f\' {
+    yylval.char_val = '\f';
+    return(CHARNUM); 
+}
+
 void {
     strncpy(yylval.cval, yytext, 128);
     return(VOID); 
