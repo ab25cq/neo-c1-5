@@ -27,6 +27,12 @@ void free_nodes()
                     free(gNodes[i].uValue.sBlock.mSource.mBuf);
                     break;
 
+/*
+                case kNodeTypeSwitch:
+                    free(gNodes[i].uValue.sSwitch.mSwitchExpression);
+                    break;
+*/
+
                 default:
                     break;
             }
@@ -397,7 +403,7 @@ unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int fun
     return node;
 }
 
-unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline)
+unsigned int sNodeTree_create_return(unsigned int right, unsigned int middle, char* sname, int sline)
 {
     unsigned node = alloc_node();
 
@@ -408,7 +414,7 @@ unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline)
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = right;
-    gNodes[node].mMiddle = 0;
+    gNodes[node].mMiddle = middle;
 
     return node;
 }
@@ -1287,6 +1293,124 @@ unsigned int sNodeTree_create_array_initializer(int left, char* var_name, int nu
     gNodes[node].uValue.sArrayInitializer.mGlobal = global;
 
     gNodes[node].mLeft = left;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_while_statment(unsigned int expression_node, unsigned int while_node_block, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeWhile;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sWhile.mExpressionNode = expression_node;
+    gNodes[node].uValue.sWhile.mWhileNodeBlock = while_node_block;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_do_while_expression(unsigned int expression_node, unsigned int while_node_block, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeDoWhile;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sWhile.mExpressionNode = expression_node;
+    gNodes[node].uValue.sWhile.mWhileNodeBlock = while_node_block;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_switch_statment(unsigned int expression_node, int num_switch_expression, unsigned int* switch_expression, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeSwitch;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sSwitch.mExpression = expression_node;
+    memcpy(gNodes[node].uValue.sSwitch.mSwitchExpression, switch_expression, sizeof(unsigned int)*SWITCH_STASTMENT_NODE_MAX);
+    gNodes[node].uValue.sSwitch.mNumSwitchExpression = num_switch_expression;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_case_expression(unsigned int expression_node, BOOL first_case, BOOL last_case, BOOL case_after_return, unsigned int first_statment, BOOL last_statment, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeCase;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sCase.mExpression = expression_node;
+    gNodes[node].uValue.sCase.mLastCase = last_case;
+    gNodes[node].uValue.sCase.mFirstCase = first_case;
+    gNodes[node].uValue.sCase.mCaseAfterReturn = case_after_return;
+    gNodes[node].uValue.sCase.mFirstStatment = first_statment;
+    gNodes[node].uValue.sCase.mLastStatment = last_statment;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_for_statment(unsigned int expression_node1, unsigned int expression_node2, unsigned int expression_node3, unsigned int for_node_block, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeFor;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].uValue.sFor.mExpressionNode = expression_node1;
+    gNodes[node].uValue.sFor.mExpressionNode2 = expression_node2;
+    gNodes[node].uValue.sFor.mExpressionNode3 = expression_node3;
+    gNodes[node].uValue.sFor.mForNodeBlock = for_node_block;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_break_expression(char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeBreak;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
 

@@ -418,6 +418,41 @@ new {
     return(NEW);
 }
 
+for {
+    strncpy(yylval.cval, yytext, 128);
+    return(FOR);
+}
+
+while {
+    strncpy(yylval.cval, yytext, 128);
+    return(WHILE);
+}
+
+do {
+    strncpy(yylval.cval, yytext, 128);
+    return(DO);
+}
+
+switch {
+    strncpy(yylval.cval, yytext, 128);
+    return(SWITCH);
+}
+
+case {
+    strncpy(yylval.cval, yytext, 128);
+    return(CASE);
+}
+
+default {
+    strncpy(yylval.cval, yytext, 128);
+    return(DEFAULT);
+}
+
+break {
+    strncpy(yylval.cval, yytext, 128);
+    return(BREAK);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 

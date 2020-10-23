@@ -33,8 +33,10 @@ BOOL inherit_ = FALSE;
 int enum_number = 0;
 int array_index_num_dimention = 0;
 unsigned int array_index_index_node[ARRAY_DIMENTION_MAX];
-unsigned int array_values[INIT_ARRAY_MAX];
 int num_array_value;
+unsigned int array_values[INIT_ARRAY_MAX];
+unsigned int num_switch_expression;
+unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %}
 
 %union {
@@ -90,6 +92,13 @@ int num_array_value;
 %token <cval> LSHIFT_EQ
 %token <cval> RSHIFT_EQ
 %token <cval> FUNCTION_POINTER
+%token <cval> FOR
+%token <cval> WHILE
+%token <cval> DO
+%token <cval> SWITCH
+%token <cval> CASE
+%token <cval> BREAK
+%token <cval> DEFAULT
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -101,7 +110,7 @@ int num_array_value;
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields, array_index, array_value;
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment;
 
 %left OROR
 %left ANDAND
@@ -285,7 +294,7 @@ type_name: IDENTIFIER {
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
     }
-    | IDENTIFIER '<' generics_types '>' {
+    | IDENTIFIER '!' '<' generics_types '>' {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
@@ -313,7 +322,7 @@ type_name: IDENTIFIER {
         }
 
         xstrncat(type_name, "<", VAR_NAME_MAX);
-        xstrncat(type_name, $3, VAR_NAME_MAX);
+        xstrncat(type_name, $4, VAR_NAME_MAX);
         xstrncat(type_name, ">", VAR_NAME_MAX);
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
@@ -436,9 +445,9 @@ union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
         ;
 
 struct_: 
-        STRUCT IDENTIFIER '<' struct_generics_types '>' '{' fields '}' ';' {
+        STRUCT IDENTIFIER '!' '<' struct_generics_types '>' '{' fields '}' ';' {
             char* struct_name = $2;
-            unsigned int fields = $7;
+            unsigned int fields = $8;
             BOOL anonymous = FALSE;
             BOOL generics = num_struct_generics_types > 0;
 
@@ -730,11 +739,11 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | TEMPLATE '<' method_generics_types '>' type IDENTIFIER '(' function_params ')' '{' block '}' block_end {
-            char* result_type = $5;
-            char* fun_name = $6;
-            unsigned int function_params = $8;
-            unsigned int node_block = $11;
+        | TEMPLATE '!' '<' method_generics_types '>' type IDENTIFIER '(' function_params ')' '{' block '}' block_end {
+            char* result_type = $6;
+            char* fun_name = $7;
+            unsigned int function_params = $9;
+            unsigned int node_block = $12;
             BOOL generics = FALSE;
             BOOL method_generics = num_method_generics_types > 0;
 
@@ -746,13 +755,13 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | TEMPLATE '<' method_generics_types '>' type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' '{' block '}' block_end 
+        | TEMPLATE '!' '<' method_generics_types '>' type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' '{' block '}' block_end 
         {
-            char* result_type = $5;
+            char* result_type = $6;
 
             char fun_name[VAR_NAME_MAX];
 
-            char* struct_name = $6;
+            char* struct_name = $7;
 
             char* p = strstr(struct_name, "<");
 
@@ -768,14 +777,14 @@ function:
 
             xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
             xstrncat(fun_name, "_", VAR_NAME_MAX);
-            xstrncat(fun_name, $8, VAR_NAME_MAX);
+            xstrncat(fun_name, $9, VAR_NAME_MAX);
 
             char fun_base_name[VAR_NAME_MAX];
 
             xstrncpy(fun_base_name, $8, VAR_NAME_MAX);
 
-            unsigned int function_params = $10;
-            unsigned int node_block = $13;
+            unsigned int function_params = $11;
+            unsigned int node_block = $14;
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
@@ -827,12 +836,12 @@ function_struct_type_name: IDENTIFIER {
         xstrncpy($$, type_name, VAR_NAME_MAX);
         num_function_generics_types = 0;
     }
-    | IDENTIFIER '<' function_generics_types '>' {
+    | IDENTIFIER '!' '<' function_generics_types '>' {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
         xstrncat(type_name, "<", VAR_NAME_MAX);
-        xstrncat(type_name, $3, VAR_NAME_MAX);
+        xstrncat(type_name, $4, VAR_NAME_MAX);
         xstrncat(type_name, ">", VAR_NAME_MAX);
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
@@ -876,9 +885,12 @@ block_end: {
         };
 
 statment: comma_exp ';'              { $$ = $1; }
-    | RETURN ';'               { $$ = sNodeTree_create_return(0, gSName, gSLine); }
-    | RETURN '(' comma_exp ')' ';'   { $$ = sNodeTree_create_return($3, gSName, gSLine); }
-    | RETURN comma_exp ';'  { $$ = sNodeTree_create_return($2, gSName, gSLine); }
+    | RETURN ';'               { $$ = sNodeTree_create_return(0, 0, gSName, gSLine); }
+    | RETURN '(' comma_exp ')' ';'   { $$ = sNodeTree_create_return($3, 0, gSName, gSLine); }
+    | RETURN comma_exp ';'  { $$ = sNodeTree_create_return($2, 0, gSName, gSLine); }
+    | RETURN ';' after_return_case_statment { $$ = sNodeTree_create_return(0, $3, gSName, gSLine); }
+    | RETURN '(' comma_exp ')' ';' after_return_case_statment   { $$ = sNodeTree_create_return($3, $6, gSName, gSLine); }
+    | RETURN comma_exp ';' after_return_case_statment  { $$ = sNodeTree_create_return($2, $4, gSName, gSLine); }
     | IF '(' comma_exp ')' '{' block '}' block_end {
         unsigned int if_exp = $3;
         unsigned int if_block = $6;
@@ -915,6 +927,49 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, gSLine);
     }
+    | FOR '(' comma_exp ';' comma_exp ';' comma_exp ')' '{' block '}' block_end {
+        unsigned int expression_node1 = $3;
+        unsigned int expression_node2 = $5;
+        unsigned int expression_node3 = $7;
+
+        unsigned int for_node_block = $10;
+
+        $$ = sNodeTree_for_statment(expression_node1, expression_node2, expression_node3, for_node_block, gSName, gSLine);
+    }
+    | WHILE '(' comma_exp ')' '{' block '}' block_end {
+        unsigned int expression_node1 = $3;
+
+        unsigned int while_node_block = $6;
+
+        $$ = sNodeTree_while_statment(expression_node1, while_node_block, gSName, gSLine);
+    }
+    | SWITCH '(' comma_exp ')' '{' switch_block '}' {
+        unsigned int expression_node = $3;
+
+        $$ = sNodeTree_switch_statment(expression_node, num_switch_expression, switch_expression, gSName, gSLine);
+    }
+    | case_statment  {
+        $$ = $1;
+    }
+    | DEFAULT ':' {
+        BOOL first_case = TRUE;
+        BOOL last_case = TRUE;
+        BOOL case_after_return = FALSE;
+        unsigned int first_statment = 0;
+        unsigned int last_statment = 0;
+
+        $$ = sNodeTree_case_expression(0, first_case, last_case, case_after_return, first_statment, last_statment, gSName, gSLine);
+    }
+    | BREAK ';' {
+        $$ = sNodeTree_create_break_expression(gSName, gSLine);
+    }
+    | DO '{' block '}' block_end WHILE '(' comma_exp ')' ';' {
+        unsigned int expression_node1 = $8;
+
+        unsigned int while_node_block = $3;
+
+        $$ = sNodeTree_do_while_expression(expression_node1, while_node_block, gSName, gSLine);
+    }
     | type_and_variable_name ';' {
         char* type_name = $1;
         char* var_name = variable_name;
@@ -924,6 +979,85 @@ statment: comma_exp ';'              { $$ = $1; }
         $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
     }
     ;
+
+case_statment: CASE exp ':' {
+        BOOL first_case = TRUE;
+        BOOL last_case = TRUE;
+        BOOL case_after_return = FALSE;
+
+        unsigned int expression_node = $2;
+
+        unsigned int first_statment = 0;
+        unsigned int last_statment = 0;
+
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, gSLine);
+    }
+    | case_statment CASE exp ':' {
+        BOOL first_case = FALSE;
+        BOOL last_case = TRUE;
+        BOOL case_after_return = FALSE;
+
+        unsigned int first_statment = 0;
+        unsigned int last_statment = $1;
+        unsigned int expression_node = $3;
+
+        gNodes[last_statment].uValue.sCase.mLastCase = FALSE;
+
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, gSLine);
+    }
+    ;
+
+after_return_case_statment: CASE exp ':' {
+        BOOL first_case = TRUE;
+        BOOL last_case = TRUE;
+        BOOL case_after_return = TRUE;
+
+        unsigned int expression_node = $2;
+
+        unsigned int first_statment = 0;
+        unsigned int last_statment = 0;
+
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, gSLine);
+    }
+    | after_return_case_statment CASE exp ':' {
+        BOOL first_case = FALSE;
+        BOOL last_case = TRUE;
+        BOOL case_after_return = FALSE;
+
+        unsigned int first_statment = 0;
+        unsigned int last_statment = $1;
+        unsigned int expression_node = $3;
+
+        gNodes[last_statment].uValue.sCase.mLastCase = FALSE;
+
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, gSLine);
+    }
+    ;
+
+switch_block: statment {
+        num_switch_expression = 0;
+
+        switch_expression[num_switch_expression] = $1;
+
+        num_switch_expression++;
+
+        if(num_switch_expression >= SWITCH_STASTMENT_NODE_MAX) {
+            fprintf(stderr, "overflow switch expression\n");
+            exit(2);
+        }
+    }
+    | switch_block statment {
+        switch_expression[num_switch_expression] = $2;
+
+        num_switch_expression++;
+
+        if(num_switch_expression >= SWITCH_STASTMENT_NODE_MAX) {
+            fprintf(stderr, "overflow switch expression\n");
+            exit(2);
+        }
+    }
+    ;
+
 
 prepare_elif_statment: '(' comma_exp ')' '{' block '}' block_end {
     elif_num = 0;

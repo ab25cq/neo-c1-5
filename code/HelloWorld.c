@@ -6,9 +6,9 @@ void*% calloc(size_t nmemb, size_t size);
 void free(void *ptr);
 int atoi(const char* str);
 int atoi(const char* str);
-
 int strcmp(const char* str1, const char* str2);
 
+/*
 int fun() {
     puts("called fun");
     return 2;
@@ -84,12 +84,12 @@ union Data2 {
     long b;
 };
 
-struct GenericsData<T> {
+struct GenericsData!<T> {
     T a;
     T b;
 };
 
-int GenericsData<T>::show(GenericsData<T> self)
+int GenericsData!<T>::show(GenericsData!<T> self)
 {
     T a;
     a = 123;
@@ -103,27 +103,27 @@ int GenericsData<T>::show(GenericsData<T> self)
     return 123;
 }
 
-struct GenericsData2<T> {
+struct GenericsData2!<T> {
     T a;
 };
 
-void GenericsData2<T>::fun(GenericsData2<T>* self)
+void GenericsData2!<T>::fun(GenericsData2!<T>* self)
 {
-    GenericsData<int> data;
+    GenericsData!<int> data;
     data.a = 123;
     data.b = 234;
     data.show();
 }
 
-template <M> M fun2(M a) {
+template !<M> M fun2(M a) {
     return a + 1;
 }
 
-template <M> M fun3(M (*aaa)(char*), char* bbb) {
+template !<M> M fun3(M (*aaa)(char*), char* bbb) {
     return aaa(bbb);
 }
 
-template <M> M GenericsData<T>::map(GenericsData<T> self, M (*aaa)(T))
+template !<M> M GenericsData!<T>::map(GenericsData!<T> self, M (*aaa)(T))
 {
     self.a = 123;
     return aaa(self.a);
@@ -141,24 +141,24 @@ inherit void inheritFun()
     puts("inheritFun version 2");
 }
 
-struct GenericsData3<T> {
+struct GenericsData3!<T> {
     T a;
     T b;
 };
 
-void GenericsData3<T>::fun(GenericsData3<T> self)
+void GenericsData3!<T>::fun(GenericsData3!<T> self)
 {
-    puts("GenericsData3<T>::fun version1");
-    GenericsData2<int>* xyz = new GenericsData2<int>;
+    puts("GenericsData3!<T>::fun version1");
+    GenericsData2!<int>* xyz = new GenericsData2!<int>;
 
     xyz.fun();
 }
 
-inherit void GenericsData3<T>::fun(GenericsData3<T> self)
+inherit void GenericsData3!<T>::fun(GenericsData3!<T> self)
 {
     self.inherit();
-    puts("GenericsData3<T>::fun version2");
-    GenericsData2<int>* xyz = new GenericsData2<int>;
+    puts("GenericsData3!<T>::fun version2");
+    GenericsData2!<int>* xyz = new GenericsData2!<int>;
 
     xyz.fun();
 }
@@ -180,9 +180,11 @@ int gArray[3] = { 1, 2, 3 };
 char gArray2[3] = "AB";
 
 int gArray3[] = { 1, 2, 3 };
+*/
 
 int main() 
 {
+/*
     puts("HELLO WORLD");
 
     xassert("test1", true);
@@ -211,7 +213,7 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
-    GenericsData<int> data2;
+    GenericsData!<int> data2;
 
     data2.a = 123;
     data2.b = 234;
@@ -228,11 +230,11 @@ int main()
 
     inheritFun();
 
-    GenericsData2<int>* xyz = new GenericsData2<int>;
+    GenericsData2!<int>* xyz = new GenericsData2!<int>;
 
     xyz.fun();
 
-    GenericsData3<int> xyz2;
+    GenericsData3!<int> xyz2;
 
     xyz2.fun();
 
@@ -377,6 +379,38 @@ int main()
     char ccc3 = '\0';
 
     xassert("char test", ccc == '\n' && ccc2 == 'a' && ccc3 == '\0');
+
+    for(int i=0; i<3; i++) {
+        printf("i %d\n", i);
+    }
+
+    int i=0;
+    while(i<3) {
+        printf("i %d\n", i);
+        i++;
+    }
+
+    i = 0;
+    do {
+        printf("i %d\n", i);
+        i++;
+    } while( i < 3);
+*/
+
+    switch(4) {
+        case 2:
+        case 1:
+            puts("1 or 2");
+            break;
+
+        case 3:
+            puts("3");
+            break;
+
+        default:
+            puts("default");
+            break;
+    }
 
     return 0;
 }

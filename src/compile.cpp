@@ -1787,6 +1787,23 @@ void free_objects_with_parents(Value* inhibit_free_object_address, sCompileInfo*
     }
 }
 
+void free_objects_until_loop_top(Value* inhibit_free_object_address, sCompileInfo* info)
+{
+    sVarTable* it = info->lv_table;
+
+    while(it != NULL) 
+    {
+        free_objects(it, inhibit_free_object_address, info);
+
+        if(info->loop_top_lv_table == it) {
+            break;
+        }
+
+        it = it->mParent;
+    }
+}
+
+
 /*
 static BOOL call_clone_method(sNodeType* node_type, Value** address, sCompileInfo* info)
 {
@@ -2378,7 +2395,7 @@ void llvm_change_block(BasicBlock* current_block, BasicBlock** current_block_bef
     info->current_block = current_block;
 }
 
-BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expression_is_return)
+BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expression_is_return, BOOL loop_top)
 {
     int num_nodes = gNodes[node_block].uValue.sBlock.mNumNodes;
     unsigned int* nodes = gNodes[node_block].uValue.sBlock.mNodes;
@@ -2386,6 +2403,11 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
     sVarTable* lv_table = info->lv_table;
     info->lv_table = init_var_table();
     info->lv_table->mParent = lv_table;
+
+    sVarTable* loop_top_lv_table = info->loop_top_lv_table;
+    if(loop_top) {
+        info->loop_top_lv_table = info->lv_table;
+    }
 
     int i;
     for(i=0; i<num_nodes; i++) {
@@ -2407,6 +2429,10 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
     if(info->err_num > 0) {
         fprintf(stderr, "compile error\n");
         exit(2);
+    }
+
+    if(loop_top) {
+        info->loop_top_lv_table = loop_top_lv_table;
     }
 
     info->lv_table= lv_table;
@@ -3941,7 +3967,8 @@ BOOL create_llvm_function(sFunction* fun, sCompileInfo* info)
     }
 
     BOOL last_expression_is_return = FALSE;
-    if(!compile_block(node_block, info, &last_expression_is_return)) {
+    BOOL loop_top = FALSE;
+    if(!compile_block(node_block, info, &last_expression_is_return, loop_top)) {
         return FALSE;
     }
 
@@ -4091,6 +4118,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
 static BOOL compile_return(unsigned int node, sCompileInfo* info)
 {
     int right_node = gNodes[node].mRight;
+    int middle_node = gNodes[node].mMiddle;
 
     if(right_node != 0) {
         if(!compile(right_node, info)) {
@@ -4143,6 +4171,12 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
     }
 
     info->type = create_node_type_with_class_name("void");
+
+    if(middle_node != 0) {
+        if(!compile(middle_node, info)) {
+            return FALSE;
+        }
+    }
 
     return TRUE;
 }
@@ -4717,7 +4751,8 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
     sNodeType* result_type = create_node_type_with_class_name("void");
 
     BOOL last_expression_is_return = FALSE;
-    if(!compile_block(if_block, info, &last_expression_is_return)) {
+    BOOL loop_top = FALSE;
+    if(!compile_block(if_block, info, &last_expression_is_return, loop_top)) {
         return FALSE;
     }
 
@@ -4786,7 +4821,8 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
 
             BOOL last_expression_is_return = FALSE;
 
-            if(!compile_block(elif_block, info, &last_expression_is_return))
+            BOOL loop_top = FALSE;
+            if(!compile_block(elif_block, info, &last_expression_is_return, loop_top))
             {
                 return FALSE;
             }
@@ -4802,8 +4838,8 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
         llvm_change_block(cond_else_block, &current_block_before, info, FALSE);
 
         BOOL last_expression_is_return = FALSE;
-
-        if(!compile_block(else_block, info, &last_expression_is_return))
+        BOOL loop_top = FALSE;
+        if(!compile_block(else_block, info, &last_expression_is_return, loop_top))
         {
             return FALSE;
         }
@@ -7751,6 +7787,570 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
+{
+    void* switch_expression = info->switch_expression;
+    info->switch_expression = NULL;
+
+    unsigned int for_block = gNodes[node].uValue.sFor.mForNodeBlock;
+
+    sVarTable* lv_table = info->lv_table;
+    info->lv_table = init_var_table();
+    info->lv_table->mParent = lv_table;
+
+    /// compile expression ///
+    unsigned int expression_node = gNodes[node].uValue.sFor.mExpressionNode;
+
+    if(!compile(expression_node, info)) {
+        return FALSE;
+    }
+
+    /// compile expression ///
+    sFunction* fun = (sFunction*)info->function;
+    Function* llvm_function = fun->mLLVMFunction;
+    BasicBlock* loop_top_block = BasicBlock::Create(TheContext, "loop_top_block", llvm_function);
+
+    //free_right_value_objects(info);
+    Builder.CreateBr(loop_top_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(loop_top_block, &current_block_before, info, FALSE);
+
+    unsigned int expression_node2 = gNodes[node].uValue.sFor.mExpressionNode2;
+
+    if(!compile(expression_node2, info)) {
+        return FALSE;
+    }
+
+    sNodeType* conditional_type = info->type;
+
+    LVALUE conditional_value = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, conditional_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &conditional_type, &conditional_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(conditional_type, "bool")) {
+        compile_err_msg(info, "This conditional type is not bool");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+
+    BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end_block", llvm_function);
+
+    info->loop_end_block[info->num_loop] = cond_end_block;
+    info->num_loop++;
+
+    if(info->num_loop >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. for", info->num_loop);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    info->loop_begin_block[info->num_loop2] = cond_then_block;
+    info->num_loop2++;
+
+    if(info->num_loop2 >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. for", info->num_loop2);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    //free_right_value_objects(info);
+    Builder.CreateCondBr(conditional_value.value, cond_then_block, cond_end_block);
+
+    BasicBlock* current_block_before2;
+    llvm_change_block(cond_then_block, &current_block_before2, info, FALSE);
+
+//    BasicBlock* current_block = (BasicBlock*)info->current_block;
+//    info->current_block = for_block;
+
+    /// block of for expression ///
+    BOOL last_expression_is_return = FALSE;
+    BOOL loop_top = TRUE;
+    if(!compile_block(for_block, info, &last_expression_is_return, loop_top))
+    {
+        info->num_loop--;
+        return FALSE;
+    }
+
+//    info->current_block = current_block;
+
+    /// expression 3 ///
+    unsigned int expression_node3 = gNodes[node].uValue.sFor.mExpressionNode3;
+
+    last_expression_is_return = gNodes[expression_node3].mNodeType == kNodeTypeReturn;
+    if(!compile(expression_node3, info)) {
+        return FALSE;
+    }
+
+    if(!last_expression_is_return) {
+        Builder.CreateBr(loop_top_block);
+    }
+
+    BasicBlock* current_block_before3;
+    llvm_change_block(cond_end_block, &current_block_before3, info, FALSE);
+    info->num_loop--;
+
+    info->lv_table = lv_table;
+
+    info->type = create_node_type_with_class_name("void");
+
+    info->switch_expression = switch_expression;
+
+    return TRUE;
+}
+
+static BOOL compile_while_statment(unsigned int node, sCompileInfo* info)
+{
+    void* switch_expression_before = info->switch_expression;
+    info->switch_expression = NULL;
+
+    unsigned int while_node_block = gNodes[node].uValue.sWhile.mWhileNodeBlock;
+    sFunction* fun = (sFunction*)info->function;
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* loop_top_block = BasicBlock::Create(TheContext, "loop_top_block", llvm_function);
+
+    Builder.CreateBr(loop_top_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(loop_top_block, &current_block_before, info, FALSE);
+
+    /// compile expression ///
+    unsigned int expression_node = gNodes[node].uValue.sWhile.mExpressionNode;
+
+    if(!compile(expression_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* conditional_type = info->type;
+
+    LVALUE conditional_value = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, conditional_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &conditional_type, &conditional_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(conditional_type, "bool")) {
+        compile_err_msg(info, "This conditional type is not bool");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    BasicBlock* cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+
+    BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end_block", llvm_function);
+
+    info->loop_end_block[info->num_loop] = cond_end_block;
+    info->num_loop++;
+
+    if(info->num_loop >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. while(1)", info->num_loop);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    info->loop_begin_block[info->num_loop2] = cond_then_block;
+    info->num_loop2++;
+
+    if(info->num_loop2 >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. while(2)", info->num_loop2);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    Builder.CreateCondBr(conditional_value.value, cond_then_block, cond_end_block);
+
+    BasicBlock* current_block_before2;
+    llvm_change_block(cond_then_block, &current_block_before2, info, FALSE);
+
+    //sNodeBlock* current_node_block = info->current_node_block;
+    //info->current_node_block = while_node_block;
+    
+    BOOL loop_top = TRUE;
+    BOOL last_expression_is_return = FALSE;
+    if(!compile_block(while_node_block, info, &last_expression_is_return, loop_top))
+    {
+        info->num_loop--;
+        return FALSE;
+    }
+
+    //info->current_node_block = current_node_block;
+
+    if(!last_expression_is_return) {
+        Builder.CreateBr(loop_top_block);
+    }
+
+    info->num_loop--;
+    info->num_loop2--;
+
+    //info->last_expression_is_return = last_expression_is_return_before;
+
+    BasicBlock* current_block_before3;
+    llvm_change_block(cond_end_block, &current_block_before3, info, FALSE);
+
+    info->type = create_node_type_with_class_name("void");
+
+    info->switch_expression = switch_expression_before;
+
+    return TRUE;
+}
+
+static BOOL compile_do_while_statment(unsigned int node, sCompileInfo* info)
+{
+    void* switch_expression_before = info->switch_expression;
+    info->switch_expression = NULL;
+
+    unsigned int while_node_block = gNodes[node].uValue.sWhile.mWhileNodeBlock;
+
+    sFunction* fun = (sFunction*)info->function;
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* loop_top_block = BasicBlock::Create(TheContext, "loop_top_block", llvm_function);
+
+    Builder.CreateBr(loop_top_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(loop_top_block, &current_block_before, info, FALSE);
+
+    info->loop_begin_block[info->num_loop2] = loop_top_block;
+    info->num_loop2++;
+
+    if(info->num_loop2 >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. do while", info->num_loop2);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_end_block", llvm_function);
+
+    info->loop_end_block[info->num_loop] = cond_end_block;
+    info->num_loop++;
+
+    if(info->num_loop >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. do while", info->num_loop);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+//    sNodeBlock* current_node_block = info->current_node_block;
+//    info->current_node_block = while_node_block;
+
+    BOOL last_expression_is_return = FALSE;
+    BOOL loop_top = TRUE;
+    if(!compile_block(while_node_block, info, &last_expression_is_return, loop_top))
+    {
+        info->num_loop--;
+        return FALSE;
+    }
+
+//    info->current_node_block = current_node_block;
+
+    /// compile expression ///
+    unsigned int expression_node = gNodes[node].uValue.sWhile.mExpressionNode;
+
+    if(!compile(expression_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* conditional_type = info->type;
+
+    LVALUE conditional_value = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+//    free_right_value_objects(info);
+    Builder.CreateCondBr(conditional_value.value, loop_top_block, cond_end_block);
+
+    sNodeType* bool_type = create_node_type_with_class_name("bool");
+
+    if(auto_cast_posibility(bool_type, conditional_type)) {
+        if(!cast_right_type_to_left_type(bool_type, &conditional_type, &conditional_value, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+            return TRUE;
+        }
+    }
+
+    if(!type_identify_with_class_name(conditional_type, "bool")) {
+        compile_err_msg(info, "This conditional type is not bool");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    BasicBlock* current_block_before2;
+    llvm_change_block(cond_end_block, &current_block_before2, info, FALSE);
+
+    info->type = create_node_type_with_class_name("void");
+
+    info->switch_expression = switch_expression_before;
+
+    return TRUE;
+}
+
+BOOL compile_switch_statment(unsigned int node, sCompileInfo* info)
+{
+    unsigned int* switch_expression = gNodes[node].uValue.sSwitch.mSwitchExpression;
+    int num_switch_expression = gNodes[node].uValue.sSwitch.mNumSwitchExpression;
+    unsigned int expression_node = gNodes[node].uValue.sSwitch.mExpression;
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* loop_end_block = BasicBlock::Create(TheContext, "end_block", llvm_function);
+
+    info->loop_end_block[info->num_loop] = loop_end_block;
+    info->num_loop++;
+
+    if(info->num_loop >= LOOP_NEST_MAX) {
+        compile_err_msg(info, "Over flow loop number. Loop number is %d. switch", info->num_loop);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    if(!compile(expression_node, info)) {
+        return FALSE;
+    }
+
+    void* switch_expression_before = info->switch_expression;
+    info->switch_expression = get_value_from_stack(-1)->value;
+    sNodeType* switch_expression_type_before = info->switch_expression_type;
+    info->switch_expression_type = clone_node_type(get_value_from_stack(-1)->type);
+    dec_stack_ptr(1, info);
+
+    info->case_else_block = nullptr;
+
+    int i;
+    unsigned int node2;
+    for(i=0; i<num_switch_expression; i++) {
+        int sline = info->sline;
+        gNodes[node].mLine = info->sline;
+        
+        /// compile node ///
+        node2 = switch_expression[i];
+
+        info->sline = gNodes[node2].mLine;
+
+        if(!compile(node2, info)) {
+            info->num_loop--;
+            return FALSE;
+        }
+    }
+
+    BasicBlock* case_else_block;
+    if(gNodes[node2].mNodeType == kNodeTypeReturn) {
+        case_else_block = NULL;
+    }
+    else {
+        case_else_block = (BasicBlock*)info->case_else_block;
+    }
+
+    if(case_else_block) {
+        Builder.CreateBr(case_else_block);
+
+        BasicBlock* current_block_before;
+        llvm_change_block(case_else_block, &current_block_before, info, FALSE);
+    }
+
+    info->switch_expression = switch_expression_before;
+    info->switch_expression_type = switch_expression_type_before;
+
+    //free_right_value_objects(info);
+    Builder.CreateBr(loop_end_block);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(loop_end_block, &current_block_before, info, FALSE);
+
+    info->type = create_node_type_with_class_name("void");
+
+    info->case_else_block = nullptr;
+
+    info->num_loop--;
+
+    return TRUE;
+}
+
+BOOL compile_case_expression(unsigned int node, sCompileInfo* info)
+{
+    unsigned int expression_node = gNodes[node].uValue.sCase.mExpression;
+    BOOL first_case = gNodes[node].uValue.sCase.mFirstCase;
+    BOOL last_case = gNodes[node].uValue.sCase.mLastCase;
+    BOOL case_after_return = gNodes[node].uValue.sCase.mCaseAfterReturn;
+    unsigned int first_statment = gNodes[node].uValue.sCase.mFirstStatment;
+    unsigned int last_statment = gNodes[node].uValue.sCase.mLastStatment;
+
+    if(last_statment) {
+        if(!compile(last_statment, info)) {
+            return FALSE;
+        }
+    }
+
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* cond_then_block;
+    if(first_case) {
+        cond_then_block = BasicBlock::Create(TheContext, "cond_then_block", llvm_function);
+        info->case_then_block = cond_then_block;
+    }
+    else {
+        cond_then_block = (BasicBlock*)info->case_then_block;
+    }
+    BasicBlock* cond_else_block = BasicBlock::Create(TheContext, "cond_else_block", llvm_function);
+
+    BasicBlock* case_else_block = (BasicBlock*)info->case_else_block;
+
+    if(case_else_block) {
+        if(first_case && !case_after_return) {
+            Builder.CreateBr(case_else_block);
+        }
+
+        BasicBlock* current_block_before;
+        llvm_change_block(case_else_block, &current_block_before, info, FALSE);
+    }
+
+    if(expression_node == 0) {
+        Builder.CreateBr(cond_then_block);
+    }
+    else {
+        if(!compile(expression_node, info)) {
+            return FALSE;
+        }
+
+        LVALUE rvalue = *get_value_from_stack(-1);
+
+        dec_stack_ptr(1, info);
+        Value* lvalue = (Value*)info->switch_expression;
+        sNodeType* left_type = info->switch_expression_type;
+
+        if(lvalue == nullptr) {
+            compile_err_msg(info, "No in the switch.");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+
+        if(auto_cast_posibility(left_type, rvalue.type))
+        {
+            cast_right_type_to_left_type(left_type, &rvalue.type, &rvalue, info);
+        }
+
+        Value* conditional_value = Builder.CreateICmpEQ(lvalue, rvalue.value, "eqtmpY");
+        free_right_value_objects(info);
+        Builder.CreateCondBr(conditional_value, cond_then_block, cond_else_block);
+    }
+
+    if(last_case) {
+        BasicBlock* current_block_before;
+        llvm_change_block(cond_then_block, &current_block_before, info, FALSE);
+    }
+
+    info->case_else_block = cond_else_block;
+
+    if(first_statment) {
+        if(!compile(first_statment, info)) {
+            return FALSE;
+        }
+    }
+
+    info->type = create_node_type_with_class_name("void");
+
+    return TRUE;
+}
+
+BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
+{
+    if(info->num_loop <= 0) {
+        compile_err_msg(info, "No in the loop");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    BasicBlock* loop_end_block = (BasicBlock*)info->loop_end_block[info->num_loop-1];
+    //info->num_loop--;
+
+/*
+    if(info->switch_expression == NULL && info->current_block) {
+        free_objects_with_parents(nullptr, info);
+    }
+*/
+    free_objects_until_loop_top(nullptr, info);
+    Builder.CreateBr(loop_end_block);
+
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* after_break = BasicBlock::Create(TheContext, "after_break", llvm_function);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(after_break, &current_block_before, info, FALSE);
+
+    info->type = create_node_type_with_class_name("void");
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -8076,6 +8676,48 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeArrayInitializer: {
             if(!compile_array_initializer(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeFor: {
+            if(!compile_for_statment(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeWhile: {
+            if(!compile_while_statment(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeDoWhile: {
+            if(!compile_do_while_statment(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeSwitch: {
+            if(!compile_switch_statment(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeCase: {
+            if(!compile_case_expression(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeBreak: {
+            if(!compile_break_expression(node, info)) {
                 return FALSE;
             }
             }

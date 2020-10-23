@@ -40,6 +40,7 @@
 #define TYPEDEF_MAX 4096
 #define MACRO_MAX 1024
 #define ARRAY_DIMENTION_MAX 5
+#define SWITCH_STASTMENT_NODE_MAX 4096*2
 
 #define clint64 long long      // for 32 bit cpu
 
@@ -271,7 +272,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak };
 
 struct sNodeTreeStruct 
 {
@@ -390,6 +391,29 @@ struct sNodeTreeStruct
             BOOL mGlobal;
             char mVarName[VAR_NAME_MAX];
         } sArrayInitializer;
+        struct {
+            unsigned int mExpressionNode;
+            unsigned int mExpressionNode2;
+            unsigned int mExpressionNode3;
+            unsigned int mForNodeBlock;
+        } sFor;
+        struct {
+            unsigned int mExpressionNode;
+            unsigned int mWhileNodeBlock;
+        } sWhile;
+        struct {
+            unsigned int mSwitchExpression[SWITCH_STASTMENT_NODE_MAX];
+            int mNumSwitchExpression;
+            unsigned int mExpression;
+        } sSwitch;
+        struct {
+            unsigned int mExpression;
+            BOOL mLastCase;
+            BOOL mFirstCase;
+            BOOL mCaseAfterReturn;
+            unsigned int mFirstStatment;
+            unsigned int mLastStatment;
+        } sCase;
     } uValue;
 };
 
@@ -405,6 +429,7 @@ void init_nodes();
 void free_nodes();
 
 unsigned int sNodeTree_create_int_value(int value, char* sname, int sline);
+unsigned int sNodeTree_case_expression(unsigned int expression_node, BOOL first_case, BOOL last_case, BOOL case_after_return, unsigned int first_statment, BOOL last_statment, char* sname, int sline);
 unsigned int sNodeTree_create_char_value(char value, char* sname, int sline);
 unsigned int sNodeTree_create_true(char* sname, int sline);
 unsigned int sNodeTree_create_false(char* sname, int sline);
@@ -428,7 +453,7 @@ unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, un
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
 unsigned int sNodeTree_create_block(char* sname, int sline);
-unsigned int sNodeTree_create_return(unsigned int right, char* sname, int sline);
+unsigned int sNodeTree_create_return(unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline);
 unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
 unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, char* sname, int sline);
@@ -487,6 +512,18 @@ struct sCompileInfoStruct
     void* right_value_objects;
 
     sNodeType* generics_type;
+
+    void* switch_expression;
+    sNodeType* switch_expression_type;
+    void* case_else_block;
+    void* case_then_block;
+
+    void* loop_end_block[LOOP_NEST_MAX];
+    int num_loop;
+    void* loop_begin_block[LOOP_NEST_MAX];
+    int num_loop2;
+
+    sVarTable* loop_top_lv_table;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

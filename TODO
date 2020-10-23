@@ -1,12 +1,21 @@
 
-for
-switch
-while
-do, while
+
+check automatically free especially right value heap free and break and return
+
+loop break
+loop continue
+
+int a[3][3] = { { 1,2,3 }, { 1,2,3 }, {1,2,3}};
 
 cast
 
 sizeof
+
+
+
+
+
+
 
 preprocesser
 
@@ -60,3 +69,8 @@ array initializer
 
 operators
 
+for
+while
+do, while
+switch
+loop break automatically free
