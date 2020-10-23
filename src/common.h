@@ -19,6 +19,7 @@
 /// limits 
 //////////////////////////////
 #define GENERICS_TYPES_MAX 10
+#define BLOCK_NEST_MAX 256
 #define VAR_NAME_MAX 128
 #define CLASS_NUM_MAX 512*2*2*2*2*2
 #define PARSER_ERR_MSG_MAX 5

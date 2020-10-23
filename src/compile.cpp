@@ -1793,11 +1793,11 @@ void free_objects_until_loop_top(Value* inhibit_free_object_address, sCompileInf
 
     while(it != NULL) 
     {
-        free_objects(it, inhibit_free_object_address, info);
-
         if(info->loop_top_lv_table == it) {
             break;
         }
+
+        free_objects(it, inhibit_free_object_address, info);
 
         it = it->mParent;
     }
@@ -8329,12 +8329,9 @@ BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
     BasicBlock* loop_end_block = (BasicBlock*)info->loop_end_block[info->num_loop-1];
     //info->num_loop--;
 
-/*
     if(info->switch_expression == NULL && info->current_block) {
-        free_objects_with_parents(nullptr, info);
+        free_objects_until_loop_top(nullptr, info);
     }
-*/
-    free_objects_until_loop_top(nullptr, info);
     Builder.CreateBr(loop_end_block);
 
     sFunction* fun = (sFunction*)info->function;

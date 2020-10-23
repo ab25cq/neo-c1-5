@@ -6,7 +6,8 @@
 #include "common.h"
 
 unsigned int it;
-unsigned int prev_block;
+unsigned int prev_block[BLOCK_NEST_MAX];
+int num_prev_block = 0;
 unsigned int block;
 BOOL var_arg;
 unsigned int func_params;
@@ -871,7 +872,14 @@ function_generics_types: {
 
 
 block:  statment                  { 
-            prev_block = block;
+            prev_block[num_prev_block] = block;
+            num_prev_block++;
+
+            if(num_prev_block >= BLOCK_NEST_MAX) {
+                fprintf(stderr, "overflow nest block\n");
+                exit(2);
+            }
+
             block = sNodeTree_create_block(gSName, gSLine); append_node_to_node_block(block, $1); $$ = block; 
         } 
         | block statment          { 
@@ -880,7 +888,13 @@ block:  statment                  {
         ;
 
 block_end: {
-        block = prev_block;
+        block = prev_block[num_prev_block-1];
+
+        num_prev_block--;
+        if(num_prev_block < 0) {
+            fprintf(stderr, "overflow nest block\n");
+            exit(2);
+        }
         $$ = block;
         };
 

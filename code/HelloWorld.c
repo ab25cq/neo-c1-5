@@ -397,7 +397,7 @@ int main()
     } while( i < 3);
 */
 
-    switch(4) {
+    switch(1) {
         case 2:
         case 1:
             puts("1 or 2");
@@ -410,6 +410,14 @@ int main()
         default:
             puts("default");
             break;
+    }
+
+    for(int i=0; i<3; i++) {
+        printf("i %d\n", i);
+
+        if(1 == 1) {
+            puts("AAA");
+        }
     }
 
     return 0;
