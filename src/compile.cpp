@@ -8348,6 +8348,36 @@ BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+BOOL compile_continue_expression(unsigned int node, sCompileInfo* info)
+{
+    if(info->num_loop2 <= 0) {
+        compile_err_msg(info, "No in the loop");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    BasicBlock* loop_begin_block = (BasicBlock*)info->loop_begin_block[info->num_loop2-1];
+    //info->num_loop2--;
+
+    Builder.CreateBr(loop_begin_block);
+
+    sFunction* fun = (sFunction*)info->function;
+
+    Function* llvm_function = fun->mLLVMFunction;
+
+    BasicBlock* after_continue = BasicBlock::Create(TheContext, "after_continue", llvm_function);
+
+    BasicBlock* current_block_before;
+    llvm_change_block(after_continue, &current_block_before, info, FALSE);
+
+    info->type = create_node_type_with_class_name("void");
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -8715,6 +8745,13 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeBreak: {
             if(!compile_break_expression(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeContinue: {
+            if(!compile_continue_expression(node, info)) {
                 return FALSE;
             }
             }

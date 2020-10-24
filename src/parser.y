@@ -99,6 +99,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %token <cval> SWITCH
 %token <cval> CASE
 %token <cval> BREAK
+%token <cval> CONTINUE
 %token <cval> DEFAULT
 %type <cval> type 
 %type <cval> type_name
@@ -976,6 +977,9 @@ statment: comma_exp ';'              { $$ = $1; }
     }
     | BREAK ';' {
         $$ = sNodeTree_create_break_expression(gSName, gSLine);
+    }
+    | CONTINUE ';' {
+        $$ = sNodeTree_create_continue_expression(gSName, gSLine);
     }
     | DO '{' block '}' block_end WHILE '(' comma_exp ')' ';' {
         unsigned int expression_node1 = $8;

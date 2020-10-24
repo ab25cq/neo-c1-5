@@ -453,6 +453,11 @@ break {
     return(BREAK);
 }
 
+continue {
+    strncpy(yylval.cval, yytext, 128);
+    return(CONTINUE);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
     return(IDENTIFIER); 

@@ -8,7 +8,6 @@ int atoi(const char* str);
 int atoi(const char* str);
 int strcmp(const char* str1, const char* str2);
 
-/*
 int fun() {
     puts("called fun");
     return 2;
@@ -180,11 +179,9 @@ int gArray[3] = { 1, 2, 3 };
 char gArray2[3] = "AB";
 
 int gArray3[] = { 1, 2, 3 };
-*/
 
 int main() 
 {
-/*
     puts("HELLO WORLD");
 
     xassert("test1", true);
@@ -395,7 +392,6 @@ int main()
         printf("i %d\n", i);
         i++;
     } while( i < 3);
-*/
 
     switch(1) {
         case 2:
@@ -415,8 +411,8 @@ int main()
     for(int i=0; i<3; i++) {
         printf("i %d\n", i);
 
-        if(1 == 1) {
-            puts("AAA");
+        if(i == 2) {
+            continue;
         }
     }
 
