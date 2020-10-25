@@ -112,7 +112,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment;
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2;
 
 %left OROR
 %left ANDAND
@@ -1182,6 +1182,18 @@ exp: node {
     | '&' node       { $$ = sNodeTree_create_refference($2, gSName, gSLine); }
     ;
 
+cstring_array_value2: CSTRING {
+        $$ = sNodeTree_create_c_string($1, gSName, gSLine);
+
+        num_array_value = 0;
+        array_values[num_array_value++] = $$;
+    }
+    | cstring_array_value2 ',' CSTRING {
+        $$ = sNodeTree_create_c_string($3, gSName, gSLine);
+
+        array_values[num_array_value++] = $$;
+    };
+
 node: 
         INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
         | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, gSLine); }
@@ -1202,6 +1214,20 @@ node:
             BOOL global = FALSE;
 
             $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
+        }
+        | type IDENTIFIER const_array_type '=' '{' cstring_array_value2 '}' { 
+            char type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $1, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            char* var_name = $2;
+
+            BOOL global = FALSE;
+            BOOL extern_ = FALSE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, gSLine);
+
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, gSLine);
         }
         | type IDENTIFIER const_array_type '=' '{' array_value '}' { 
             char type_name[VAR_NAME_MAX];

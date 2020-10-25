@@ -3,6 +3,9 @@ source_filename = "Module stdin"
 
 @gLVTable0 = internal global [512 x i8*] zeroinitializer, align 8
 @global_string = private constant [4 x i8] c"%d\0A\00", align 1
+@global_string.2 = private constant [4 x i8] c"AAA\00", align 1
+@global_string.3 = private constant [4 x i8] c"BBB\00", align 1
+@global_string.4 = private constant [7 x i8] c"%s %s\0A\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -81,5 +84,23 @@ entry:
   %39 = getelementptr inbounds [3 x i32], [3 x i32]* %38, i32 0, i32 2
   %element = load i32, i32* %39, align 4
   %40 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string, i32 0, i32 0), i32 %element)
+  %aa = alloca [2 x i8*]
+  %41 = bitcast [2 x i8*]* %aa to i8*
+  store i8* %41, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable0, i32 0, i32 1), align 8
+  %42 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %43 = bitcast [2 x i8*]* %aa to i8**
+  %element_address = getelementptr i8*, i8** %43, i64 0
+  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.2, i32 0, i32 0), i8** %element_address, align 8
+  %element_address3 = getelementptr i8*, i8** %43, i64 1
+  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.3, i32 0, i32 0), i8** %element_address3, align 8
+  %aa4 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %44 = bitcast [2 x i8*]* %aa to i8**
+  %element_address5 = getelementptr i8*, i8** %44, i32 1
+  %element6 = load i8*, i8** %element_address5, align 8
+  %aa7 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %45 = bitcast [2 x i8*]* %aa to i8**
+  %element_address8 = getelementptr i8*, i8** %45, i32 0
+  %element9 = load i8*, i8** %element_address8, align 8
+  %46 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @global_string.4, i32 0, i32 0), i8* %element9, i8* %element6)
   ret i32 0
 }

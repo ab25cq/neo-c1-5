@@ -454,6 +454,9 @@ int main()
 
     printf("%d\n", ay[0][1][2]);
 
+    char* aa[2] = { "AAA", "BBB" };
+
+    printf("%s %s\n", aa[0], aa[1]);
 
     return 0;
 }
