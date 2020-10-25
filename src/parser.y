@@ -637,7 +637,7 @@ global_variable:
         ;
 
 array_value: 
-    exp {
+    | exp {
         num_array_value = 0;
         array_values[num_array_value++] = $1;
 
@@ -647,18 +647,6 @@ array_value:
         }
 
         $$ = $1;
-    }
-    | '{' exp {
-        num_array_value = 0;
-
-        array_values[num_array_value++] = $2;
-
-        if(num_array_value >= INIT_ARRAY_MAX) {
-            fprintf(stderr, "overflow array element numver\n");
-            exit(1);
-        }
-
-        $$ = $2;
     }
     | array_value ',' exp {
         array_values[num_array_value++] = $3;
@@ -670,6 +658,7 @@ array_value:
 
         $$ = $3;
     }
+/*
     | array_value ',' exp '}' {
         array_values[num_array_value++] = $3;
 
@@ -690,6 +679,7 @@ array_value:
 
         $$ = $4;
     }
+*/
     ;
 
 function: 

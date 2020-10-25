@@ -8,7 +8,6 @@ int atoi(const char* str);
 int atoi(const char* str);
 int strcmp(const char* str1, const char* str2);
 
-/*
 int fun() {
     puts("called fun");
     return 2;
@@ -182,23 +181,21 @@ char gArray2[3] = "AB";
 int gArray3[] = { 1, 2, 3 };
 
 int gArray4[3][3][3] = {
-    1,2,3,
+    { 1,2,3,
     2,3,4,
-    5,6,7,
+    5,6,7 },
 
+    { 1,2,3,
     1,2,3,
-    1,2,3,
-    1,2,3,
+    1,2,3 },
 
-    11,12,13,
+    { 11,12,13,
     14,15,16,
-    17, 18, 19
+    17, 18, 19 }
 };
-*/
 
 int main() 
 {
-/*
     puts("HELLO WORLD");
 
     xassert("test1", true);
@@ -424,7 +421,6 @@ int main()
             puts("default");
             break;
     }
-*/
 
 /*
     for(int i=0; i<3; i++) {
@@ -436,27 +432,22 @@ int main()
     }
 */
 
-    //int aaaaaa = gArray4[0][1][2];
+    int aaaaaa = gArray4[0][1][2];
 
-//printf("aaaaaa %d\n", aaaaaa);
+    xassert("global array initializer test", aaaaaa == 4);
 
-/*
-    gArray4[1][2][2] = 123;
-    printf("aaaa %d\n", gArray4[1][2][2]);
-*/
+    xassert("array initializer test", gArray4[1][1][1] == 2 && gArray4[2][0][1] == 12);
 
-//    xassert("array initializer test", gArray4[1][1][1] == 2 && gArray4[2][0][1] == 12);
-//
     int ay[2][2][3] = { 
         { 1,2,3 }, { 4,5,6 },
         { 7,8,9 }, { 11,12,13 }
     };
 
-    printf("%d\n", ay[0][1][2]);
+    xassert("local array initializer test", ay[0][1][2] == 6);
 
     char* aa[2] = { "AAA", "BBB" };
 
-    printf("%s %s\n", aa[0], aa[1]);
+    xassert("local cstring array initializer test", strcmp(aa[0], "AAA") == 0 && strcmp(aa[1], "BBB") == 0);
 
     return 0;
 }
