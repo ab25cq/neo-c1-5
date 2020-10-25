@@ -1,6 +1,5 @@
-loop continue
 
-int a[3][3] = { { 1,2,3 }, { 1,2,3 }, {1,2,3}};
+global variable multiple array access store
 
 cast
 
@@ -66,3 +65,6 @@ do, while
 switch
 loop break automatically free
 loop break
+loop continue
+
+int a[3][3] = { { 1,2,3 }, { 1,2,3 }, {1,2,3}};

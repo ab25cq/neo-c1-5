@@ -7292,24 +7292,29 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
 
             element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
         }
-        else if(left_type->mArrayDimentionNum > 1) {
+        else if(left_type->mArrayDimentionNum == 2) {
+            int i;
             Value* lvalue2 = lvalue.address;
 
             load_element_addresss = lvalue2;
 
-            for(i=0; i<num_dimention; i++) {
-                Value* indices[num_dimention-i];
+            Value* indices[2];
 
-                int j;
-                for(j=i; j<num_dimention; j++) {
-                    indices[j-i] = rvalue[j].value;
-                }
+            indices[0] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
 
-                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, num_dimention-i));
-            }
+            indices[1] = rvalue[0].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+
+            indices[1] = rvalue[1].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
 
             sNodeType* var_type3 = clone_node_type(var_type);
-            var_type3->mPointerNum = 1;
+            var_type3->mPointerNum -= num_dimention;
+            var_type3->mPointerNum+=2;
             var_type3->mArrayDimentionNum = 0;
 
             Type* llvm_var_type2;
@@ -7324,15 +7329,64 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
 
-            load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            if(var_type3->mPointerNum == 0) {
+                element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+            }
+            else {
+                load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+                element_value = load_element_addresss;
+            }
+        }
+        else if(left_type->mArrayDimentionNum == 3) {
+            int i;
+            Value* lvalue2 = lvalue.address;
+
+            load_element_addresss = lvalue2;
+
+            Value* indices[2];
+
+            indices[0] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+
+            indices[1] = rvalue[0].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+
+            indices[1] = rvalue[1].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+
+            indices[1] = rvalue[2].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum -= num_dimention;
+            var_type3->mPointerNum+=2;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
 
             int alignment = get_llvm_alignment_from_node_type(var_type);
 
             element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
-
         }
-/*
-        else if(left_type->mArrayDimentionNum > 1) {
+        else if(left_type->mArrayDimentionNum > 3) {
             int i;
             Value* lvalue2 = lvalue.address;
 
@@ -7382,7 +7436,6 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
                 element_value = load_element_addresss;
             }
         }
-*/
         else {
             Value* lvalue2 = lvalue.value;
 
@@ -7414,7 +7467,7 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-static BOOL compile_store_element(unsigned int node, sCompileInfo* info)
+BOOL compile_store_element(unsigned int node, sCompileInfo* info)
 {
     int num_dimention = gNodes[node].uValue.sStoreElement.mArrayDimentionNum;
     int i;
@@ -7556,6 +7609,83 @@ static BOOL compile_store_element(unsigned int node, sCompileInfo* info)
 
             Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
         }
+        else if(left_type->mArrayDimentionNum == 2) {
+            Value* load_element_addresss = lvalue.address;
+            Value* indices[2];
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = mvalue[0].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = mvalue[1].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum = 1;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            //load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+        }
+        else if(left_type->mArrayDimentionNum == 3) {
+            Value* load_element_addresss = lvalue.address;
+            Value* indices[2];
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = mvalue[0].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = mvalue[1].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = mvalue[2].value;
+
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum = 1;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            //load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+        }
         else if(left_type->mArrayDimentionNum > 1) {
             Value* load_element_addresss = lvalue.address;
             for(i=0; i<num_dimention; i++) {
@@ -7641,143 +7771,549 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
 
         sNodeType* var_type = var->mType;
 
-        std::vector<Constant *> init_data(num_array_value);
+        if(var_type->mArrayDimentionNum == 1) {
+            std::vector<Constant *> init_data(num_array_value);
 
-        int i;
-        for(i=0; i<num_array_value; i++) {
-            /// compile node ///
-            unsigned int element_node = array_values[i];
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
 
-            if(!compile(element_node, info)) {
-                return FALSE;
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = clone_node_type(info->type);
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                if(dyn_cast<Constant>(rvalue.value)) 
+                {
+                    init_data[i] = dyn_cast<Constant>(rvalue.value);
+                }
+                else {
+                    compile_err_msg(info, "Require Constant Value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
             }
 
-            sNodeType* right_type = clone_node_type(info->type);
+            sNodeType* var_element_type = clone_node_type(var_type);
+            var_element_type->mPointerNum--;
 
-            LVALUE rvalue = *get_value_from_stack(-1);
-
-            dec_stack_ptr(1, info);
-
-            if(dyn_cast<Constant>(rvalue.value)) 
+            Type* var_llvm_element_type;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type, var_element_type, var_element_type, info))
             {
-                init_data[i] = dyn_cast<Constant>(rvalue.value);
-            }
-            else {
-                compile_err_msg(info, "Require Constant Value");
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
 
                 return TRUE;
             }
+
+            int alignment = get_llvm_alignment_from_node_type(var_element_type);
+
+            GlobalVariable* address = (GlobalVariable*)var->mLLVMValue;
+
+            Constant* constant_array = ConstantArray::get(ArrayType::get(var_llvm_element_type, num_array_value), init_data);
+            address->setAlignment(alignment);
+
+            ConstantAggregateZero* initializer = ConstantAggregateZero::get(var_llvm_element_type);
+
+            address->setInitializer(constant_array);
         }
+        else if(var_type->mArrayDimentionNum == 2) {
+            int array_num = var_type->mArrayNum[1];
 
-        sNodeType* var_element_type = clone_node_type(var_type);
-        var_element_type->mPointerNum--;
+            sNodeType* var_element_type = clone_node_type(var_type);
+            var_element_type->mArrayDimentionNum--;
+            var_element_type->mPointerNum--;
 
-        Type* var_llvm_element_type;
-        if(!create_llvm_type_from_node_type(&var_llvm_element_type, var_element_type, var_element_type, info))
-        {
-            compile_err_msg(info, "Getting llvm type failed(13)");
-            show_node_type(var_element_type);
+            Type* var_llvm_element_type;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type, var_element_type, var_element_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+
+            std::vector<Constant*> init_data;
+            std::vector<Constant*> init_datas;
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
+
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = clone_node_type(info->type);
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                if(dyn_cast<Constant>(rvalue.value)) 
+                {
+                    if(i % array_num == 0 && i != 0) {
+                        Constant* constant_data = ConstantArray::get(ArrayType::get(var_llvm_element_type, array_num), init_data);
+                        init_datas.push_back(constant_data);
+                        init_data.clear();
+                    }
+                    init_data.push_back(dyn_cast<Constant>(rvalue.value));
+                }
+                else {
+                    compile_err_msg(info, "Require Constant Value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+            }
+
+            Constant* constant_data = ConstantArray::get(ArrayType::get(var_llvm_element_type, array_num), init_data);
+            init_datas.push_back(constant_data);
+            init_data.clear();
+            int alignment = get_llvm_alignment_from_node_type(var_element_type);
+
+            GlobalVariable* address = (GlobalVariable*)var->mLLVMValue;
+
+
+            Constant* initializer = ConstantArray::get(ArrayType::get(var_llvm_element_type, array_num), init_datas);
+            address->setAlignment(alignment);
+
+            address->setInitializer(initializer);
+        }
+        else if(var_type->mArrayDimentionNum == 3) {
+            int array_num = var_type->mArrayNum[1];
+            int array_num2 = var_type->mArrayNum[2];
+
+            sNodeType* var_element_type0 = clone_node_type(var_type);
+            var_element_type0->mArrayDimentionNum-=3;
+            var_element_type0->mPointerNum--;
+
+            Type* var_llvm_element_type0;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type0, var_element_type0, var_element_type0, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type0);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            sNodeType* var_element_type = clone_node_type(var_type);
+            var_element_type->mArrayDimentionNum-=2;
+            var_element_type->mPointerNum--;
+
+            Type* var_llvm_element_type;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type, var_element_type, var_element_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            sNodeType* var_element_type2 = clone_node_type(var_type);
+            var_element_type2->mArrayDimentionNum--;
+            var_element_type2->mPointerNum--;
+
+            Type* var_llvm_element_type2;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type2, var_element_type2, var_element_type2, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+
+            std::vector<Constant*> init_data;
+            std::vector<Constant*> init_datas;
+            std::vector<Constant*> init_datas2;
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
+
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = clone_node_type(info->type);
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                if(dyn_cast<Constant>(rvalue.value)) 
+                {
+                    if(i % array_num == 0 && i != 0) {
+                        Constant* constant_data = ConstantArray::get(ArrayType::get(var_llvm_element_type0, array_num), init_data);
+                        init_datas.push_back(constant_data);
+                        init_data.clear();
+                    }
+                    if(i % (array_num * array_num2) == 0 && i != 0) {
+                        Constant* constant_data = ConstantArray::get(ArrayType::get(var_llvm_element_type, array_num2), init_datas);
+                        init_datas2.push_back(constant_data);
+                        init_data.clear();
+                        init_datas.clear();
+                    }
+                    init_data.push_back(dyn_cast<Constant>(rvalue.value));
+                }
+                else {
+                    compile_err_msg(info, "Require Constant Value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+            }
+
+            Constant* constant_data = ConstantArray::get(ArrayType::get(var_llvm_element_type0, array_num), init_data);
+            init_datas.push_back(constant_data);
+            init_data.clear();
+
+            Constant* constant_data2 = ConstantArray::get(ArrayType::get(var_llvm_element_type, array_num2), init_datas);
+            init_datas2.push_back(constant_data2);
+            init_data.clear();
+            init_datas.clear();
+
+            int alignment = get_llvm_alignment_from_node_type(var_element_type);
+
+            GlobalVariable* address = (GlobalVariable*)var->mLLVMValue;
+
+            Type* var_llvm_element_type3;
+            if(!create_llvm_type_from_node_type(&var_llvm_element_type3, var_type, var_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(13)");
+                show_node_type(var_element_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+
+            Constant* initializer = ConstantArray::get(ArrayType::get(var_llvm_element_type2, array_num2), init_datas2);
+            address->setAlignment(alignment);
+
+            address->setInitializer(initializer);
+        }
+        else {
+            compile_err_msg(info, "overflow dimetion of array initializer");
             info->err_num++;
 
             info->type = create_node_type_with_class_name("int"); // dummy
 
             return TRUE;
         }
-
-        int alignment = get_llvm_alignment_from_node_type(var_element_type);
-
-        GlobalVariable* address = (GlobalVariable*)var->mLLVMValue;
-
-        Constant* constant_array = ConstantArray::get(ArrayType::get(var_llvm_element_type, num_array_value), init_data);
-        address->setAlignment(alignment);
-
-        ConstantAggregateZero* initializer = ConstantAggregateZero::get(var_llvm_element_type);
-
-        address->setInitializer(constant_array);
     }
     else {
         sVar* var = get_variable_from_table(info->lv_table, var_name);
 
         sNodeType* var_type = var->mType;
 
-        if(var_type == NULL || var_type->mClass == NULL) 
-        {
-            compile_err_msg(info, "null type %s", var_name);
-            info->err_num++;
+        if(var_type->mArrayDimentionNum == 1) {
+            sNodeType* var_type = var->mType;
 
-            info->type = create_node_type_with_class_name("int"); // dummy
-            return TRUE;
-        }
+            if(var_type == NULL || var_type->mClass == NULL) 
+            {
+                compile_err_msg(info, "null type %s", var_name);
+                info->err_num++;
 
-        BOOL parent = FALSE;
-        int index = get_variable_index(info->lv_table, var_name, &parent);
-
-        Value* var_address;
-        if(parent) {
-            var_address = load_address_to_lvtable(index, var_type, info);
-        }
-        else {
-            var_address = (Value*)var->mLLVMValue;
-        }
-
-        if(var_address == nullptr) {
-            compile_err_msg(info, "Invalid variable. %s. array with initialization", var_name);
-            info->err_num++;
-
-            info->type = create_node_type_with_class_name("int"); // dummy
-
-            return TRUE;
-        }
-
-        int alignment = get_llvm_alignment_from_node_type(var_type);
-
-        var_address = Builder.CreateAlignedLoad(var_address, alignment);
-
-        sNodeType* var_element_type = clone_node_type(var_type);
-        var_element_type->mPointerNum++;
-        var_element_type->mArrayDimentionNum = 0;
-
-        Value* lvalue = (Value*)var->mLLVMValue;
-
-        Type* llvm_var_type;
-        if(!create_llvm_type_from_node_type(&llvm_var_type, var_element_type, var_element_type, info))
-        {
-            compile_err_msg(info, "Getting llvm type failed(11)");
-            show_node_type(var_element_type);
-            info->err_num++;
-
-            info->type = create_node_type_with_class_name("int"); // dummy
-
-            return TRUE;
-        }
-
-        Value* lvalue2 = Builder.CreateCast(Instruction::BitCast, lvalue, llvm_var_type);
-
-        int alignment2 = get_llvm_alignment_from_node_type(var_element_type);
-
-        int i;
-        for(i=0; i<num_array_value; i++) {
-            /// compile node ///
-            unsigned int element_node = array_values[i];
-
-            if(!compile(element_node, info)) {
-                return FALSE;
+                info->type = create_node_type_with_class_name("int"); // dummy
+                return TRUE;
             }
 
-            sNodeType* right_type = info->type;
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
 
-            LVALUE rvalue = *get_value_from_stack(-1);
+            Value* var_address;
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
 
-            dec_stack_ptr(1, info);
+            if(var_address == nullptr) {
+                compile_err_msg(info, "Invalid variable. %s. array with initialization", var_name);
+                info->err_num++;
 
-            Value* mvalue = ConstantInt::get(Type::getInt64Ty(TheContext), i);
+                info->type = create_node_type_with_class_name("int"); // dummy
 
-            Value* load_element_addresss = Builder.CreateGEP(lvalue2, mvalue, "element_address");
+                return TRUE;
+            }
 
-            Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment2);
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            var_address = Builder.CreateAlignedLoad(var_address, alignment);
+
+            sNodeType* var_element_type = clone_node_type(var_type);
+            var_element_type->mPointerNum++;
+            var_element_type->mArrayDimentionNum = 0;
+
+            Value* lvalue = (Value*)var->mLLVMValue;
+
+            Type* llvm_var_type;
+            if(!create_llvm_type_from_node_type(&llvm_var_type, var_element_type, var_element_type, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(11)");
+                show_node_type(var_element_type);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            Value* lvalue2 = Builder.CreateCast(Instruction::BitCast, lvalue, llvm_var_type);
+
+            int alignment2 = get_llvm_alignment_from_node_type(var_element_type);
+
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
+
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = info->type;
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                Value* mvalue = ConstantInt::get(Type::getInt64Ty(TheContext), i);
+
+                Value* load_element_addresss = Builder.CreateGEP(lvalue2, mvalue, "element_address");
+
+                Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment2);
+            }
+        }
+        else if(var_type->mArrayDimentionNum == 2) {
+            sNodeType* var_type = var->mType;
+
+            if(var_type == NULL || var_type->mClass == NULL) 
+            {
+                compile_err_msg(info, "null type %s", var_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+                return TRUE;
+            }
+
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
+
+            Value* var_address;
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
+
+            if(var_address == nullptr) {
+                compile_err_msg(info, "Invalid variable. %s. array with initialization", var_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
+
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = info->type;
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                Value* mvalue[2];
+
+                int n = i / var_type->mArrayNum[0];
+                mvalue[0] = ConstantInt::get(TheContext, llvm::APInt(32, n, false)); 
+                n = i % var_type->mArrayNum[0];
+
+                mvalue[1] = ConstantInt::get(TheContext, llvm::APInt(32, n, false)); 
+
+                Value* load_element_addresss = var_address;
+                Value* indices[2];
+
+                indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+                indices[1] = mvalue[0];
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+                indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+                indices[1] = mvalue[1];
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+                sNodeType* var_type3 = clone_node_type(var_type);
+                var_type3->mPointerNum = 1;
+                var_type3->mArrayDimentionNum = 0;
+
+                Type* llvm_var_type2;
+                if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+                {
+                    compile_err_msg(info, "Getting llvm type failed(10)");
+                    show_node_type(var_type3);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                //load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+                int alignment = get_llvm_alignment_from_node_type(var_type);
+
+                Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+            }
+        }
+        else if(var_type->mArrayDimentionNum == 3) {
+            sNodeType* var_type = var->mType;
+
+            if(var_type == NULL || var_type->mClass == NULL) 
+            {
+                compile_err_msg(info, "null type %s", var_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+                return TRUE;
+            }
+
+            BOOL parent = FALSE;
+            int index = get_variable_index(info->lv_table, var_name, &parent);
+
+            Value* var_address;
+            if(parent) {
+                var_address = load_address_to_lvtable(index, var_type, info);
+            }
+            else {
+                var_address = (Value*)var->mLLVMValue;
+            }
+
+            if(var_address == nullptr) {
+                compile_err_msg(info, "Invalid variable. %s. array with initialization", var_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+            int i;
+            for(i=0; i<num_array_value; i++) {
+                /// compile node ///
+                unsigned int element_node = array_values[i];
+
+                if(!compile(element_node, info)) {
+                    return FALSE;
+                }
+
+                sNodeType* right_type = info->type;
+
+                LVALUE rvalue = *get_value_from_stack(-1);
+
+                dec_stack_ptr(1, info);
+
+                Value* mvalue[3];
+
+                int n = i / (var_type->mArrayNum[0] * var_type->mArrayNum[1]);
+                mvalue[0] = ConstantInt::get(TheContext, llvm::APInt(32, n, false)); 
+                n = (i % (var_type->mArrayNum[0] * var_type->mArrayNum[1]) ) / var_type->mArrayNum[0];
+
+                mvalue[1] = ConstantInt::get(TheContext, llvm::APInt(32, n, false)); 
+                n = i % var_type->mArrayNum[0];
+
+                mvalue[2] = ConstantInt::get(TheContext, llvm::APInt(32, n, false)); 
+
+                Value* load_element_addresss = var_address;
+                Value* indices[2];
+
+                indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+                indices[1] = mvalue[0];
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+                indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+                indices[1] = mvalue[1];
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+                indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+                indices[1] = mvalue[2];
+
+                load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, 2));
+
+                sNodeType* var_type3 = clone_node_type(var_type);
+                var_type3->mPointerNum = 1;
+                var_type3->mArrayDimentionNum = 0;
+
+                Type* llvm_var_type2;
+                if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+                {
+                    compile_err_msg(info, "Getting llvm type failed(10)");
+                    show_node_type(var_type3);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                //load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+
+                int alignment = get_llvm_alignment_from_node_type(var_type);
+
+                Builder.CreateAlignedStore(rvalue.value, load_element_addresss, alignment);
+            }
+        }
+        else {
+            compile_err_msg(info, "overflow dimetion of array initializer");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
         }
     }
 

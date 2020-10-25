@@ -372,7 +372,7 @@ type_and_variable_name:
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
         xstrncat(type_name, $3, VAR_NAME_MAX);
-    
+
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_name, $2, VAR_NAME_MAX);
     }
@@ -636,7 +636,8 @@ global_variable:
         }
         ;
 
-array_value: exp {
+array_value: 
+    exp {
         num_array_value = 0;
         array_values[num_array_value++] = $1;
 
@@ -647,6 +648,18 @@ array_value: exp {
 
         $$ = $1;
     }
+    | '{' exp {
+        num_array_value = 0;
+
+        array_values[num_array_value++] = $2;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $2;
+    }
     | array_value ',' exp {
         array_values[num_array_value++] = $3;
 
@@ -656,6 +669,26 @@ array_value: exp {
         }
 
         $$ = $3;
+    }
+    | array_value ',' exp '}' {
+        array_values[num_array_value++] = $3;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $3;
+    }
+    | array_value ',' '{' exp {
+        array_values[num_array_value++] = $4;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $4;
     }
     ;
 

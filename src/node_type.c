@@ -335,6 +335,15 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
 
                     node_type->mArrayNum[node_type->mArrayDimentionNum++] = n;
 
+                    int array_num[node_type->mArrayDimentionNum];
+                    for(int j=0; j<node_type->mArrayDimentionNum; j++) {
+                        array_num[j] = node_type->mArrayNum[j];
+                    }
+
+                    for(int j=0; j<node_type->mArrayDimentionNum; j++) {
+                        node_type->mArrayNum[j] = array_num[node_type->mArrayDimentionNum-j-1];
+                    }
+
                     if(**p == ']') {
                         (*p)++;
                     }
