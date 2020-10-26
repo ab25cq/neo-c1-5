@@ -1,6 +1,3 @@
-
-global variable multiple array access store
-
 cast
 
 sizeof
@@ -68,3 +65,4 @@ loop break
 loop continue
 
 int a[3][3] = { { 1,2,3 }, { 1,2,3 }, {1,2,3}};
+global variable multiple array access store

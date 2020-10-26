@@ -115,28 +115,30 @@ source_filename = "Module stdin"
 @global_string.75 = private constant [4 x i8] c"DEF\00", align 1
 @global_string.76 = private constant [12 x i8] c"array test5\00", align 1
 @global_string.77 = private constant [23 x i8] c"array initializer test\00", align 1
-@global_string.78 = private constant [24 x i8] c"array initializer test2\00", align 1
-@global_string.79 = private constant [3 x i8] c"AB\00", align 1
-@global_string.80 = private constant [24 x i8] c"array initializer test3\00", align 1
-@global_string.81 = private constant [3 x i8] c"AB\00", align 1
-@global_string.82 = private constant [24 x i8] c"array initializer test4\00", align 1
-@global_string.83 = private constant [24 x i8] c"array initializer test5\00", align 1
-@global_string.84 = private constant [24 x i8] c"array initializer test6\00", align 1
-@global_string.85 = private constant [10 x i8] c"char test\00", align 1
-@global_string.86 = private constant [6 x i8] c"i %d\0A\00", align 1
+@global_string.78 = private constant [18 x i8] c"global array test\00", align 1
+@global_string.79 = private constant [24 x i8] c"array initializer test2\00", align 1
+@global_string.80 = private constant [3 x i8] c"AB\00", align 1
+@global_string.81 = private constant [24 x i8] c"array initializer test3\00", align 1
+@global_string.82 = private constant [3 x i8] c"AB\00", align 1
+@global_string.83 = private constant [24 x i8] c"array initializer test4\00", align 1
+@global_string.84 = private constant [24 x i8] c"array initializer test5\00", align 1
+@global_string.85 = private constant [24 x i8] c"array initializer test6\00", align 1
+@global_string.86 = private constant [10 x i8] c"char test\00", align 1
 @global_string.87 = private constant [6 x i8] c"i %d\0A\00", align 1
 @global_string.88 = private constant [6 x i8] c"i %d\0A\00", align 1
-@global_string.89 = private constant [7 x i8] c"1 or 2\00", align 1
-@global_string.90 = private constant [2 x i8] c"3\00", align 1
-@global_string.91 = private constant [8 x i8] c"default\00", align 1
-@global_string.92 = private constant [30 x i8] c"global array initializer test\00", align 1
-@global_string.93 = private constant [23 x i8] c"array initializer test\00", align 1
-@global_string.94 = private constant [29 x i8] c"local array initializer test\00", align 1
-@global_string.95 = private constant [4 x i8] c"AAA\00", align 1
-@global_string.96 = private constant [4 x i8] c"BBB\00", align 1
+@global_string.89 = private constant [6 x i8] c"i %d\0A\00", align 1
+@global_string.90 = private constant [7 x i8] c"1 or 2\00", align 1
+@global_string.91 = private constant [2 x i8] c"3\00", align 1
+@global_string.92 = private constant [8 x i8] c"default\00", align 1
+@global_string.93 = private constant [30 x i8] c"global array initializer test\00", align 1
+@global_string.94 = private constant [23 x i8] c"array initializer test\00", align 1
+@global_string.95 = private constant [29 x i8] c"local array initializer test\00", align 1
+@global_string.96 = private constant [17 x i8] c"local array test\00", align 1
 @global_string.97 = private constant [4 x i8] c"AAA\00", align 1
 @global_string.98 = private constant [4 x i8] c"BBB\00", align 1
-@global_string.99 = private constant [37 x i8] c"local cstring array initializer test\00", align 1
+@global_string.99 = private constant [4 x i8] c"AAA\00", align 1
+@global_string.100 = private constant [4 x i8] c"BBB\00", align 1
+@global_string.101 = private constant [37 x i8] c"local cstring array initializer test\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -933,150 +935,156 @@ cond_jump_then183:                                ; preds = %cond_jump_end177
 cond_jump_end184:                                 ; preds = %cond_jump_then183, %cond_jump_end177
   %andand_result_value189 = load i1, i1* %andand_result_var, align 1
   call void @xassert(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @global_string.77, i32 0, i32 0), i1 %andand_result_value189)
+  %gArray190 = load [3 x i32], [3 x i32]* @gArray, align 4
+  store i32 123, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray, i32 0, i32 1), align 4
+  %gArray191 = load [3 x i32], [3 x i32]* @gArray, align 4
+  %element192 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray, i32 0, i32 1), align 4
+  %eqtmpX193 = icmp eq i32 %element192, 123
+  call void @xassert(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @global_string.78, i32 0, i32 0), i1 %eqtmpX193)
   %array6 = alloca [3 x i32]
   %111 = bitcast [3 x i32]* %array6 to i8*
   store i8* %111, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 25), align 8
   %112 = load [3 x i32], [3 x i32]* %array6, align 4
   %113 = bitcast [3 x i32]* %array6 to i32*
-  %element_address190 = getelementptr i32, i32* %113, i64 0
-  store i32 1, i32* %element_address190, align 8
-  %element_address191 = getelementptr i32, i32* %113, i64 1
-  store i32 2, i32* %element_address191, align 8
-  %element_address192 = getelementptr i32, i32* %113, i64 2
-  store i32 3, i32* %element_address192, align 8
-  %array6193 = load [3 x i32], [3 x i32]* %array6, align 4
+  %element_address194 = getelementptr i32, i32* %113, i64 0
+  store i32 1, i32* %element_address194, align 8
+  %element_address195 = getelementptr i32, i32* %113, i64 1
+  store i32 2, i32* %element_address195, align 8
+  %element_address196 = getelementptr i32, i32* %113, i64 2
+  store i32 3, i32* %element_address196, align 8
+  %array6197 = load [3 x i32], [3 x i32]* %array6, align 4
   %114 = bitcast [3 x i32]* %array6 to i32*
-  %element_address194 = getelementptr i32, i32* %114, i32 0
-  %element195 = load i32, i32* %element_address194, align 4
-  %eqtmpX196 = icmp eq i32 %element195, 1
-  store i1 %eqtmpX196, i1* %andand_result_var, align 1
-  br i1 %eqtmpX196, label %cond_jump_then197, label %cond_jump_end198
+  %element_address198 = getelementptr i32, i32* %114, i32 0
+  %element199 = load i32, i32* %element_address198, align 4
+  %eqtmpX200 = icmp eq i32 %element199, 1
+  store i1 %eqtmpX200, i1* %andand_result_var, align 1
+  br i1 %eqtmpX200, label %cond_jump_then201, label %cond_jump_end202
 
-cond_jump_then197:                                ; preds = %cond_jump_end184
-  %array6199 = load [3 x i32], [3 x i32]* %array6, align 4
+cond_jump_then201:                                ; preds = %cond_jump_end184
+  %array6203 = load [3 x i32], [3 x i32]* %array6, align 4
   %115 = bitcast [3 x i32]* %array6 to i32*
-  %element_address200 = getelementptr i32, i32* %115, i32 1
-  %element201 = load i32, i32* %element_address200, align 4
-  %eqtmpX202 = icmp eq i32 %element201, 2
-  %andand203 = and i1 %eqtmpX196, %eqtmpX202
-  store i1 %andand203, i1* %andand_result_var, align 1
-  br label %cond_jump_end198
+  %element_address204 = getelementptr i32, i32* %115, i32 1
+  %element205 = load i32, i32* %element_address204, align 4
+  %eqtmpX206 = icmp eq i32 %element205, 2
+  %andand207 = and i1 %eqtmpX200, %eqtmpX206
+  store i1 %andand207, i1* %andand_result_var, align 1
+  br label %cond_jump_end202
 
-cond_jump_end198:                                 ; preds = %cond_jump_then197, %cond_jump_end184
-  %andand_result_value204 = load i1, i1* %andand_result_var, align 1
-  store i1 %andand_result_value204, i1* %andand_result_var, align 1
-  br i1 %andand_result_value204, label %cond_jump_then205, label %cond_jump_end206
+cond_jump_end202:                                 ; preds = %cond_jump_then201, %cond_jump_end184
+  %andand_result_value208 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value208, i1* %andand_result_var, align 1
+  br i1 %andand_result_value208, label %cond_jump_then209, label %cond_jump_end210
 
-cond_jump_then205:                                ; preds = %cond_jump_end198
-  %array6207 = load [3 x i32], [3 x i32]* %array6, align 4
+cond_jump_then209:                                ; preds = %cond_jump_end202
+  %array6211 = load [3 x i32], [3 x i32]* %array6, align 4
   %116 = bitcast [3 x i32]* %array6 to i32*
-  %element_address208 = getelementptr i32, i32* %116, i32 2
-  %element209 = load i32, i32* %element_address208, align 4
-  %eqtmpX210 = icmp eq i32 %element209, 3
-  %andand211 = and i1 %andand_result_value204, %eqtmpX210
-  store i1 %andand211, i1* %andand_result_var, align 1
-  br label %cond_jump_end206
+  %element_address212 = getelementptr i32, i32* %116, i32 2
+  %element213 = load i32, i32* %element_address212, align 4
+  %eqtmpX214 = icmp eq i32 %element213, 3
+  %andand215 = and i1 %andand_result_value208, %eqtmpX214
+  store i1 %andand215, i1* %andand_result_var, align 1
+  br label %cond_jump_end210
 
-cond_jump_end206:                                 ; preds = %cond_jump_then205, %cond_jump_end198
-  %andand_result_value212 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.78, i32 0, i32 0), i1 %andand_result_value212)
+cond_jump_end210:                                 ; preds = %cond_jump_then209, %cond_jump_end202
+  %andand_result_value216 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.79, i32 0, i32 0), i1 %andand_result_value216)
   %array7 = alloca [3 x i8]
   %117 = bitcast [3 x i8]* %array7 to i8*
   store i8* %117, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 26), align 8
   %118 = load [3 x i8], [3 x i8]* %array7, align 1
   %119 = bitcast [3 x i8]* %array7 to i8*
-  %element_address213 = getelementptr i8, i8* %119, i64 0
-  store i8 65, i8* %element_address213, align 8
-  %element_address214 = getelementptr i8, i8* %119, i64 1
-  store i8 66, i8* %element_address214, align 8
-  %element_address215 = getelementptr i8, i8* %119, i64 2
-  store i8 0, i8* %element_address215, align 8
-  %array7216 = load [3 x i8], [3 x i8]* %array7, align 1
+  %element_address217 = getelementptr i8, i8* %119, i64 0
+  store i8 65, i8* %element_address217, align 8
+  %element_address218 = getelementptr i8, i8* %119, i64 1
+  store i8 66, i8* %element_address218, align 8
+  %element_address219 = getelementptr i8, i8* %119, i64 2
+  store i8 0, i8* %element_address219, align 8
+  %array7220 = load [3 x i8], [3 x i8]* %array7, align 1
   %120 = bitcast [3 x i8]* %array7 to i8*
-  %121 = call i32 @strcmp(i8* %120, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @global_string.79, i32 0, i32 0))
-  %eqtmpX217 = icmp eq i32 %121, 0
-  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.80, i32 0, i32 0), i1 %eqtmpX217)
+  %121 = call i32 @strcmp(i8* %120, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @global_string.80, i32 0, i32 0))
+  %eqtmpX221 = icmp eq i32 %121, 0
+  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.81, i32 0, i32 0), i1 %eqtmpX221)
   %gArray2 = load [3 x i8], [3 x i8]* @gArray2, align 1
-  %122 = call i32 @strcmp(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @gArray2, i32 0, i32 0), i8* getelementptr inbounds ([3 x i8], [3 x i8]* @global_string.81, i32 0, i32 0))
-  %eqtmpX218 = icmp eq i32 %122, 0
-  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.82, i32 0, i32 0), i1 %eqtmpX218)
+  %122 = call i32 @strcmp(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @gArray2, i32 0, i32 0), i8* getelementptr inbounds ([3 x i8], [3 x i8]* @global_string.82, i32 0, i32 0))
+  %eqtmpX222 = icmp eq i32 %122, 0
+  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.83, i32 0, i32 0), i1 %eqtmpX222)
   %gArray3 = load [3 x i32], [3 x i32]* @gArray3, align 4
-  %element219 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 0), align 4
-  %eqtmpX220 = icmp eq i32 %element219, 1
-  store i1 %eqtmpX220, i1* %andand_result_var, align 1
-  br i1 %eqtmpX220, label %cond_jump_then221, label %cond_jump_end222
+  %element223 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 0), align 4
+  %eqtmpX224 = icmp eq i32 %element223, 1
+  store i1 %eqtmpX224, i1* %andand_result_var, align 1
+  br i1 %eqtmpX224, label %cond_jump_then225, label %cond_jump_end226
 
-cond_jump_then221:                                ; preds = %cond_jump_end206
-  %gArray3223 = load [3 x i32], [3 x i32]* @gArray3, align 4
-  %element224 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 1), align 4
-  %eqtmpX225 = icmp eq i32 %element224, 2
-  %andand226 = and i1 %eqtmpX220, %eqtmpX225
-  store i1 %andand226, i1* %andand_result_var, align 1
-  br label %cond_jump_end222
+cond_jump_then225:                                ; preds = %cond_jump_end210
+  %gArray3227 = load [3 x i32], [3 x i32]* @gArray3, align 4
+  %element228 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 1), align 4
+  %eqtmpX229 = icmp eq i32 %element228, 2
+  %andand230 = and i1 %eqtmpX224, %eqtmpX229
+  store i1 %andand230, i1* %andand_result_var, align 1
+  br label %cond_jump_end226
 
-cond_jump_end222:                                 ; preds = %cond_jump_then221, %cond_jump_end206
-  %andand_result_value227 = load i1, i1* %andand_result_var, align 1
-  store i1 %andand_result_value227, i1* %andand_result_var, align 1
-  br i1 %andand_result_value227, label %cond_jump_then228, label %cond_jump_end229
+cond_jump_end226:                                 ; preds = %cond_jump_then225, %cond_jump_end210
+  %andand_result_value231 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value231, i1* %andand_result_var, align 1
+  br i1 %andand_result_value231, label %cond_jump_then232, label %cond_jump_end233
 
-cond_jump_then228:                                ; preds = %cond_jump_end222
-  %gArray3230 = load [3 x i32], [3 x i32]* @gArray3, align 4
-  %element231 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 2), align 4
-  %eqtmpX232 = icmp eq i32 %element231, 3
-  %andand233 = and i1 %andand_result_value227, %eqtmpX232
-  store i1 %andand233, i1* %andand_result_var, align 1
-  br label %cond_jump_end229
+cond_jump_then232:                                ; preds = %cond_jump_end226
+  %gArray3234 = load [3 x i32], [3 x i32]* @gArray3, align 4
+  %element235 = load i32, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @gArray3, i32 0, i32 2), align 4
+  %eqtmpX236 = icmp eq i32 %element235, 3
+  %andand237 = and i1 %andand_result_value231, %eqtmpX236
+  store i1 %andand237, i1* %andand_result_var, align 1
+  br label %cond_jump_end233
 
-cond_jump_end229:                                 ; preds = %cond_jump_then228, %cond_jump_end222
-  %andand_result_value234 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.83, i32 0, i32 0), i1 %andand_result_value234)
+cond_jump_end233:                                 ; preds = %cond_jump_then232, %cond_jump_end226
+  %andand_result_value238 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.84, i32 0, i32 0), i1 %andand_result_value238)
   %array8 = alloca [3 x i32]
   %123 = bitcast [3 x i32]* %array8 to i8*
   store i8* %123, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 27), align 8
   %124 = load [3 x i32], [3 x i32]* %array8, align 4
   %125 = bitcast [3 x i32]* %array8 to i32*
-  %element_address235 = getelementptr i32, i32* %125, i64 0
-  store i32 1, i32* %element_address235, align 8
-  %element_address236 = getelementptr i32, i32* %125, i64 1
-  store i32 2, i32* %element_address236, align 8
-  %element_address237 = getelementptr i32, i32* %125, i64 2
-  store i32 3, i32* %element_address237, align 8
-  %array8238 = load [3 x i32], [3 x i32]* %array8, align 4
+  %element_address239 = getelementptr i32, i32* %125, i64 0
+  store i32 1, i32* %element_address239, align 8
+  %element_address240 = getelementptr i32, i32* %125, i64 1
+  store i32 2, i32* %element_address240, align 8
+  %element_address241 = getelementptr i32, i32* %125, i64 2
+  store i32 3, i32* %element_address241, align 8
+  %array8242 = load [3 x i32], [3 x i32]* %array8, align 4
   %126 = bitcast [3 x i32]* %array8 to i32*
-  %element_address239 = getelementptr i32, i32* %126, i32 0
-  %element240 = load i32, i32* %element_address239, align 4
-  %eqtmpX241 = icmp eq i32 %element240, 1
-  store i1 %eqtmpX241, i1* %andand_result_var, align 1
-  br i1 %eqtmpX241, label %cond_jump_then242, label %cond_jump_end243
+  %element_address243 = getelementptr i32, i32* %126, i32 0
+  %element244 = load i32, i32* %element_address243, align 4
+  %eqtmpX245 = icmp eq i32 %element244, 1
+  store i1 %eqtmpX245, i1* %andand_result_var, align 1
+  br i1 %eqtmpX245, label %cond_jump_then246, label %cond_jump_end247
 
-cond_jump_then242:                                ; preds = %cond_jump_end229
-  %array8244 = load [3 x i32], [3 x i32]* %array8, align 4
+cond_jump_then246:                                ; preds = %cond_jump_end233
+  %array8248 = load [3 x i32], [3 x i32]* %array8, align 4
   %127 = bitcast [3 x i32]* %array8 to i32*
-  %element_address245 = getelementptr i32, i32* %127, i32 1
-  %element246 = load i32, i32* %element_address245, align 4
-  %eqtmpX247 = icmp eq i32 %element246, 2
-  %andand248 = and i1 %eqtmpX241, %eqtmpX247
-  store i1 %andand248, i1* %andand_result_var, align 1
-  br label %cond_jump_end243
+  %element_address249 = getelementptr i32, i32* %127, i32 1
+  %element250 = load i32, i32* %element_address249, align 4
+  %eqtmpX251 = icmp eq i32 %element250, 2
+  %andand252 = and i1 %eqtmpX245, %eqtmpX251
+  store i1 %andand252, i1* %andand_result_var, align 1
+  br label %cond_jump_end247
 
-cond_jump_end243:                                 ; preds = %cond_jump_then242, %cond_jump_end229
-  %andand_result_value249 = load i1, i1* %andand_result_var, align 1
-  store i1 %andand_result_value249, i1* %andand_result_var, align 1
-  br i1 %andand_result_value249, label %cond_jump_then250, label %cond_jump_end251
+cond_jump_end247:                                 ; preds = %cond_jump_then246, %cond_jump_end233
+  %andand_result_value253 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value253, i1* %andand_result_var, align 1
+  br i1 %andand_result_value253, label %cond_jump_then254, label %cond_jump_end255
 
-cond_jump_then250:                                ; preds = %cond_jump_end243
-  %array8252 = load [3 x i32], [3 x i32]* %array8, align 4
+cond_jump_then254:                                ; preds = %cond_jump_end247
+  %array8256 = load [3 x i32], [3 x i32]* %array8, align 4
   %128 = bitcast [3 x i32]* %array8 to i32*
-  %element_address253 = getelementptr i32, i32* %128, i32 2
-  %element254 = load i32, i32* %element_address253, align 4
-  %eqtmpX255 = icmp eq i32 %element254, 3
-  %andand256 = and i1 %andand_result_value249, %eqtmpX255
-  store i1 %andand256, i1* %andand_result_var, align 1
-  br label %cond_jump_end251
+  %element_address257 = getelementptr i32, i32* %128, i32 2
+  %element258 = load i32, i32* %element_address257, align 4
+  %eqtmpX259 = icmp eq i32 %element258, 3
+  %andand260 = and i1 %andand_result_value253, %eqtmpX259
+  store i1 %andand260, i1* %andand_result_var, align 1
+  br label %cond_jump_end255
 
-cond_jump_end251:                                 ; preds = %cond_jump_then250, %cond_jump_end243
-  %andand_result_value257 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.84, i32 0, i32 0), i1 %andand_result_value257)
+cond_jump_end255:                                 ; preds = %cond_jump_then254, %cond_jump_end247
+  %andand_result_value261 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([24 x i8], [24 x i8]* @global_string.85, i32 0, i32 0), i1 %andand_result_value261)
   %ccc = alloca i8
   store i8* %ccc, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 28), align 8
   store i8 10, i8* %ccc, align 1
@@ -1086,166 +1094,166 @@ cond_jump_end251:                                 ; preds = %cond_jump_then250, 
   %ccc3 = alloca i8
   store i8* %ccc3, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 30), align 8
   store i8 0, i8* %ccc3, align 1
-  %ccc258 = load i8, i8* %ccc, align 1
-  %eqtmpX259 = icmp eq i8 %ccc258, 10
-  store i1 %eqtmpX259, i1* %andand_result_var, align 1
-  br i1 %eqtmpX259, label %cond_jump_then260, label %cond_jump_end261
+  %ccc262 = load i8, i8* %ccc, align 1
+  %eqtmpX263 = icmp eq i8 %ccc262, 10
+  store i1 %eqtmpX263, i1* %andand_result_var, align 1
+  br i1 %eqtmpX263, label %cond_jump_then264, label %cond_jump_end265
 
-cond_jump_then260:                                ; preds = %cond_jump_end251
-  %ccc2262 = load i8, i8* %ccc2, align 1
-  %eqtmpX263 = icmp eq i8 %ccc2262, 97
-  %andand264 = and i1 %eqtmpX259, %eqtmpX263
-  store i1 %andand264, i1* %andand_result_var, align 1
-  br label %cond_jump_end261
+cond_jump_then264:                                ; preds = %cond_jump_end255
+  %ccc2266 = load i8, i8* %ccc2, align 1
+  %eqtmpX267 = icmp eq i8 %ccc2266, 97
+  %andand268 = and i1 %eqtmpX263, %eqtmpX267
+  store i1 %andand268, i1* %andand_result_var, align 1
+  br label %cond_jump_end265
 
-cond_jump_end261:                                 ; preds = %cond_jump_then260, %cond_jump_end251
-  %andand_result_value265 = load i1, i1* %andand_result_var, align 1
-  store i1 %andand_result_value265, i1* %andand_result_var, align 1
-  br i1 %andand_result_value265, label %cond_jump_then266, label %cond_jump_end267
+cond_jump_end265:                                 ; preds = %cond_jump_then264, %cond_jump_end255
+  %andand_result_value269 = load i1, i1* %andand_result_var, align 1
+  store i1 %andand_result_value269, i1* %andand_result_var, align 1
+  br i1 %andand_result_value269, label %cond_jump_then270, label %cond_jump_end271
 
-cond_jump_then266:                                ; preds = %cond_jump_end261
-  %ccc3268 = load i8, i8* %ccc3, align 1
-  %eqtmpX269 = icmp eq i8 %ccc3268, 0
-  %andand270 = and i1 %andand_result_value265, %eqtmpX269
-  store i1 %andand270, i1* %andand_result_var, align 1
-  br label %cond_jump_end267
+cond_jump_then270:                                ; preds = %cond_jump_end265
+  %ccc3272 = load i8, i8* %ccc3, align 1
+  %eqtmpX273 = icmp eq i8 %ccc3272, 0
+  %andand274 = and i1 %andand_result_value269, %eqtmpX273
+  store i1 %andand274, i1* %andand_result_var, align 1
+  br label %cond_jump_end271
 
-cond_jump_end267:                                 ; preds = %cond_jump_then266, %cond_jump_end261
-  %andand_result_value271 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @global_string.85, i32 0, i32 0), i1 %andand_result_value271)
+cond_jump_end271:                                 ; preds = %cond_jump_then270, %cond_jump_end265
+  %andand_result_value275 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @global_string.86, i32 0, i32 0), i1 %andand_result_value275)
   %i = alloca i32
   %129 = bitcast i32* %i to i8*
   store i8* %129, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   store i32 0, i32* %i, align 4
   br label %loop_top_block
 
-loop_top_block:                                   ; preds = %cond_then_block273, %cond_jump_end267
-  %i272 = load i32, i32* %i, align 4
-  %letmp = icmp slt i32 %i272, 3
-  br i1 %letmp, label %cond_then_block273, label %cond_end_block
+loop_top_block:                                   ; preds = %cond_then_block277, %cond_jump_end271
+  %i276 = load i32, i32* %i, align 4
+  %letmp = icmp slt i32 %i276, 3
+  br i1 %letmp, label %cond_then_block277, label %cond_end_block
 
-cond_then_block273:                               ; preds = %loop_top_block
+cond_then_block277:                               ; preds = %loop_top_block
   %130 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %131 = bitcast i8* %130 to i32*
-  %i274 = load i32, i32* %131, align 4
-  %132 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.86, i32 0, i32 0), i32 %i274)
-  %i275 = load i32, i32* %i, align 4
-  %addtmp276 = add nsw i32 %i275, 1
-  store i32 %addtmp276, i32* %i, align 4
-  %subttmp277 = sub nsw i32 %addtmp276, 1
+  %i278 = load i32, i32* %131, align 4
+  %132 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.87, i32 0, i32 0), i32 %i278)
+  %i279 = load i32, i32* %i, align 4
+  %addtmp280 = add nsw i32 %i279, 1
+  store i32 %addtmp280, i32* %i, align 4
+  %subttmp281 = sub nsw i32 %addtmp280, 1
   br label %loop_top_block
 
 cond_end_block:                                   ; preds = %loop_top_block
-  %i278 = alloca i32
-  %133 = bitcast i32* %i278 to i8*
+  %i282 = alloca i32
+  %133 = bitcast i32* %i282 to i8*
   store i8* %133, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
-  store i32 0, i32* %i278, align 4
-  br label %loop_top_block279
+  store i32 0, i32* %i282, align 4
+  br label %loop_top_block283
 
-loop_top_block279:                                ; preds = %cond_then_block282, %cond_end_block
-  %i280 = load i32, i32* %i278, align 4
-  %letmp281 = icmp slt i32 %i280, 3
-  br i1 %letmp281, label %cond_then_block282, label %cond_end_block283
+loop_top_block283:                                ; preds = %cond_then_block286, %cond_end_block
+  %i284 = load i32, i32* %i282, align 4
+  %letmp285 = icmp slt i32 %i284, 3
+  br i1 %letmp285, label %cond_then_block286, label %cond_end_block287
 
-cond_then_block282:                               ; preds = %loop_top_block279
+cond_then_block286:                               ; preds = %loop_top_block283
   %134 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %135 = bitcast i8* %134 to i32*
-  %i284 = load i32, i32* %135, align 4
-  %136 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.87, i32 0, i32 0), i32 %i284)
+  %i288 = load i32, i32* %135, align 4
+  %136 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.88, i32 0, i32 0), i32 %i288)
   %137 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %138 = bitcast i8* %137 to i32*
-  %i285 = load i32, i32* %138, align 4
-  %addtmp286 = add nsw i32 %i285, 1
+  %i289 = load i32, i32* %138, align 4
+  %addtmp290 = add nsw i32 %i289, 1
   %139 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %140 = bitcast i8* %139 to i32*
-  store i32 %addtmp286, i32* %140, align 4
-  %subttmp287 = sub nsw i32 %addtmp286, 1
-  br label %loop_top_block279
+  store i32 %addtmp290, i32* %140, align 4
+  %subttmp291 = sub nsw i32 %addtmp290, 1
+  br label %loop_top_block283
 
-cond_end_block283:                                ; preds = %loop_top_block279
-  store i32 0, i32* %i278, align 4
-  br label %loop_top_block288
+cond_end_block287:                                ; preds = %loop_top_block283
+  store i32 0, i32* %i282, align 4
+  br label %loop_top_block292
 
-loop_top_block288:                                ; preds = %loop_top_block288, %cond_end_block283
+loop_top_block292:                                ; preds = %loop_top_block292, %cond_end_block287
   %141 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %142 = bitcast i8* %141 to i32*
-  %i290 = load i32, i32* %142, align 4
-  %143 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.88, i32 0, i32 0), i32 %i290)
+  %i294 = load i32, i32* %142, align 4
+  %143 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @global_string.89, i32 0, i32 0), i32 %i294)
   %144 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %145 = bitcast i8* %144 to i32*
-  %i291 = load i32, i32* %145, align 4
-  %addtmp292 = add nsw i32 %i291, 1
+  %i295 = load i32, i32* %145, align 4
+  %addtmp296 = add nsw i32 %i295, 1
   %146 = load i8*, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 31), align 8
   %147 = bitcast i8* %146 to i32*
-  store i32 %addtmp292, i32* %147, align 4
-  %subttmp293 = sub nsw i32 %addtmp292, 1
-  %i294 = load i32, i32* %i278, align 4
-  %letmp295 = icmp slt i32 %i294, 3
-  br i1 %letmp295, label %loop_top_block288, label %cond_end_block289
+  store i32 %addtmp296, i32* %147, align 4
+  %subttmp297 = sub nsw i32 %addtmp296, 1
+  %i298 = load i32, i32* %i282, align 4
+  %letmp299 = icmp slt i32 %i298, 3
+  br i1 %letmp299, label %loop_top_block292, label %cond_end_block293
 
-cond_end_block289:                                ; preds = %loop_top_block288
-  br i1 false, label %cond_then_block296, label %cond_else_block
+cond_end_block293:                                ; preds = %loop_top_block292
+  br i1 false, label %cond_then_block300, label %cond_else_block
 
-end_block:                                        ; preds = %cond_else_block302, %cond_then_block301, %cond_then_block298, %cond_then_block296
+end_block:                                        ; preds = %cond_else_block306, %cond_then_block305, %cond_then_block302, %cond_then_block300
   %gArray4 = load [3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, align 4
-  %element304 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 0, i32 1, i32 2), align 4
+  %element308 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 0, i32 1, i32 2), align 4
   %aaaaaa = alloca i32
   %148 = bitcast i32* %aaaaaa to i8*
   store i8* %148, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 32), align 8
-  store i32 %element304, i32* %aaaaaa, align 4
-  %aaaaaa305 = load i32, i32* %aaaaaa, align 4
-  %eqtmpX306 = icmp eq i32 %aaaaaa305, 4
-  call void @xassert(i8* getelementptr inbounds ([30 x i8], [30 x i8]* @global_string.92, i32 0, i32 0), i1 %eqtmpX306)
-  %gArray4307 = load [3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, align 4
-  %element308 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 1, i32 1, i32 1), align 4
-  %eqtmpX309 = icmp eq i32 %element308, 2
-  store i1 %eqtmpX309, i1* %andand_result_var, align 1
-  br i1 %eqtmpX309, label %cond_jump_then310, label %cond_jump_end311
+  store i32 %element308, i32* %aaaaaa, align 4
+  %aaaaaa309 = load i32, i32* %aaaaaa, align 4
+  %eqtmpX310 = icmp eq i32 %aaaaaa309, 4
+  call void @xassert(i8* getelementptr inbounds ([30 x i8], [30 x i8]* @global_string.93, i32 0, i32 0), i1 %eqtmpX310)
+  %gArray4311 = load [3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, align 4
+  %element312 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 1, i32 1, i32 1), align 4
+  %eqtmpX313 = icmp eq i32 %element312, 2
+  store i1 %eqtmpX313, i1* %andand_result_var, align 1
+  br i1 %eqtmpX313, label %cond_jump_then314, label %cond_jump_end315
 
-cond_then_block296:                               ; preds = %cond_else_block, %cond_end_block289
-  %149 = call i32 @puts(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @global_string.89, i32 0, i32 0))
+cond_then_block300:                               ; preds = %cond_else_block, %cond_end_block293
+  %149 = call i32 @puts(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @global_string.90, i32 0, i32 0))
   br label %end_block
 
-cond_else_block:                                  ; preds = %cond_end_block289
-  br i1 true, label %cond_then_block296, label %cond_else_block297
+cond_else_block:                                  ; preds = %cond_end_block293
+  br i1 true, label %cond_then_block300, label %cond_else_block301
 
-cond_else_block297:                               ; preds = %after_break, %cond_else_block
-  br i1 false, label %cond_then_block298, label %cond_else_block299
+cond_else_block301:                               ; preds = %after_break, %cond_else_block
+  br i1 false, label %cond_then_block302, label %cond_else_block303
 
 after_break:                                      ; No predecessors!
-  br label %cond_else_block297
+  br label %cond_else_block301
 
-cond_then_block298:                               ; preds = %cond_else_block297
-  %150 = call i32 @puts(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @global_string.90, i32 0, i32 0))
+cond_then_block302:                               ; preds = %cond_else_block301
+  %150 = call i32 @puts(i8* getelementptr inbounds ([2 x i8], [2 x i8]* @global_string.91, i32 0, i32 0))
   br label %end_block
 
-cond_else_block299:                               ; preds = %after_break300, %cond_else_block297
-  br label %cond_then_block301
+cond_else_block303:                               ; preds = %after_break304, %cond_else_block301
+  br label %cond_then_block305
 
-after_break300:                                   ; No predecessors!
-  br label %cond_else_block299
+after_break304:                                   ; No predecessors!
+  br label %cond_else_block303
 
-cond_then_block301:                               ; preds = %cond_else_block299
-  %151 = call i32 @puts(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @global_string.91, i32 0, i32 0))
+cond_then_block305:                               ; preds = %cond_else_block303
+  %151 = call i32 @puts(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @global_string.92, i32 0, i32 0))
   br label %end_block
 
-cond_else_block302:                               ; preds = %after_break303
+cond_else_block306:                               ; preds = %after_break307
   br label %end_block
 
-after_break303:                                   ; No predecessors!
-  br label %cond_else_block302
+after_break307:                                   ; No predecessors!
+  br label %cond_else_block306
 
-cond_jump_then310:                                ; preds = %end_block
-  %gArray4312 = load [3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, align 4
-  %element313 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 2, i32 0, i32 1), align 4
-  %eqtmpX314 = icmp eq i32 %element313, 12
-  %andand315 = and i1 %eqtmpX309, %eqtmpX314
-  store i1 %andand315, i1* %andand_result_var, align 1
-  br label %cond_jump_end311
+cond_jump_then314:                                ; preds = %end_block
+  %gArray4316 = load [3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, align 4
+  %element317 = load i32, i32* getelementptr inbounds ([3 x [3 x [3 x i32]]], [3 x [3 x [3 x i32]]]* @gArray4, i32 0, i32 2, i32 0, i32 1), align 4
+  %eqtmpX318 = icmp eq i32 %element317, 12
+  %andand319 = and i1 %eqtmpX313, %eqtmpX318
+  store i1 %andand319, i1* %andand_result_var, align 1
+  br label %cond_jump_end315
 
-cond_jump_end311:                                 ; preds = %cond_jump_then310, %end_block
-  %andand_result_value316 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @global_string.93, i32 0, i32 0), i1 %andand_result_value316)
+cond_jump_end315:                                 ; preds = %cond_jump_then314, %end_block
+  %andand_result_value320 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([23 x i8], [23 x i8]* @global_string.94, i32 0, i32 0), i1 %andand_result_value320)
   %ay = alloca [2 x [2 x [3 x i32]]]
   %152 = bitcast [2 x [2 x [3 x i32]]]* %ay to i8*
   store i8* %152, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 33), align 8
@@ -1297,66 +1305,78 @@ cond_jump_end311:                                 ; preds = %cond_jump_then310, 
   %187 = getelementptr inbounds [2 x [3 x i32]], [2 x [3 x i32]]* %186, i32 0, i32 1
   %188 = getelementptr inbounds [3 x i32], [3 x i32]* %187, i32 0, i32 2
   store i32 13, i32* %188, align 4
-  %ay317 = load [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, align 4
+  %ay321 = load [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, align 4
   %189 = getelementptr inbounds [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, i32 0, i32 0
   %190 = getelementptr inbounds [2 x [3 x i32]], [2 x [3 x i32]]* %189, i32 0, i32 1
   %191 = getelementptr inbounds [3 x i32], [3 x i32]* %190, i32 0, i32 2
-  %element318 = load i32, i32* %191, align 4
-  %eqtmpX319 = icmp eq i32 %element318, 6
-  call void @xassert(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @global_string.94, i32 0, i32 0), i1 %eqtmpX319)
+  %element322 = load i32, i32* %191, align 4
+  %eqtmpX323 = icmp eq i32 %element322, 6
+  call void @xassert(i8* getelementptr inbounds ([29 x i8], [29 x i8]* @global_string.95, i32 0, i32 0), i1 %eqtmpX323)
+  %ay324 = load [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, align 4
+  %192 = getelementptr inbounds [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, i32 0, i32 0
+  %193 = getelementptr inbounds [2 x [3 x i32]], [2 x [3 x i32]]* %192, i32 0, i32 1
+  %194 = getelementptr inbounds [3 x i32], [3 x i32]* %193, i32 0, i32 2
+  store i32 123, i32* %194, align 4
+  %ay325 = load [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, align 4
+  %195 = getelementptr inbounds [2 x [2 x [3 x i32]]], [2 x [2 x [3 x i32]]]* %ay, i32 0, i32 0
+  %196 = getelementptr inbounds [2 x [3 x i32]], [2 x [3 x i32]]* %195, i32 0, i32 1
+  %197 = getelementptr inbounds [3 x i32], [3 x i32]* %196, i32 0, i32 2
+  %element326 = load i32, i32* %197, align 4
+  %eqtmpX327 = icmp eq i32 %element326, 123
+  call void @xassert(i8* getelementptr inbounds ([17 x i8], [17 x i8]* @global_string.96, i32 0, i32 0), i1 %eqtmpX327)
   %aa = alloca [2 x i8*]
-  %192 = bitcast [2 x i8*]* %aa to i8*
-  store i8* %192, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 34), align 8
-  %193 = load [2 x i8*], [2 x i8*]* %aa, align 8
-  %194 = bitcast [2 x i8*]* %aa to i8**
-  %element_address320 = getelementptr i8*, i8** %194, i64 0
-  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.95, i32 0, i32 0), i8** %element_address320, align 8
-  %element_address321 = getelementptr i8*, i8** %194, i64 1
-  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.96, i32 0, i32 0), i8** %element_address321, align 8
-  %aa322 = load [2 x i8*], [2 x i8*]* %aa, align 8
-  %195 = bitcast [2 x i8*]* %aa to i8**
-  %element_address323 = getelementptr i8*, i8** %195, i32 0
-  %element324 = load i8*, i8** %element_address323, align 8
-  %196 = call i32 @strcmp(i8* %element324, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.97, i32 0, i32 0))
-  %eqtmpX325 = icmp eq i32 %196, 0
-  store i1 %eqtmpX325, i1* %andand_result_var, align 1
-  br i1 %eqtmpX325, label %cond_jump_then326, label %cond_jump_end327
+  %198 = bitcast [2 x i8*]* %aa to i8*
+  store i8* %198, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 34), align 8
+  %199 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %200 = bitcast [2 x i8*]* %aa to i8**
+  %element_address328 = getelementptr i8*, i8** %200, i64 0
+  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.97, i32 0, i32 0), i8** %element_address328, align 8
+  %element_address329 = getelementptr i8*, i8** %200, i64 1
+  store i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.98, i32 0, i32 0), i8** %element_address329, align 8
+  %aa330 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %201 = bitcast [2 x i8*]* %aa to i8**
+  %element_address331 = getelementptr i8*, i8** %201, i32 0
+  %element332 = load i8*, i8** %element_address331, align 8
+  %202 = call i32 @strcmp(i8* %element332, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.99, i32 0, i32 0))
+  %eqtmpX333 = icmp eq i32 %202, 0
+  store i1 %eqtmpX333, i1* %andand_result_var, align 1
+  br i1 %eqtmpX333, label %cond_jump_then334, label %cond_jump_end335
 
-cond_jump_then326:                                ; preds = %cond_jump_end311
-  %aa328 = load [2 x i8*], [2 x i8*]* %aa, align 8
-  %197 = bitcast [2 x i8*]* %aa to i8**
-  %element_address329 = getelementptr i8*, i8** %197, i32 1
-  %element330 = load i8*, i8** %element_address329, align 8
-  %198 = call i32 @strcmp(i8* %element330, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.98, i32 0, i32 0))
-  %eqtmpX331 = icmp eq i32 %198, 0
-  %andand332 = and i1 %eqtmpX325, %eqtmpX331
-  store i1 %andand332, i1* %andand_result_var, align 1
-  br label %cond_jump_end327
+cond_jump_then334:                                ; preds = %cond_jump_end315
+  %aa336 = load [2 x i8*], [2 x i8*]* %aa, align 8
+  %203 = bitcast [2 x i8*]* %aa to i8**
+  %element_address337 = getelementptr i8*, i8** %203, i32 1
+  %element338 = load i8*, i8** %element_address337, align 8
+  %204 = call i32 @strcmp(i8* %element338, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_string.100, i32 0, i32 0))
+  %eqtmpX339 = icmp eq i32 %204, 0
+  %andand340 = and i1 %eqtmpX333, %eqtmpX339
+  store i1 %andand340, i1* %andand_result_var, align 1
+  br label %cond_jump_end335
 
-cond_jump_end327:                                 ; preds = %cond_jump_then326, %cond_jump_end311
-  %andand_result_value333 = load i1, i1* %andand_result_var, align 1
-  call void @xassert(i8* getelementptr inbounds ([37 x i8], [37 x i8]* @global_string.99, i32 0, i32 0), i1 %andand_result_value333)
-  %199 = load %Data3*, %Data3** %data3_2, align 8
-  %200 = ptrtoint %Data3* %199 to i64
-  %201 = icmp ne i64 %200, 0
-  br i1 %201, label %cond_then_block334, label %cond_end335
+cond_jump_end335:                                 ; preds = %cond_jump_then334, %cond_jump_end315
+  %andand_result_value341 = load i1, i1* %andand_result_var, align 1
+  call void @xassert(i8* getelementptr inbounds ([37 x i8], [37 x i8]* @global_string.101, i32 0, i32 0), i1 %andand_result_value341)
+  %205 = load %Data3*, %Data3** %data3_2, align 8
+  %206 = ptrtoint %Data3* %205 to i64
+  %207 = icmp ne i64 %206, 0
+  br i1 %207, label %cond_then_block342, label %cond_end343
 
-cond_then_block334:                               ; preds = %cond_jump_end327
-  br label %cond_end335
+cond_then_block342:                               ; preds = %cond_jump_end335
+  br label %cond_end343
 
-cond_end335:                                      ; preds = %cond_then_block334, %cond_jump_end327
-  %202 = bitcast %Data3* %199 to i8*
-  call void @free(i8* %202)
-  %203 = load i8*, i8** %b, align 8
-  %204 = ptrtoint i8* %203 to i64
-  %205 = icmp ne i64 %204, 0
-  br i1 %205, label %cond_then_block336, label %cond_end337
+cond_end343:                                      ; preds = %cond_then_block342, %cond_jump_end335
+  %208 = bitcast %Data3* %205 to i8*
+  call void @free(i8* %208)
+  %209 = load i8*, i8** %b, align 8
+  %210 = ptrtoint i8* %209 to i64
+  %211 = icmp ne i64 %210, 0
+  br i1 %211, label %cond_then_block344, label %cond_end345
 
-cond_then_block336:                               ; preds = %cond_end335
-  br label %cond_end337
+cond_then_block344:                               ; preds = %cond_end343
+  br label %cond_end345
 
-cond_end337:                                      ; preds = %cond_then_block336, %cond_end335
-  call void @free(i8* %203)
+cond_end345:                                      ; preds = %cond_then_block344, %cond_end343
+  call void @free(i8* %209)
   ret i32 0
 }
 

@@ -369,6 +369,10 @@ int main()
 
     xassert("array initializer test", gArray[0] == 1 && gArray[1] == 2 && gArray[2] == 3);
 
+    gArray[1] = 123;
+
+    xassert("global array test", gArray[1] == 123);
+
     int array6[3] = { 1, 2, 3 };
 
     xassert("array initializer test2", array6[0] == 1 && array6[1] == 2 && array6[2] == 3);
@@ -444,6 +448,10 @@ int main()
     };
 
     xassert("local array initializer test", ay[0][1][2] == 6);
+
+    ay[0][1][2] = 123;
+
+    xassert("local array test", ay[0][1][2] == 123);
 
     char* aa[2] = { "AAA", "BBB" };
 
