@@ -112,7 +112,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2;
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init;
 
 %left OROR
 %left ANDAND
@@ -636,8 +636,36 @@ global_variable:
         }
         ;
 
+sub_array: 
+    exp {
+        array_values[num_array_value++] = $1;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $1;
+    }
+    | sub_array ',' exp {
+        array_values[num_array_value++] = $3;
+
+        if(num_array_value >= INIT_ARRAY_MAX) {
+            fprintf(stderr, "overflow array element numver\n");
+            exit(1);
+        }
+
+        $$ = $3;
+    }
+    ;
+
+sub_array_init: {
+    num_array_value = 0;
+    }
+    ;
+
 array_value: 
-    | exp {
+    exp {
         num_array_value = 0;
         array_values[num_array_value++] = $1;
 
@@ -647,6 +675,9 @@ array_value:
         }
 
         $$ = $1;
+    }
+    | '{' sub_array_init sub_array '}' {
+        $$ = $2;
     }
     | array_value ',' exp {
         array_values[num_array_value++] = $3;
@@ -658,28 +689,9 @@ array_value:
 
         $$ = $3;
     }
-/*
-    | array_value ',' exp '}' {
-        array_values[num_array_value++] = $3;
-
-        if(num_array_value >= INIT_ARRAY_MAX) {
-            fprintf(stderr, "overflow array element numver\n");
-            exit(1);
-        }
-
-        $$ = $3;
-    }
-    | array_value ',' '{' exp {
-        array_values[num_array_value++] = $4;
-
-        if(num_array_value >= INIT_ARRAY_MAX) {
-            fprintf(stderr, "overflow array element numver\n");
-            exit(1);
-        }
-
+    | array_value ',' '{' sub_array '}' {
         $$ = $4;
     }
-*/
     ;
 
 function: 

@@ -7269,7 +7269,57 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
     Value* element_value;
     Value* load_element_addresss;
     if(!info->no_output) {
-        if(left_type->mArrayDimentionNum == 1) {
+        if(left_type->mArrayDimentionNum > num_dimention) {
+            int i;
+            Value* lvalue2 = lvalue.address;
+
+            load_element_addresss = lvalue2;
+
+            Value* indices[left_type->mArrayDimentionNum+1];
+
+            int j;
+            for(j=0; j<left_type->mArrayDimentionNum-num_dimention; j++) {
+                indices[j] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+            }
+            int k=0;
+            for(; j<left_type->mArrayDimentionNum; j++, k++) {
+                indices[j] = rvalue[k].value;
+            }
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, left_type->mArrayDimentionNum));
+
+            for(j=0; j<left_type->mArrayDimentionNum; j++) {
+                indices[j] = ConstantInt::get(TheContext, llvm::APInt(32, 0, false)); 
+            }
+            load_element_addresss = Builder.CreateInBoundsGEP(load_element_addresss, ArrayRef<Value*>(indices, left_type->mArrayDimentionNum));
+
+            sNodeType* var_type3 = clone_node_type(var_type);
+            var_type3->mPointerNum -= num_dimention;
+            var_type3->mPointerNum+=2;
+            var_type3->mArrayDimentionNum = 0;
+
+            Type* llvm_var_type2;
+            if(!create_llvm_type_from_node_type(&llvm_var_type2, var_type3, var_type3, info))
+            {
+                compile_err_msg(info, "Getting llvm type failed(10)");
+                show_node_type(var_type3);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            int alignment = get_llvm_alignment_from_node_type(var_type);
+
+            if(var_type3->mPointerNum == 0) {
+                element_value = Builder.CreateAlignedLoad(load_element_addresss, alignment, "element");
+            }
+            else {
+                load_element_addresss = Builder.CreateCast(Instruction::BitCast, load_element_addresss, llvm_var_type2);
+                element_value = load_element_addresss;
+            }
+        }
+        else if(left_type->mArrayDimentionNum == 1) {
             sNodeType* var_type2 = clone_node_type(var_type);
             var_type2->mPointerNum++;
 
