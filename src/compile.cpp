@@ -3472,7 +3472,7 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
         sNodeType* var_type = create_node_type_with_class_name(type_name);
 
         if(var_type == NULL || var_type->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name (%s)\n", type_name);
+            compile_err_msg(info, "Invalid type name (%s) 2\n", type_name);
             return FALSE;
         }
 
@@ -3852,7 +3852,7 @@ BOOL create_llvm_function(sFunction* fun, sCompileInfo* info)
         (void)solve_generics(&params[i].mType, info->generics_type, &success_solve);
 
         if(params[i].mType == NULL || params[i].mType->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name %s\n", fun->mParamNames[i]);
+            compile_err_msg(info, "Invalid type name %s 3\n", fun->mParamNames[i]);
             return FALSE;
         }
     }
@@ -3927,7 +3927,7 @@ BOOL create_llvm_function(sFunction* fun, sCompileInfo* info)
         (void)solve_generics(&var_type, info->generics_type, &success_solve);
 
         if(var_type == NULL || var_type->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name %s\n", param.mTypeName);
+            compile_err_msg(info, "Invalid type name %s 4\n", param.mTypeName);
             return FALSE;
         }
 
@@ -4092,7 +4092,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         xstrncpy(params[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
         params[i].mType = create_node_type_with_class_name(param->mTypeName);
         if(params[i].mType == NULL || params[i].mType->mClass == NULL) {
-            compile_err_msg(info, "Invalid type name %s\n", param->mTypeName);
+            compile_err_msg(info, "Invalid type name %s 5\n", param->mTypeName);
             return FALSE;
         }
     }
@@ -4867,7 +4867,7 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
     sNodeType* node_type = create_node_type_with_class_name(type_name);
 
     if(node_type == NULL || node_type->mClass == NULL) {
-        compile_err_msg(info, "Invalid type name %s\n", type_name);
+        compile_err_msg(info, "Invalid type name %s 6\n", type_name);
         return FALSE;
     }
 
@@ -5123,7 +5123,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
     sNodeType* var_type = create_node_type_with_class_name(type_name);
     if(var_type == NULL || var_type->mClass == NULL) {
-        compile_err_msg(info, "Invalid type name %s\n", type_name);
+        compile_err_msg(info, "Invalid type name %s 7\n", type_name);
         return FALSE;
     }
 
@@ -8964,6 +8964,165 @@ BOOL compile_continue_expression(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+BOOL compile_cast(unsigned int node, sCompileInfo* info)
+{
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sCast.mTypeName, VAR_NAME_MAX);
+    sNodeType* right_type = create_node_type_with_class_name(type_name);
+    
+    if(right_type == NULL || right_type->mClass == NULL) {
+        compile_err_msg(info, "Cast failed(%s)", type_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    int left_node = gNodes[node].mLeft;
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+    sNodeType* left_type = info->type;
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    if(!cast_right_type_to_left_type(right_type, &left_type, &lvalue, info))
+    {
+        compile_err_msg(info, "Cast failed(%s)", type_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    push_value_to_stack_ptr(&lvalue, info);
+
+    info->type = clone_node_type(lvalue.type);
+
+    return TRUE;
+}
+
+static BOOL compile_sizeof1(unsigned int node, sCompileInfo* info)
+{
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sSizeOf.mTypeName, VAR_NAME_MAX);
+    sNodeType* node_type2 = create_node_type_with_class_name(type_name);
+
+    if(node_type2 == NULL || node_type2->mClass == NULL) {
+        compile_err_msg(info, "Invalid type name(%s)1", type_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    uint64_t alloc_size = 0;
+    if(!get_size_from_node_type(&alloc_size, node_type2, node_type2, info))
+    {
+        return FALSE;
+    }
+
+    /// result ///
+#ifdef __32BIT_CPU__
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(32, alloc_size, false)); 
+    llvm_value.type = create_node_type_with_class_name("int");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("int");
+#else
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(64, alloc_size, false)); 
+    llvm_value.type = create_node_type_with_class_name("long");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("long");
+#endif
+
+    return TRUE;
+}
+
+BOOL compile_sizeof2(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX];
+    xstrncpy(var_name, gNodes[node].uValue.sSizeOf.mVarName, VAR_NAME_MAX);
+    sVar* var = get_variable_from_table(info->lv_table, var_name);
+
+    if(var == NULL) {
+        var = get_variable_from_table(info->gv_table, var_name);
+    }
+
+    if(var == NULL) {
+        compile_err_msg(info, "Invalid var name(%s)", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+
+    sNodeType* node_type2 = var->mType;
+
+    if(node_type2 == NULL || node_type2->mClass == NULL) {
+        compile_err_msg(info, "Invalid var name(%s)", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    uint64_t alloc_size = 0;
+    if(!get_size_from_node_type(&alloc_size, node_type2, node_type2, info))
+    {
+        return FALSE;
+    }
+
+    /// result ///
+#ifdef __32BIT_CPU__
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(32, alloc_size, false)); 
+    llvm_value.type = create_node_type_with_class_name("int");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("int");
+#else
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(64, alloc_size, false)); 
+    llvm_value.type = create_node_type_with_class_name("long");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("long");
+#endif
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -9338,6 +9497,27 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeContinue: {
             if(!compile_continue_expression(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeCast: {
+            if(!compile_cast(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeSizeOf1: {
+            if(!compile_sizeof1(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeSizeOf2: {
+            if(!compile_sizeof2(node, info)) {
                 return FALSE;
             }
             }

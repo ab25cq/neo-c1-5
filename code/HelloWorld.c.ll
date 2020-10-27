@@ -139,6 +139,9 @@ source_filename = "Module stdin"
 @global_string.99 = private constant [4 x i8] c"AAA\00", align 1
 @global_string.100 = private constant [4 x i8] c"BBB\00", align 1
 @global_string.101 = private constant [37 x i8] c"local cstring array initializer test\00", align 1
+@global_string.102 = private constant [10 x i8] c"cast test\00", align 1
+@global_string.103 = private constant [12 x i8] c"sizeof test\00", align 1
+@global_string.104 = private constant [12 x i8] c"sizeof test\00", align 1
 
 declare i32 @puts(i8*)
 
@@ -1356,27 +1359,51 @@ cond_jump_then334:                                ; preds = %cond_jump_end315
 cond_jump_end335:                                 ; preds = %cond_jump_then334, %cond_jump_end315
   %andand_result_value341 = load i1, i1* %andand_result_var, align 1
   call void @xassert(i8* getelementptr inbounds ([37 x i8], [37 x i8]* @global_string.101, i32 0, i32 0), i1 %andand_result_value341)
-  %205 = load %Data3*, %Data3** %data3_2, align 8
-  %206 = ptrtoint %Data3* %205 to i64
-  %207 = icmp ne i64 %206, 0
-  br i1 %207, label %cond_then_block342, label %cond_end343
+  %nnnnn = alloca i32
+  %205 = bitcast i32* %nnnnn to i8*
+  store i8* %205, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 35), align 8
+  store i32 123, i32* %nnnnn, align 4
+  %nnnnn342 = load i32, i32* %nnnnn, align 4
+  %IntToPtr10 = inttoptr i32 %nnnnn342 to i8*
+  %bbbbbbbbb = alloca i8*
+  %206 = bitcast i8** %bbbbbbbbb to i8*
+  store i8* %206, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 36), align 8
+  store i8* %IntToPtr10, i8** %bbbbbbbbb, align 8
+  %bbbbbbbbb343 = load i8*, i8** %bbbbbbbbb, align 8
+  %207 = ptrtoint i8* %bbbbbbbbb343 to i32
+  %mmmmm = alloca i32
+  %208 = bitcast i32* %mmmmm to i8*
+  store i8* %208, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 37), align 8
+  store i32 %207, i32* %mmmmm, align 4
+  %mmmmm344 = load i32, i32* %mmmmm, align 4
+  %eqtmpX345 = icmp eq i32 %mmmmm344, 123
+  call void @xassert(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @global_string.102, i32 0, i32 0), i1 %eqtmpX345)
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.103, i32 0, i32 0), i1 true)
+  %a = alloca [2 x i32]
+  %209 = bitcast [2 x i32]* %a to i8*
+  store i8* %209, i8** getelementptr inbounds ([512 x i8*], [512 x i8*]* @gLVTable21, i32 0, i32 38), align 8
+  call void @xassert(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @global_string.104, i32 0, i32 0), i1 true)
+  %210 = load %Data3*, %Data3** %data3_2, align 8
+  %211 = ptrtoint %Data3* %210 to i64
+  %212 = icmp ne i64 %211, 0
+  br i1 %212, label %cond_then_block346, label %cond_end347
 
-cond_then_block342:                               ; preds = %cond_jump_end335
-  br label %cond_end343
+cond_then_block346:                               ; preds = %cond_jump_end335
+  br label %cond_end347
 
-cond_end343:                                      ; preds = %cond_then_block342, %cond_jump_end335
-  %208 = bitcast %Data3* %205 to i8*
-  call void @free(i8* %208)
-  %209 = load i8*, i8** %b, align 8
-  %210 = ptrtoint i8* %209 to i64
-  %211 = icmp ne i64 %210, 0
-  br i1 %211, label %cond_then_block344, label %cond_end345
+cond_end347:                                      ; preds = %cond_then_block346, %cond_jump_end335
+  %213 = bitcast %Data3* %210 to i8*
+  call void @free(i8* %213)
+  %214 = load i8*, i8** %b, align 8
+  %215 = ptrtoint i8* %214 to i64
+  %216 = icmp ne i64 %215, 0
+  br i1 %216, label %cond_then_block348, label %cond_end349
 
-cond_then_block344:                               ; preds = %cond_end343
-  br label %cond_end345
+cond_then_block348:                               ; preds = %cond_end347
+  br label %cond_end349
 
-cond_end345:                                      ; preds = %cond_then_block344, %cond_end343
-  call void @free(i8* %209)
+cond_end349:                                      ; preds = %cond_then_block348, %cond_end347
+  call void @free(i8* %214)
   ret i32 0
 }
 

@@ -457,6 +457,19 @@ int main()
 
     xassert("local cstring array initializer test", strcmp(aa[0], "AAA") == 0 && strcmp(aa[1], "BBB") == 0);
 
+    int nnnnn = 123;
+
+    char* bbbbbbbbb = (char*)nnnnn;
+
+    int mmmmm = (int)bbbbbbbbb;
+
+    xassert("cast test", mmmmm == 123);
+
+    xassert("sizeof test", sizeof(int) == 4);
+
+    int a[2];
+    xassert("sizeof test", sizeof(a) == 8);
+
     return 0;
 }
 

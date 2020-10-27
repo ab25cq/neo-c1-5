@@ -1433,6 +1433,59 @@ unsigned int sNodeTree_create_continue_expression(char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_cast(char* type_name, unsigned int left_node, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeCast;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left_node;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    xstrncpy(gNodes[node].uValue.sCast.mTypeName, type_name, VAR_NAME_MAX);
+    return node;
+}
+
+unsigned int sNodeTree_create_sizeof1(char* type_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeSizeOf1;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sSizeOf.mTypeName, type_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_sizeof2(char* var_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeSizeOf2;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sSizeOf.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

@@ -7,6 +7,39 @@
 
 char buf[512];
 char* p;
+
+extern int num_struct_generics_types;
+char struct_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
+extern int num_function_generics_types;
+char function_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
+extern int num_method_generics_types;
+char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
+
+BOOL is_type_name(char* name)
+{
+    char name2[VAR_NAME_MAX];
+
+    get_typedef(name, name2);
+
+    int i;
+    for(i=0; i<num_function_generics_types; i++) {
+        if(strcmp(name, function_generics_types[i]) == 0) {
+            return TRUE;
+        }
+    }
+    for(i=0; i<num_struct_generics_types; i++) {
+        if(strcmp(name, struct_generics_types[i]) == 0) {
+            return TRUE;
+        }
+    }
+    for(i=0; i<num_method_generics_types; i++) {
+        if(strcmp(name, method_generics_types[i]) == 0) {
+            return TRUE;
+        }
+    }
+
+    return get_class(name2) != NULL;
+}
 %}
 
 %x str
@@ -458,9 +491,20 @@ continue {
     return(CONTINUE);
 }
 
+sizeof {
+    strncpy(yylval.cval, yytext, 128);
+    return(SIZEOF);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
-    return(IDENTIFIER); 
+
+    if(is_type_name(yytext)) {
+        return(TYPE_NAME); 
+    }
+    else {
+        return(IDENTIFIER); 
+    }
 }
 
 . { 

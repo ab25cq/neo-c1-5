@@ -99,6 +99,8 @@ extern sClassTable* gHeadClassTable;
 void class_init();
 void class_final();
 
+BOOL is_type_name(char* name);
+
 sCLClass* get_class(char* class_name);
 sCLClass* alloc_struct(char* class_name, BOOL anonymous);
 sCLClass* alloc_enum(char* class_name);
@@ -273,7 +275,7 @@ extern int gSLine;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2 };
 
 struct sNodeTreeStruct 
 {
@@ -415,6 +417,13 @@ struct sNodeTreeStruct
             unsigned int mFirstStatment;
             unsigned int mLastStatment;
         } sCase;
+        struct {
+            char mTypeName[VAR_NAME_MAX];
+        } sCast;
+        struct {
+            char mTypeName[VAR_NAME_MAX];
+            char mVarName[VAR_NAME_MAX];
+        } sSizeOf;
     } uValue;
 };
 

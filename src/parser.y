@@ -52,6 +52,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %token <ival> INTNUM 
 %token <char_val> CHARNUM 
 %token <cval> IDENTIFIER
+%token <cval> TYPE_NAME
 %token <sval> CSTRING
 %token <cval> VOID
 %token <cval> IF
@@ -101,6 +102,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %token <cval> BREAK
 %token <cval> CONTINUE
 %token <cval> DEFAULT
+%token <cval> SIZEOF
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -267,7 +269,8 @@ type_attribute: {
     }
     ;
 
-type_name: IDENTIFIER {
+type_name: 
+    TYPE_NAME {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
@@ -296,7 +299,7 @@ type_name: IDENTIFIER {
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
     }
-    | IDENTIFIER '!' '<' generics_types '>' {
+    | TYPE_NAME '!' '<' generics_types '>' {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
@@ -866,14 +869,14 @@ method_generics_types: {
     }
     ;
 
-function_struct_type_name: IDENTIFIER {
+function_struct_type_name: TYPE_NAME {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
         num_function_generics_types = 0;
     }
-    | IDENTIFIER '!' '<' function_generics_types '>' {
+    | TYPE_NAME '!' '<' function_generics_types '>' {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
@@ -1758,6 +1761,26 @@ node:
             unsigned int right = $5;
 
             $$ = sNodeTree_create_rshift_eq(left, right, gSName, gSLine);
+        }
+
+        | '(' type ')' exp {
+            char type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, $2, VAR_NAME_MAX);
+
+            unsigned int lnode = $4;
+
+            $$ = sNodeTree_create_cast(type_name, lnode, gSName, gSLine);
+        }
+        | SIZEOF '(' IDENTIFIER ')' {
+            char* var_name = $3;
+
+            $$ = sNodeTree_create_sizeof2(var_name, gSName, gSLine);
+        }
+        | SIZEOF '(' type ')' {
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_sizeof1(type_name, gSName, gSLine);
         }
         ;
 
