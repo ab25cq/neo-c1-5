@@ -1,9 +1,11 @@
-cast
-
-sizeof
 
 check automatically free especially right value heap free and break and return
 
+global variable 
+char* aaa[3] = { "ABC", "A", "C" };
+char* aaa[2][2] = { "AA", "BB", "CC", "DD" };
+
+#include <stdio.h>
 preprocesser
 
 __ASM_NAME__ など
@@ -66,3 +68,6 @@ loop continue
 
 int a[3][3] = { { 1,2,3 }, { 1,2,3 }, {1,2,3}};
 global variable multiple array access store
+cast
+
+sizeof
