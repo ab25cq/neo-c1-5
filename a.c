@@ -1,10 +1,13 @@
 
+int fun() {
+    int a = 0;
+    int b = 1/a;
+    return 123;
+}
+
 int main() {
-    int ay[2][3][3];
-
-    ay[1][2][3] = 123;
-
-    printf("%d\n", ay[1][2][3]);
+    int (*aaa)() = int lambda() { return 123; };
+    fun();
 
     return 0;
 }

@@ -281,7 +281,7 @@ BOOL is_type_name(char* name)
     return(LSHIFT_EQ); 
 }
 
-[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~] { 
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#] { 
     return(yytext[0]); 
 }
 
@@ -446,6 +446,11 @@ return {
     return(RETURN);
 }
 
+typedef {
+    strncpy(yylval.cval, yytext, 128);
+    return(TYPEDEF);
+}
+
 new {
     strncpy(yylval.cval, yytext, 128);
     return(NEW);
@@ -499,7 +504,13 @@ sizeof {
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
 
-    if(is_type_name(yytext)) {
+    if(strcmp(yytext, "long") == 0) {
+        return(LONG); 
+    }
+    else if(strcmp(yytext, "short") == 0) {
+        return(SHORT); 
+    }
+    else if(is_type_name(yytext)) {
         return(TYPE_NAME); 
     }
     else {

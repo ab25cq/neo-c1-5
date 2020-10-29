@@ -1,3 +1,9 @@
+
+#define AAAAA 12345
+
+long int gAAAAAA = AAAAA;
+typedef long unsigned int size_t;
+
 int puts(char* str);
 
 int exit(int rc);
@@ -8,7 +14,9 @@ int atoi(const char* str);
 int atoi(const char* str);
 int strcmp(const char* str1, const char* str2);
 
-int fun() {
+int funXXX() {
+int a = 0;
+int b = 1/a;
     puts("called fun");
     return 2;
 }
@@ -114,6 +122,7 @@ void GenericsData2!<T>::fun(GenericsData2!<T>* self)
     data.show();
 }
 
+
 template !<M> M fun2(M a) {
     return a + 1;
 }
@@ -196,11 +205,10 @@ int gArray4[3][3][3] = {
 
 int main() 
 {
+/*
     puts("HELLO WORLD");
 
     xassert("test1", true);
-
-    fun();
 
     xassert("message passing test", 3.fun() == 123);
     xassert("const test", const_test("ABC"));
@@ -234,9 +242,11 @@ int main()
     xassert("generics fun test", data2.show() == 123);
 
     xassert("method generics fun test", fun2(123) == 124);
+*/
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
+/*
     xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
 
     inheritFun();
@@ -338,10 +348,10 @@ int main()
 
     strcpy(array, "ABC");
 
+
     xassert("array test", strcmp(array, "ABC") == 0);
 
     int array_num = 128;
-
     char array2[array_num];
 
     strcpy(array2, "ABC");
@@ -426,16 +436,6 @@ int main()
             break;
     }
 
-/*
-    for(int i=0; i<3; i++) {
-        printf("i %d\n", i);
-
-        if(i == 2) {
-            continue;
-        }
-    }
-*/
-
     int aaaaaa = gArray4[0][1][2];
 
     xassert("global array initializer test", aaaaaa == 4);
@@ -470,6 +470,22 @@ int main()
     int a[2];
     xassert("sizeof test", sizeof(a) == 8);
 
+    long aaaaaaa = 123;
+    long unsigned int bbbbbbbb = 123;
+*/
+
+    //funXXX();
+
     return 0;
 }
 
+
+/*
+    for(int i=0; i<3; i++) {
+        printf("i %d\n", i);
+
+        if(i == 2) {
+            continue;
+        }
+    }
+*/

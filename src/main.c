@@ -28,6 +28,8 @@ char* gVersion = "0.0.1";
 char gSName[PATH_MAX];
 int gSLine;
 
+char gSNameOriginal[PATH_MAX];
+
 extern FILE *yyin, *yyout;
 
 void parser_err_msg(char* msg)
@@ -46,8 +48,7 @@ extern int yyparse();
 
 int main(int argc, char** argv)
 {
-    compiler_init();
-
+    char sname[PATH_MAX];
     gSName[0] = '\0';
 
     int i;
@@ -56,9 +57,39 @@ int main(int argc, char** argv)
         if(argv[i][0] == '-') {
         }
         else {
-            xstrncpy(gSName, argv[i], PATH_MAX);
+            xstrncpy(sname, argv[i], PATH_MAX);
+            xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
+            snprintf(gSName, PATH_MAX, "%s.pp", argv[i]);
         }
     }
+
+    char* cflags = getenv("CFLAGS");
+    char cmd[1024];
+#ifdef __DARWIN__
+    if(cflags) {
+        snprintf(cmd, 1024, "clang -E %s -I/opt/local/include %s > %s", cflags, sname, gSName);
+    }
+    else {
+        snprintf(cmd, 1024, "clang -E %s -I/opt/local/include > %s", sname, gSName);
+    }
+#else
+    if(cflags) {
+        snprintf(cmd, 1024, "cpp %s -C %s > %s", cflags, sname, gSName);
+    }
+    else {
+        snprintf(cmd, 1024, "cpp -C %s > %s", sname, gSName);
+    }
+#endif
+
+    puts(cmd);
+    int rc = system(cmd);
+
+    if(rc != 0) {
+        fprintf(stderr, "failed to cpp(1)\n");
+        exit(2);
+    }
+
+    compiler_init();
 
     gSLine = 1;
 

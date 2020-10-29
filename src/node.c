@@ -650,7 +650,8 @@ unsigned int sNodeTree_create_typedef(char* name, char* type_name, char* sname, 
     gNodes[node].mRight = 0;
     gNodes[node].mMiddle = 0;
 
-    add_typedef(name, type_name);
+    xstrncpy(gNodes[node].uValue.sTypeDef.mTypeName, type_name, VAR_NAME_MAX);
+    xstrncpy(gNodes[node].uValue.sTypeDef.mName, name, VAR_NAME_MAX);
 
     return node;
 }
@@ -1484,6 +1485,13 @@ unsigned int sNodeTree_create_sizeof2(char* var_name, char* sname, int sline)
     gNodes[node].mMiddle = 0;
 
     return node;
+}
+
+static BOOL compile_typedef(unsigned int node, sCompileInfo* info)
+{
+    info->type = create_node_type_with_class_name("void");
+
+    return TRUE;
 }
 
 void show_node(unsigned int node)

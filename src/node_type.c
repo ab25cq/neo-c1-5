@@ -175,9 +175,23 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
 
     *p2 = buf;
 
+    BOOL long_ = FALSE;
+    BOOL short_ = FALSE;
+
     while(**p) {
         if(strstr(*p, "const") == *p) {
             node_type->mConstant = TRUE;
+            (*p)+= 5;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "long ") == *p) {
+            long_ = TRUE;
+            (*p)+= 4;
+            skip_spaces_for_parse_class_name(p);
+        }
+        else if(strstr(*p, "short ") == *p) {
+            short_ = TRUE;
+            node_type->mClass = get_class("short");
             (*p)+= 5;
             skip_spaces_for_parse_class_name(p);
         }
@@ -381,6 +395,13 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
                 return NULL;
             }
 
+            if(long_) {
+                node_type->mClass = get_class("long");
+            }
+            else if(short_) {
+                node_type->mClass = get_class("short");
+            }
+
             return node_type;
         }
         else if(**p == ' ') {
@@ -426,6 +447,13 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
         if(bit > 0) {
             node_type->mSizeNum = bit;
         }
+    }
+
+    if(long_) {
+        node_type->mClass = get_class("long");
+    }
+    else if(short_) {
+        node_type->mClass = get_class("short");
     }
 
     return node_type;

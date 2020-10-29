@@ -53,12 +53,15 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %token <char_val> CHARNUM 
 %token <cval> IDENTIFIER
 %token <cval> TYPE_NAME
+%token <cval> LONG
+%token <cval> SHORT
 %token <sval> CSTRING
 %token <cval> VOID
 %token <cval> IF
 %token <cval> ELSE
 %token <cval> EXTERN
 %token <cval> RETURN
+%token <cval> TYPEDEF
 %token <cval> TOKEN_TRUE
 %token <cval> TOKEN_FALSE
 %token <cval> CONST
@@ -114,7 +117,7 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init;
+%type <node> program function block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_;
 
 %left OROR
 %left ANDAND
@@ -131,10 +134,36 @@ unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
 %start program
 
 %%
-program: function {
+
+source_point_macro: '#' INTNUM CSTRING {
+        xstrncpy(gSName, $3, PATH_MAX);
+        gSLine = $2;
+        }
+        | '#' INTNUM CSTRING INTNUM {
+        xstrncpy(gSName, $3, PATH_MAX);
+        gSLine = $2;
+        }
+        | '#' INTNUM CSTRING INTNUM INTNUM INTNUM {
+        xstrncpy(gSName, $3, PATH_MAX);
+        gSLine = $2;
+        }
+        | '#' INTNUM CSTRING INTNUM INTNUM {
+        xstrncpy(gSName, $3, PATH_MAX);
+        gSLine = $2;
+        }
+        ;
+
+program:
+        source_point_macro {
+        }
+        |
+        function {
             $$ = compile($1, &cinfo);
         }
         | global_variable {
+            $$ = compile($1, &cinfo);
+        }
+        | typedef_ {
             $$ = compile($1, &cinfo);
         }
         | struct_ {
@@ -144,6 +173,8 @@ program: function {
             $$ = compile($1, &cinfo);
         }
         | enum_ {
+        }
+        | program source_point_macro {
         }
         | program function {
             $$ = compile($2, &cinfo);
@@ -159,24 +190,81 @@ program: function {
         }
         | program enum_ {
         }
+        | program typedef_ {
+            $$ = compile($2, &cinfo);
+        }
         ;
 
 type:
-    type_name {
-        xstrncpy($$, $1, VAR_NAME_MAX);
+    type_attribute {
+        if(strcmp($1, "long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "shor ") == 0) {
+            xstrncpy($$, "short", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned ") == 0) {
+            xstrncpy($$, "unsigned int", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "singed ") == 0) {
+            xstrncpy($$, "singed int", VAR_NAME_MAX);
+        }
+        else {
+            fprintf(stderr, "invalid type name (%s)\n", $1);
+            exit(1);
+        }
     }
-    | type_name pointer {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+    | type_attribute pointer {
+        if(strcmp($1, "long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "shor ") == 0) {
+            xstrncpy($$, "short", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned ") == 0) {
+            xstrncpy($$, "unsigned int", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "singed ") == 0) {
+            xstrncpy($$, "singed int", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+        }
+        else {
+            fprintf(stderr, "invalid type name (%s)\n", $1);
+            exit(1);
+        }
     }
-    | type_name pointer '%' {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-        xstrncat($$, "%", VAR_NAME_MAX);
+    | type_attribute pointer '%' {
+        if(strcmp($1, "long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "shor ") == 0) {
+            xstrncpy($$, "short", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned ") == 0) {
+            xstrncpy($$, "unsigned int", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "singed ") == 0) {
+            xstrncpy($$, "singed int", VAR_NAME_MAX);
+            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else {
+            fprintf(stderr, "invalid type name (%s)\n", $1);
+            exit(1);
+        }
     }
     | type_attribute type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncpy($$, $2, VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
     }
     | type_attribute type_name pointer {
         xstrncpy($$, $1, VAR_NAME_MAX);
@@ -187,6 +275,18 @@ type:
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, "%", VAR_NAME_MAX);
+    }
+    | type_name {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+    }
+    | type_name pointer {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
+    }
+    | type_name pointer '%' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
     }
     | STRUCT '{' fields '}' {
@@ -223,7 +323,8 @@ type:
     }
     ;
 
-pointer: '*' {
+pointer: 
+    '*' {
         xstrncpy($$, "*", VAR_NAME_MAX);
     }
     | pointer '*' {
@@ -232,11 +333,69 @@ pointer: '*' {
     }
     ;
 
-type_attribute: { 
-        xstrncpy($$, "", VAR_NAME_MAX); 
+type_attribute: 
+    LONG {
+        xstrncpy($$, "long ", VAR_NAME_MAX); 
         inline_ = FALSE;
         static_ = FALSE;
         inherit_ = FALSE;
+    }
+    | SHORT {
+        xstrncpy($$, "short ", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | CONST {
+        xstrncpy($$, "const ", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | UNSIGNED {
+        xstrncpy($$, "unsigned ", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | SIGNED {
+        xstrncpy($$, "signed ", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | REGISTER {
+        xstrncpy($$, "regisster ", VAR_NAME_MAX); 
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | STATIC {
+        xstrncpy($$, "static ", VAR_NAME_MAX); 
+        static_ = TRUE;
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | INLINE {
+        xstrncpy($$, "", VAR_NAME_MAX); 
+        inline_ = TRUE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
+    | INHERIT {
+        xstrncpy($$, "", VAR_NAME_MAX); 
+        inherit_ = TRUE;
+        inline_ = FALSE;
+        static_ = FALSE;
+    }
+    | type_attribute LONG {
+        xstrncpy($$, $1, VAR_NAME_MAX); 
+        xstrncat($$, "long ", VAR_NAME_MAX); 
+    }
+    | type_attribute SHORT {
+        xstrncpy($$, $1, VAR_NAME_MAX); 
+        xstrncat($$, "short ", VAR_NAME_MAX); 
     }
     | type_attribute CONST {
         xstrncpy($$, $1, VAR_NAME_MAX); 
@@ -332,8 +491,28 @@ type_name:
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
     }
+/*
+    | LONG {
+        xstrncpy($$, "long",  VAR_NAME_MAX);
+    }
+    | SHORT {
+        xstrncpy($$, "short",  VAR_NAME_MAX);
+    }
+*/
     | VOID {
         xstrncpy($$, "void",  VAR_NAME_MAX);
+    }
+    ;
+
+typedef_: TYPEDEF type IDENTIFIER ';' {
+        char* name = $3;
+        char* type_name = $2;
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
+    }
+    | TYPEDEF type TYPE_NAME ';' {
+        char* name = $3;
+        char* type_name = $2;
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
     }
     ;
 
@@ -1199,8 +1378,10 @@ cstring_array_value2: CSTRING {
         array_values[num_array_value++] = $$;
     };
 
-node: 
-        INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
+node: source_point_macro exp {
+            $$ = $2;
+            }
+        | INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, gSLine); }
         | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, gSLine); }
         | CSTRING {
             $$ = it = sNodeTree_create_c_string($1, gSName, gSLine);

@@ -270,6 +270,7 @@ struct sParserParamStruct
 typedef struct sParserParamStruct sParserParam;
 
 extern char gSName[PATH_MAX];
+extern char gSNameOriginal[PATH_MAX];
 extern int gSLine;
 
 /////////////////////////////// 
@@ -424,6 +425,10 @@ struct sNodeTreeStruct
             char mTypeName[VAR_NAME_MAX];
             char mVarName[VAR_NAME_MAX];
         } sSizeOf;
+        struct {
+            char mName[VAR_NAME_MAX];
+            char mTypeName[VAR_NAME_MAX];
+        } sTypeDef;
     } uValue;
 };
 
@@ -535,6 +540,8 @@ struct sCompileInfoStruct
 
     sVarTable* loop_top_lv_table;
     void* loop_top_block;
+
+    BOOL pre_compile;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;
@@ -542,6 +549,7 @@ typedef struct sCompileInfoStruct sCompileInfo;
 BOOL function_existance(char* fun_name);
 void dec_stack_ptr(int value, sCompileInfo* info);
 BOOL compile(unsigned int node, sCompileInfo* info);
+BOOL pre_compile(unsigned int node, sCompileInfo* info);
 void llvm_init();
 void llvm_final();
 
