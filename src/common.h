@@ -327,6 +327,7 @@ struct sNodeTreeStruct
             BOOL mCoroutine;
             BOOL mGenerics;
             BOOL mMethodGenerics;
+            sVarTable* mLVTable;
         } sFunction;
         struct {
             char mFunName[VAR_NAME_MAX];
@@ -540,8 +541,6 @@ struct sCompileInfoStruct
 
     sVarTable* loop_top_lv_table;
     void* loop_top_block;
-
-    BOOL pre_compile;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;
@@ -556,6 +555,7 @@ void llvm_final();
 BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sCompileInfo* cinfo);
 
 extern BOOL gNCDebug;
+extern sCompileInfo cinfo;
 
 #endif
 

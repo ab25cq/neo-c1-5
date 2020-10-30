@@ -38,6 +38,7 @@ int num_array_value;
 unsigned int array_values[INIT_ARRAY_MAX];
 unsigned int num_switch_expression;
 unsigned int switch_expression[SWITCH_STASTMENT_NODE_MAX];
+sVarTable* gLVTable = NULL;
 %}
 
 %union {
