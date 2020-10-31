@@ -21,6 +21,7 @@ int b = 1/a;
     return 2;
 }
 
+/*
 void xassert(char* msg, bool exp) 
 {
     printf("%s...", msg);
@@ -202,6 +203,7 @@ int gArray4[3][3][3] = {
     14,15,16,
     17, 18, 19 }
 };
+*/
 
 int main() 
 {
@@ -242,11 +244,9 @@ int main()
     xassert("generics fun test", data2.show() == 123);
 
     xassert("method generics fun test", fun2(123) == 124);
-*/
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
-/*
     xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
 
     inheritFun();
@@ -474,7 +474,7 @@ int main()
     long unsigned int bbbbbbbb = 123;
 */
 
-    //funXXX();
+    funXXX();
 
     return 0;
 }

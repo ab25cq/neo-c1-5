@@ -279,7 +279,7 @@ unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsi
     sVarTable* lv_table = init_var_table();
     gNodes[node].uValue.sFunction.mLVTable = lv_table;
 
-    gLVTable = lv_table;
+    cinfo.lv_table = lv_table;
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
     xstrncpy(gNodes[node].uValue.sFunction.mBaseName, fun_base_name, VAR_NAME_MAX);
@@ -320,8 +320,9 @@ unsigned int sNodeTree_create_block(char* sname, int sline)
     sBuf_init(&gNodes[node].uValue.sBlock.mSource);
 
     sVarTable* lv_table = init_var_table();
-    lv_table->mParent = gLVTable;
+    lv_table->mParent = cinfo.lv_table;
     gNodes[node].uValue.sBlock.mLVTable = lv_table;
+    cinfo.lv_table = lv_table;
 
     return node;
 }
@@ -444,35 +445,6 @@ unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, un
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = right;
     gNodes[node].mMiddle = 0;
-
-    if(alloc) {
-        sNodeType* var_type = create_node_type_with_class_name(type_name);
-
-        if(var_type == NULL || var_type->mClass == NULL) {
-            fprintf(stderr, "Invalid type name (%s)\n", type_name);
-            exit(1);
-        }
-
-        BOOL readonly = FALSE;
-        BOOL constant = FALSE;
-
-        int index = -1;
-        void* llvm_value = NULL;
-        if(global) {
-            if(!add_variable_to_table(cinfo.gv_table, var_name, var_type, llvm_value,  index, global, constant))
-            {
-                fprintf(stderr, "overflow variable table");
-                exit(2);
-            }
-        }
-        else {
-            if(!add_variable_to_table(gLVTable, var_name, var_type, llvm_value,  index, global, constant))
-            {
-                fpirntf(stderr, "overflow variable table");
-                exit(2);
-            }
-        }
-    }
 
     return node;
 }
@@ -713,7 +685,7 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
 {
     unsigned int node = alloc_node();
 
-    gNodes[node].mNodeType = kNodeTypeFunction;
+    gNodes[node].mNodeType = kNodeTypeCoroutine;
 
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
@@ -731,7 +703,6 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
     gNodes[node].uValue.sFunction.mGenerics = FALSE;
     gNodes[node].uValue.sFunction.mInherit = FALSE;
     gNodes[node].uValue.sFunction.mExternal = FALSE;
-    gNodes[node].uValue.sFunction.mLVTable = init_var_table();
 
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
     xstrncpy(gNodes[node].uValue.sFunction.mBaseName, fun_name, VAR_NAME_MAX);
@@ -757,9 +728,9 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
 
     sVarTable* lv_table = init_var_table();
     lv_table->mCoroutineTop = TRUE;
-    lv_table->mParent = gLVTable;
+    lv_table->mParent = cinfo.lv_table;
     gNodes[node].uValue.sFunction.mLVTable = lv_table;
-    gLVTable = lv_table;
+    cinfo.lv_table = lv_table;
 
     return node;
 }
@@ -858,27 +829,6 @@ unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, B
     BOOL constant = FALSE;
     void* llvm_value = NULL;
     int index = -1;
-
-    sNodeType* var_type = create_node_type_with_class_name(type_name);
-    if(var_type == NULL || var_type->mClass == NULL) {
-        fprintf(stderr, "Invalid type name %s\n", type_name);
-        return FALSE;
-    }
-
-    if(global) {
-        if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
-        {
-            compile_err_msg(info, "overflow variable table");
-            return FALSE;
-        }
-    }
-    else {
-        if(!add_variable_to_table(gLVTable, var_name, var_type, llvm_value,  index, global, constant))
-        {
-            compile_err_msg(info, "overflow variable table");
-            return FALSE;
-        }
-    }
 
     return node;
 }

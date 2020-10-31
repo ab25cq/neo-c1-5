@@ -2158,6 +2158,22 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
         int sline = gNodes[node].mLine;
         setCurrentDebugLocation(sline);
 
+        if(!pre_compile(node, info)) {
+            return FALSE;
+        }
+
+        free_right_value_objects(info);
+
+        dec_stack_ptr(info->stack_num, info);
+
+        *last_expression_is_return = gNodes[node].mNodeType == kNodeTypeReturn;
+    }
+    for(i=0; i<num_nodes; i++) {
+        unsigned int node = nodes[i];
+
+        int sline = gNodes[node].mLine;
+        setCurrentDebugLocation(sline);
+
         if(!compile(node, info)) {
             return FALSE;
         }
@@ -3203,6 +3219,28 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
     BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
     BOOL global = gNodes[node].uValue.sStoreVariable.mGlobal;
 
+    if(alloc) {
+        sNodeType* var_type = create_node_type_with_class_name(type_name);
+
+        if(var_type == NULL || var_type->mClass == NULL) {
+            fprintf(stderr, "Invalid type name (%s)\n", type_name);
+            exit(1);
+        }
+
+        BOOL readonly = FALSE;
+        BOOL constant = FALSE;
+
+        int index = -1;
+        void* llvm_value = NULL;
+        if(global) {
+            if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
+            {
+                fprintf(stderr, "overflow variable table");
+                exit(2);
+            }
+        }
+    }
+
     unsigned int right_node = gNodes[node].mRight;
 
     if(!compile(right_node, info)) {
@@ -3793,6 +3831,69 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     else {
         info->type = create_node_type_with_class_name("void");
     }
+
+    return TRUE;
+}
+
+BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
+{
+    char fun_name[VAR_NAME_MAX];
+    xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+
+    char fun_base_name[VAR_NAME_MAX];
+    xstrncpy(fun_base_name, gNodes[node].uValue.sFunction.mBaseName, VAR_NAME_MAX);
+
+    int num_params = gNodes[node].uValue.sFunction.mNumParams;
+    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
+    BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
+    BOOL static_ = gNodes[node].uValue.sFunction.mStatic;
+    BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
+    BOOL generics = gNodes[node].uValue.sFunction.mGenerics;
+    BOOL method_generics = gNodes[node].uValue.sFunction.mMethodGenerics;
+    BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
+    BOOL external = gNodes[node].uValue.sFunction.mExternal;
+    
+    char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
+
+    unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
+
+    sVarTable* fun_lv_table = gNodes[node].uValue.sFunction.mLVTable;
+
+    char* param_types[PARAMS_MAX];
+    char* param_names[PARAMS_MAX];
+
+    int i;
+    for(i=0; i<num_params; i++) {
+        param_types[i] = gNodes[node].uValue.sFunction.mParams[i].mTypeName;
+        param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
+    }
+
+    sFunction fun = gFuncs[fun_name][0];
+
+    Function* llvm_fun = fun.mLLVMFunction;
+
+    sNodeType* lambda_type = create_node_type_with_class_name("lambda");
+
+    lambda_type->mResultType = create_node_type_with_class_name(result_type_name);
+    lambda_type->mNumParams = num_params;
+    for(i=0; i<num_params; i++) {
+        lambda_type->mParamTypes[i] = create_node_type_with_class_name(param_types[i]);
+
+        BOOL success_solve;
+        (void)solve_generics(&lambda_type->mParamTypes[i], info->generics_type, &success_solve);
+    }
+
+    LVALUE llvm_value;
+    llvm_value.value = llvm_fun;
+    llvm_value.type = lambda_type;
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = lambda_type;
 
     return TRUE;
 }
@@ -4850,7 +4951,32 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
     BOOL extern_ = gNodes[node].uValue.sDefineVariable.mExtern;
     BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
     sVar* var;
-    sVar* var;
+
+    sNodeType* var_type = create_node_type_with_class_name(type_name);
+    if(var_type == NULL || var_type->mClass == NULL) {
+        fprintf(stderr, "Invalid type name %s\n", type_name);
+        return FALSE;
+    }
+
+    Value* llvm_value = NULL;
+    BOOL constant = var_type->mConstant;
+    int index = -1;
+    if(global) {
+        if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            return FALSE;
+        }
+    }
+/*
+    else {
+        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            return FALSE;
+        }
+    }
+*/
 
     if(global) {
         var = get_variable_from_table(info->gv_table, var_name);
@@ -4875,7 +5001,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
         }
     }
 
-    sNodeType* var_type = var->mType;
+    var_type = var->mType;
 
     BOOL success_solve;
     solve_generics(&var_type, info->generics_type, &success_solve);
@@ -9262,6 +9388,13 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
+        case kNodeTypeCoroutine: {
+            if(!compile_coroutine(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
         default:
             fprintf(stderr, "invalid node type\n");
             exit(2);
@@ -9271,3 +9404,181 @@ BOOL compile(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+///////////////////////////////////////////////////////////////////////
+// precompile
+///////////////////////////////////////////////////////////////////////
+BOOL pre_compile_store_variable(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX];
+    xstrncpy(var_name, gNodes[node].uValue.sStoreVariable.mVarName, VAR_NAME_MAX);
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sStoreVariable.mTypeName, VAR_NAME_MAX);
+    BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
+    BOOL global = gNodes[node].uValue.sStoreVariable.mGlobal;
+
+    if(alloc) {
+        sNodeType* var_type = create_node_type_with_class_name(type_name);
+
+        if(var_type == NULL || var_type->mClass == NULL) {
+            fprintf(stderr, "Invalid type name (%s)\n", type_name);
+            exit(1);
+        }
+
+        BOOL readonly = FALSE;
+        BOOL constant = FALSE;
+
+        int index = -1;
+        void* llvm_value = NULL;
+        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            exit(2);
+        }
+    }
+
+    return node;
+}
+
+static BOOL pre_compile_define_variable(unsigned int node, sCompileInfo* info)
+{
+    char var_name[VAR_NAME_MAX];
+    xstrncpy(var_name, gNodes[node].uValue.sDefineVariable.mVarName, VAR_NAME_MAX);
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sDefineVariable.mTypeName, VAR_NAME_MAX);
+    BOOL extern_ = gNodes[node].uValue.sDefineVariable.mExtern;
+    BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
+    sVar* var;
+
+    sNodeType* var_type = create_node_type_with_class_name(type_name);
+    if(var_type == NULL || var_type->mClass == NULL) {
+        fprintf(stderr, "Invalid type name %s\n", type_name);
+        return FALSE;
+    }
+
+    Value* llvm_value = NULL;
+    BOOL constant = var_type->mConstant;
+    int index = -1;
+/*
+    if(global) {
+        if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            return FALSE;
+        }
+    }
+    else {
+*/
+        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            return FALSE;
+        }
+//    }
+
+    return TRUE;
+}
+
+BOOL pre_compile_coroutine(unsigned int node, sCompileInfo* info)
+{
+    char fun_name[VAR_NAME_MAX];
+    xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
+
+    char fun_base_name[VAR_NAME_MAX];
+    xstrncpy(fun_base_name, gNodes[node].uValue.sFunction.mBaseName, VAR_NAME_MAX);
+
+    int num_params = gNodes[node].uValue.sFunction.mNumParams;
+    BOOL var_arg = gNodes[node].uValue.sFunction.mVarArg;
+    BOOL inline_ = gNodes[node].uValue.sFunction.mInline;
+    BOOL static_ = gNodes[node].uValue.sFunction.mStatic;
+    BOOL coroutine = gNodes[node].uValue.sFunction.mCoroutine;
+    BOOL generics = gNodes[node].uValue.sFunction.mGenerics;
+    BOOL method_generics = gNodes[node].uValue.sFunction.mMethodGenerics;
+    BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
+    BOOL external = gNodes[node].uValue.sFunction.mExternal;
+    
+    char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
+
+    unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
+
+    sVarTable* fun_lv_table = gNodes[node].uValue.sFunction.mLVTable;
+
+    char* param_types[PARAMS_MAX];
+    char* param_names[PARAMS_MAX];
+
+    int i;
+    for(i=0; i<num_params; i++) {
+        param_types[i] = gNodes[node].uValue.sFunction.mParams[i].mTypeName;
+        param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
+    }
+
+    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, info)) {
+        return FALSE;
+    }
+
+    if(!generics && !method_generics) {
+        sFunction fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+
+        int sline = gNodes[node].mLine;
+        if(!create_llvm_function(&fun, fun_lv_table, info, sline)) {
+            return FALSE;
+        }
+    }
+
+    sFunction fun = gFuncs[fun_name][0];
+
+    Function* llvm_fun = fun.mLLVMFunction;
+
+    sNodeType* lambda_type = create_node_type_with_class_name("lambda");
+
+    lambda_type->mResultType = create_node_type_with_class_name(result_type_name);
+    lambda_type->mNumParams = num_params;
+    for(i=0; i<num_params; i++) {
+        lambda_type->mParamTypes[i] = create_node_type_with_class_name(param_types[i]);
+
+        BOOL success_solve;
+        (void)solve_generics(&lambda_type->mParamTypes[i], info->generics_type, &success_solve);
+    }
+
+    LVALUE llvm_value;
+    llvm_value.value = llvm_fun;
+    llvm_value.type = lambda_type;
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = lambda_type;
+
+    return TRUE;
+}
+
+BOOL pre_compile(unsigned int node, sCompileInfo* info)
+{
+    xstrncpy(info->sname, gNodes[node].mSName, PATH_MAX);
+    info->sline = gNodes[node].mLine;
+
+    switch(gNodes[node].mNodeType) {
+        case kNodeTypeCoroutine:
+            if(!pre_compile_coroutine(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeStoreVariable:
+            if(!pre_compile_store_variable(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeDefineVariable:
+            if(!pre_compile_define_variable(node, info)) {
+                return FALSE;
+            }
+            break;
+
+    }
+
+    return TRUE;
+}
