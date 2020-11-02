@@ -299,6 +299,8 @@ struct sNodeTreeStruct
             unsigned int mSizeNodes;
             unsigned int mNumNodes;
 
+            BOOL mCreateLVTable;
+
             sVarTable* mLVTable;
 
             sBuf mSource;
@@ -460,7 +462,7 @@ unsigned int sNodeTree_create_mod(unsigned int left, unsigned int right, char* s
 unsigned int sNodeTree_create_or(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_xor(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_and(unsigned int left, unsigned int right, char* sname, int sline);
-unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
+unsigned int sNodeTree_create_function(unsigned int node, char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline);
 unsigned int sNodeTree_create_function_params(char* sname, int sline);
 unsigned int sNodeTree_create_params(char* sname, int sline);
 void append_param_to_params(unsigned int params, unsigned int param);
@@ -468,7 +470,7 @@ void append_param_to_params_at_head(unsigned int params, unsigned int param);
 unsigned int sNodeTree_create_store_variable(char* var_name, char* type_name, unsigned int right, BOOL alloc, BOOL global, char* sname, int sline);
 unsigned int sNodeTree_create_external_function(char* fun_name, unsigned int function_params, char* result_type_name, BOOL var_arg, BOOL inherite_, char* sname, int sline);
 unsigned int sNodeTree_create_load_variable(char* var_name, char* sname, int sline);
-unsigned int sNodeTree_create_block(char* sname, int sline);
+unsigned int sNodeTree_create_block(BOOL create_lv_table, char* sname, int sline);
 unsigned int sNodeTree_create_return(unsigned int right, unsigned int middle, char* sname, int sline);
 unsigned int sNodeTree_create_function_call(char* fun_name, unsigned int params, BOOL message_passing, BOOL inherit_, char* sname, int sline);
 unsigned int sNodeTree_create_c_string(char* value, char* sname, int sline);
@@ -500,6 +502,7 @@ unsigned int sNodeTree_create_minus_eq(unsigned int left, unsigned int right, ch
 unsigned int sNodeTree_create_load_array_element(unsigned int array, unsigned int index_node[], int num_dimention, char* sname, int sline);
 unsigned int sNodeTree_create_store_element(unsigned int array, unsigned int index_node[], int num_dimention, unsigned int right_node, char* sname, int sline);
 unsigned int sNodeTree_create_array_initializer(int left, char* var_name, int num_array_value, unsigned int* array_values, BOOL global, char* sname, int sline);
+unsigned int sNodeTree_pre_create_function(unsigned int function_params, char* sname, int sline);
 
 //////////////////////////////////
 // compile.cpp
@@ -557,6 +560,8 @@ BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sC
 extern BOOL gNCDebug;
 extern sCompileInfo cinfo;
 extern sVarTable* gLVTable;
+
+BOOL pre_compile_block(unsigned int node_block, sCompileInfo* info);
 
 #endif
 

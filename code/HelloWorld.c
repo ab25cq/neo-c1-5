@@ -21,7 +21,6 @@ int b = 1/a;
     return 2;
 }
 
-/*
 void xassert(char* msg, bool exp) 
 {
     printf("%s...", msg);
@@ -92,6 +91,7 @@ union Data2 {
     long b;
 };
 
+/*
 struct GenericsData!<T> {
     T a;
     T b;
@@ -207,8 +207,12 @@ int gArray4[3][3][3] = {
 
 int main() 
 {
-/*
     puts("HELLO WORLD");
+
+    char*% start_str = string("AAA");
+
+    int start_a = 111;
+    printf("a %d\n", start_a);
 
     xassert("test1", true);
 
@@ -223,7 +227,7 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int (*aaa)() = int lambda() { puts("FUN"); return xxx; };
+    int (*aaa)() = int lambda() { puts("FUN"); printf("xxx %p\n", xxx); return xxx; };
 
     xassert("function pointer test", aaa() == 123);
 
@@ -234,6 +238,7 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
+/*
     GenericsData!<int> data2;
 
     data2.a = 123;
@@ -474,7 +479,7 @@ int main()
     long unsigned int bbbbbbbb = 123;
 */
 
-    funXXX();
+    //funXXX();
 
     return 0;
 }

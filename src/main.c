@@ -55,6 +55,9 @@ int main(int argc, char** argv)
     for(i=1; i<argc; i++) {
         /// options ///
         if(argv[i][0] == '-') {
+            if(strcmp(argv[i], "-g") == 0) {
+                gNCDebug = TRUE;
+            }
         }
         else {
             xstrncpy(sname, argv[i], PATH_MAX);

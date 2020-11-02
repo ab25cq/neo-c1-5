@@ -202,7 +202,6 @@ unsigned int sNodeTree_create_rshift(unsigned int left, unsigned int right, char
     gNodes[node].mLeft = left;
     gNodes[node].mRight = right;
     gNodes[node].mMiddle = 0;
-
     return node;
 }
 
@@ -254,12 +253,51 @@ unsigned int sNodeTree_create_and(unsigned int left, unsigned int right, char* s
     return node;
 }
 
-unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)
+unsigned int sNodeTree_pre_create_function(unsigned int function_params, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
     gNodes[node].mNodeType = kNodeTypeFunction;
 
+    sVarTable* lv_table = init_var_table();
+    gNodes[node].uValue.sFunction.mLVTable = lv_table;
+
+    cinfo.lv_table = lv_table;
+
+    gNodes[node].uValue.sFunction.mNumParams = gNodes[function_params].uValue.sFunctionParams.mNumParams;
+
+    int i;
+    for(i=0; i<gNodes[function_params].uValue.sFunctionParams.mNumParams; i++) {
+        sParserParam* param = gNodes[function_params].uValue.sFunctionParams.mParams + i;
+        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mName, param->mName, VAR_NAME_MAX);
+        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
+
+        char* var_name = param->mName;
+        char* param_type = param->mTypeName;
+
+        sNodeType* var_type = create_node_type_with_class_name(param_type);
+
+        if(var_type == NULL || var_type->mClass == NULL) {
+            fprintf(stderr, "%s %d: Invalid type name %s\n", gSName, gSLine, var_name);
+            return FALSE;
+        }
+
+        BOOL constant = var_type->mConstant;
+        BOOL global = FALSE;
+        int index = -1;
+        void* llvm_value = NULL;
+        if(!add_variable_to_table(lv_table, var_name, var_type, llvm_value,  index, global, constant))
+        {
+            fprintf(stderr, "overflow variable table");
+            return FALSE;
+        }
+    }
+
+    return node;
+}
+
+unsigned int sNodeTree_create_function(unsigned int node, char* fun_name, char* fun_base_name, unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, BOOL inline_, BOOL static_, BOOL inherit_, BOOL generics, BOOL method_generics, char* sname, int sline)
+{
     xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
     gNodes[node].mLine = sline;
 
@@ -276,31 +314,27 @@ unsigned int sNodeTree_create_function(char* fun_name, char* fun_base_name, unsi
     gNodes[node].uValue.sFunction.mMethodGenerics = method_generics;
     gNodes[node].uValue.sFunction.mExternal = FALSE;
 
-    sVarTable* lv_table = init_var_table();
-    gNodes[node].uValue.sFunction.mLVTable = lv_table;
-
-    cinfo.lv_table = lv_table;
-
     xstrncpy(gNodes[node].uValue.sFunction.mName, fun_name, VAR_NAME_MAX);
     xstrncpy(gNodes[node].uValue.sFunction.mBaseName, fun_base_name, VAR_NAME_MAX);
-
-    gNodes[node].uValue.sFunction.mNumParams = gNodes[function_params].uValue.sFunctionParams.mNumParams;
-
-    int i;
-    for(i=0; i<gNodes[function_params].uValue.sFunctionParams.mNumParams; i++) {
-        sParserParam* param = gNodes[function_params].uValue.sFunctionParams.mParams + i;
-        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mName, param->mName, VAR_NAME_MAX);
-        xstrncpy(gNodes[node].uValue.sFunction.mParams[i].mTypeName, param->mTypeName, VAR_NAME_MAX);
-    }
 
     xstrncpy(gNodes[node].uValue.sFunction.mResultTypeName, result_type_name, VAR_NAME_MAX);
 
     gNodes[node].uValue.sFunction.mNodeBlock = node_block;
 
+    if(!pre_compile(node, &cinfo)) {
+        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, gSLine);
+        exit(2);
+    }
+
+    if(!pre_compile_block(node_block, &cinfo)) {
+        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, gSLine);
+        exit(2);
+    }
+
     return node;
 }
 
-unsigned int sNodeTree_create_block(char* sname, int sline)
+unsigned int sNodeTree_create_block(BOOL create_lv_table, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -315,14 +349,10 @@ unsigned int sNodeTree_create_block(char* sname, int sline)
 
     gNodes[node].uValue.sBlock.mSizeNodes = 32;
     gNodes[node].uValue.sBlock.mNumNodes = 0;
+    gNodes[node].uValue.sBlock.mCreateLVTable = create_lv_table;
     gNodes[node].uValue.sBlock.mNodes = (unsigned int*)xcalloc(1, sizeof(unsigned int)*32);
 
     sBuf_init(&gNodes[node].uValue.sBlock.mSource);
-
-    sVarTable* lv_table = init_var_table();
-    lv_table->mParent = cinfo.lv_table;
-    gNodes[node].uValue.sBlock.mLVTable = lv_table;
-    cinfo.lv_table = lv_table;
 
     return node;
 }
@@ -725,12 +755,6 @@ unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* resu
     }
 
     int num_params = gNodes[node].uValue.sFunction.mNumParams;
-
-    sVarTable* lv_table = init_var_table();
-    lv_table->mCoroutineTop = TRUE;
-    lv_table->mParent = cinfo.lv_table;
-    gNodes[node].uValue.sFunction.mLVTable = lv_table;
-    cinfo.lv_table = lv_table;
 
     return node;
 }
