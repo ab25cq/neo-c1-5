@@ -91,7 +91,6 @@ union Data2 {
     long b;
 };
 
-/*
 struct GenericsData!<T> {
     T a;
     T b;
@@ -108,8 +107,13 @@ int GenericsData!<T>::show(GenericsData!<T> self)
 
     printf("%d %d\n", self.a, self.b);
 
-    return 123;
+    int (*xxx)(int) = int lambda(int c) { return 123 + c; };
+
+    xassert("generics lambda test", xxx(1) == self.a + 1);
+
+    return a;
 }
+/*
 
 struct GenericsData2!<T> {
     T a;
@@ -227,9 +231,11 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int (*aaa)() = int lambda() { puts("FUN"); printf("xxx %p\n", xxx); return xxx; };
+    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
 
-    xassert("function pointer test", aaa() == 123);
+    xassert("eqeq test", xxx == 123);
+
+    xassert("function pointer test", aaa(1) == 124);
 
     Data data;
 
@@ -238,7 +244,6 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
-/*
     GenericsData!<int> data2;
 
     data2.a = 123;
@@ -248,6 +253,7 @@ int main()
 
     xassert("generics fun test", data2.show() == 123);
 
+/*
     xassert("method generics fun test", fun2(123) == 124);
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);

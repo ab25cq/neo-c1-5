@@ -19,6 +19,8 @@ unsigned int elif_exps[ELIF_NUM_MAX];
 unsigned int elif_blocks[ELIF_NUM_MAX];
 int elif_num;
 unsigned int fields;
+char variable_names[VAR_NAME_MAX][128];
+int num_variable_names = 0;
 char variable_name[VAR_NAME_MAX];
 char type_params[VAR_NAME_MAX];
 int num_struct_generics_types = 0;
@@ -540,7 +542,7 @@ type_and_variable_name:
         xstrncpy(type_name, $1, VAR_NAME_MAX);
     
         xstrncpy($$, type_name, VAR_NAME_MAX);
-        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
     | type IDENTIFIER array_type {
         char type_name[VAR_NAME_MAX];
@@ -549,7 +551,7 @@ type_and_variable_name:
         xstrncat(type_name, $3, VAR_NAME_MAX);
     
         xstrncpy($$, type_name, VAR_NAME_MAX);
-        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
     | type IDENTIFIER const_array_type {
         char type_name[VAR_NAME_MAX];
@@ -558,7 +560,7 @@ type_and_variable_name:
         xstrncat(type_name, $3, VAR_NAME_MAX);
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
-        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
     | type IDENTIFIER ':' INTNUM {
         char type_name[VAR_NAME_MAX];
@@ -572,7 +574,7 @@ type_and_variable_name:
         xstrncat(type_name, buf, VAR_NAME_MAX);
     
         xstrncpy($$, type_name, VAR_NAME_MAX);
-        xstrncpy(variable_name, $2, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
     | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' {
         xstrncpy($$, $1, VAR_NAME_MAX);
@@ -580,7 +582,7 @@ type_and_variable_name:
         xstrncat($$, $6, VAR_NAME_MAX);
         xstrncat($$, ")", VAR_NAME_MAX);
 
-        xstrncpy(variable_name, $3, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
 
         xstrncpy(type_params, "", VAR_NAME_MAX);
     }
@@ -667,7 +669,9 @@ struct_generics_types: {
 fields:  { 
             fields = sNodeTree_create_struct_fields(gSName, gSLine); $$ = fields; 
         }
-        | fields type_and_variable_name ';' { $$ = fields; append_field_to_fields(fields, variable_name, $2); }
+        | fields type_and_variable_name ';' { 
+            $$ = fields; append_field_to_fields(fields, variable_names[--num_variable_names], $2); 
+        }
         ;
 
 enum_: ENUM '{' enum_fields '}' ';' {
@@ -744,7 +748,7 @@ enum_fields: {
 global_variable:
         type_and_variable_name ';' {
             char* type_name = $1;
-            char* var_name = variable_name;
+            char* var_name = variable_names[--num_variable_names];
             BOOL global = TRUE;
             BOOL extern_ = FALSE;
 
@@ -816,7 +820,7 @@ global_variable:
             BOOL alloc = TRUE;
             BOOL global = TRUE;
 
-            $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
+            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, gSLine); 
         }
         ;
 
@@ -1026,9 +1030,15 @@ function_params: {
             func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; 
         }
         | type_and_variable_name {
-            func_params = sNodeTree_create_function_params(gSName, gSLine); $$ = func_params; var_arg = FALSE; append_param_to_function_params(func_params, $1, variable_name);
+            func_params = sNodeTree_create_function_params(gSName, gSLine);
+            $$ = func_params; 
+            var_arg = FALSE; 
+            append_param_to_function_params(func_params, $1, variable_names[--num_variable_names]);
         }
-        | function_params ',' type_and_variable_name { $$ = func_params; append_param_to_function_params(func_params, $3, variable_name); }
+        | function_params ',' type_and_variable_name { 
+            $$ = func_params; 
+            append_param_to_function_params(func_params, $3, variable_names[--num_variable_names]); 
+        }
         | function_params ',' '.' '.' '.' {
             var_arg = TRUE;
         }
@@ -1234,7 +1244,7 @@ statment: comma_exp ';'              { $$ = $1; }
     }
     | type_and_variable_name ';' {
         char* type_name = $1;
-        char* var_name = variable_name;
+        char* var_name = variable_names[--num_variable_names];
         BOOL global = FALSE;
         BOOL extern_ = FALSE;
 
@@ -1426,7 +1436,7 @@ node: source_point_macro exp {
             BOOL alloc = TRUE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable(variable_name, $1, $3, alloc, global, gSName, gSLine); 
+            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, gSLine); 
         }
         | type IDENTIFIER const_array_type '=' '{' cstring_array_value2 '}' { 
             char type_name[VAR_NAME_MAX];
@@ -1606,7 +1616,8 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_clone(exp, gSName, gSLine);
         }
-        | type LAMBDA '(' function_params ')' '{' function_block '}' block_end {
+        | type LAMBDA '(' function_params ')' '{' function_block '}' block_end 
+        {
             char* result_type_name = $1;
             unsigned int function_params = $4;
             unsigned int node_block = $7;

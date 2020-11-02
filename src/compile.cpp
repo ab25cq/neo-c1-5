@@ -2007,6 +2007,26 @@ static Type* get_lvtable_type()
     return lvtable_type;
 }
 
+void create_global_lvtable(sCompileInfo* info)
+{
+    Type* lvtable_type = get_lvtable_type();
+
+    static int func_num = 0;
+
+    char buf[VAR_NAME_MAX];
+    snprintf(buf, VAR_NAME_MAX, "gLVTable%d", func_num);
+    func_num++;
+
+    GlobalVariable* lv_table_value = new GlobalVariable(*TheModule, lvtable_type, false, GlobalValue::InternalLinkage, 0, buf);
+    lv_table_value->setAlignment(8);
+
+    ConstantAggregateZero* initializer = ConstantAggregateZero::get(lvtable_type);
+
+    lv_table_value->setInitializer(initializer);
+
+    info->lv_table_value = (void*)lv_table_value;
+}
+
 Value* llvm_create_string(char* str)
 {
     Constant* str_constant = ConstantDataArray::getString(TheModule->getContext(), str, true);
@@ -3966,6 +3986,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
         store_address_to_lvtable(index, address, info);
     }
 
+    gNodes[node_block].uValue.sBlock.mLVTable = fun_lv_table;
+
     BOOL last_expression_is_return = FALSE;
     BOOL loop_top = FALSE;
     if(!compile_block(node_block, info, &last_expression_is_return, loop_top)) {
@@ -4100,22 +4122,7 @@ BOOL pre_compile_function(unsigned int node, sCompileInfo* info)
     BOOL external = gNodes[node].uValue.sFunction.mExternal;
 
     if(!coroutine) {
-        Type* lvtable_type = get_lvtable_type();
-
-        static int func_num = 0;
-
-        char buf[VAR_NAME_MAX];
-        snprintf(buf, VAR_NAME_MAX, "gLVTable%d", func_num);
-        func_num++;
-
-        GlobalVariable* lv_table_value = new GlobalVariable(*TheModule, lvtable_type, false, GlobalValue::InternalLinkage, 0, buf);
-        lv_table_value->setAlignment(8);
-
-        ConstantAggregateZero* initializer = ConstantAggregateZero::get(lvtable_type);
-
-        lv_table_value->setInitializer(initializer);
-
-        info->lv_table_value = (void*)lv_table_value;
+        create_global_lvtable(info);
     }
 
     return TRUE;
@@ -4429,22 +4436,7 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 
     sVarTable* fun_lv_table = clone_var_table(generics_fun.mLVTable);
 
-    Type* lvtable_type = get_lvtable_type();
-
-    static int func_num = 0;
-
-    char buf[VAR_NAME_MAX];
-    snprintf(buf, VAR_NAME_MAX, "gLVTable%d", func_num);
-    func_num++;
-
-    GlobalVariable* lv_table_value = new GlobalVariable(*TheModule, lvtable_type, false, GlobalValue::InternalLinkage, 0, buf);
-    lv_table_value->setAlignment(8);
-
-    ConstantAggregateZero* initializer = ConstantAggregateZero::get(lvtable_type);
-
-    lv_table_value->setInitializer(initializer);
-
-    info->lv_table_value = (void*)lv_table_value;
+    create_global_lvtable(info);
 
     if(!create_llvm_function(&generics_fun, fun_lv_table, info, sline)) {
         return FALSE;
