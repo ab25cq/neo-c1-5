@@ -113,7 +113,6 @@ int GenericsData!<T>::show(GenericsData!<T> self)
 
     return a;
 }
-/*
 
 struct GenericsData2!<T> {
     T a;
@@ -207,7 +206,6 @@ int gArray4[3][3][3] = {
     14,15,16,
     17, 18, 19 }
 };
-*/
 
 int main() 
 {
@@ -231,11 +229,11 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
+//    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
+
+    //xassert("function pointer test", aaa(1) == 124);
 
     xassert("eqeq test", xxx == 123);
-
-    xassert("function pointer test", aaa(1) == 124);
 
     Data data;
 
@@ -256,14 +254,13 @@ int main()
 /*
     xassert("method generics fun test", fun2(123) == 124);
 
-    xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
+//    xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
-    xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
+//    xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
 
     inheritFun();
 
     GenericsData2!<int>* xyz = new GenericsData2!<int>;
-
     xyz.fun();
 
     GenericsData3!<int> xyz2;
@@ -485,7 +482,7 @@ int main()
     long unsigned int bbbbbbbb = 123;
 */
 
-    //funXXX();
+    funXXX();
 
     return 0;
 }

@@ -3929,13 +3929,16 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     /// ready for params ///
     for(i=0; i<num_params; i++) {
         sParserParam param = params[i];
+
+        sNodeType* param_type = create_node_type_with_class_name(param.mTypeName);
+
         char* var_name = param.mName;
 
         sVar* var = get_variable_from_table(info->lv_table, (char*)var_name);
         sNodeType* var_type;
 
         if(var == NULL) {
-            var_type = create_node_type_with_class_name(param.mTypeName);
+            var_type = clone_node_type(param_type);
             BOOL success_solve;
             (void)solve_generics(&var_type, info->generics_type, &success_solve);
 
@@ -3956,6 +3959,7 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
             }
         }
         else {
+            var->mType = clone_node_type(param_type);
             BOOL success_solve;
             (void)solve_generics(&var->mType, info->generics_type, &success_solve);
 
@@ -4436,6 +4440,7 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 
     sVarTable* fun_lv_table = clone_var_table(generics_fun.mLVTable);
 
+    void* lv_table_value = info->lv_table_value;
     create_global_lvtable(info);
 
     if(!create_llvm_function(&generics_fun, fun_lv_table, info, sline)) {
@@ -4445,6 +4450,7 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     gFuncs[real_fun_name2].push_back(generics_fun);
 
     *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
+    info->lv_table_value = lv_table_value;
 
     return TRUE;
 }
@@ -4735,6 +4741,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             info->generics_type = NULL;
 
             if(inherit_) {
+puts("AAA");
                 sFunction* current_function = (sFunction*)info->function;
 
                 char real_fun_name[VAR_NAME_MAX];
@@ -9919,8 +9926,6 @@ BOOL pre_compile_case_expression(unsigned int node, sCompileInfo* info)
     }
 
     sFunction* fun = (sFunction*)info->function;
-
-    Function* llvm_function = fun->mLLVMFunction;
 
     if(expression_node == 0) {
     }

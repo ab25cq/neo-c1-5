@@ -59,6 +59,7 @@ DO	parser.tab.c	/^    DO = 308,$/;"	e	enum:yytokentype	file:
 DO	parser.tab.h	/^    DO = 308,$/;"	e	enum:yytokentype
 Data	code/HelloWorld.c	/^struct Data {$/;"	s	file:
 Data2	code/HelloWorld.c	/^union Data2 {$/;"	u	file:
+Data3	code/HelloWorld.c	/^struct Data3 {$/;"	s	file:
 DblTy	src/compile.cpp	/^    DIType* DblTy;$/;"	m	struct:DebugInfo	file:
 DebugInfo	src/compile.cpp	/^struct DebugInfo {$/;"	s	file:
 ECHO	lex.yy.c	757;"	d	file:
@@ -189,6 +190,8 @@ SWITCH	parser.tab.c	/^    SWITCH = 309,$/;"	e	enum:yytokentype	file:
 SWITCH	parser.tab.h	/^    SWITCH = 309,$/;"	e	enum:yytokentype
 SWITCH_STASTMENT_NODE_MAX	src/common.h	44;"	d
 T	code/HelloWorld.c	/^struct GenericsData!<T> {$/;"	s	file:
+T	code/HelloWorld.c	/^struct GenericsData2!<T> {$/;"	s	file:
+T	code/HelloWorld.c	/^struct GenericsData3!<T> {$/;"	s	file:
 TEMPLATE	parser.tab.c	/^    TEMPLATE = 289,$/;"	e	enum:yytokentype	file:
 TEMPLATE	parser.tab.h	/^    TEMPLATE = 289,$/;"	e	enum:yytokentype
 TOKEN_FALSE	parser.tab.c	/^    TOKEN_FALSE = 272,$/;"	e	enum:yytokentype	file:
@@ -368,6 +371,7 @@ __64BIT_CPU__	config.h	19;"	d
 __LINUX__	config.h	16;"	d
 __STDC_LIMIT_MACROS	lex.yy.c	39;"	d	file:
 a	code/HelloWorld.c	/^    T a;$/;"	m	struct:T	file:
+a	code/HelloWorld.c	/^    int a:8;$/;"	m	struct:Data3	file:
 a	code/HelloWorld.c	/^    int a;$/;"	m	struct:Data	file:
 a	code/HelloWorld.c	/^    int a;$/;"	m	union:Data2	file:
 ac_fn_c_check_func	configure	/^ac_fn_c_check_func ()$/;"	f
@@ -422,6 +426,7 @@ as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
 as_fn_unset	configure	/^as_fn_unset ()$/;"	f
 auto_cast_posibility	src/node_type.c	/^BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type)$/;"	f
 b	code/HelloWorld.c	/^    T b;$/;"	m	struct:T	file:
+b	code/HelloWorld.c	/^    int b:4;$/;"	m	struct:Data3	file:
 b	code/HelloWorld.c	/^    int b;$/;"	m	struct:Data	file:
 b	code/HelloWorld.c	/^    long b;$/;"	m	union:Data2	file:
 binded_value	src/compile.cpp	/^    BOOL binded_value;$/;"	m	struct:LVALUEStruct	file:
@@ -597,6 +602,8 @@ free_right_value_objects	src/compile.cpp	/^void free_right_value_objects(sCompil
 freed	src/memalloc-stdc.c	/^    int freed;$/;"	m	struct:sHeapDebug	file:
 fun	a.c	/^int fun() {$/;"	f
 fun	code/HelloWorld.c	/^int int::fun(int self) {$/;"	f
+fun2	code/HelloWorld.c	/^template !<M> M fun2(M a) {$/;"	f
+fun3	code/HelloWorld.c	/^template !<M> M fun3(M (*aaa)(char*), char* bbb) {$/;"	f
 funXXX	code/HelloWorld.c	/^int funXXX() {$/;"	f
 fun_name	src/memalloc-stdc.c	/^    char fun_name[128];$/;"	m	struct:sHeapDebug	file:
 fun_node	parser.tab.c	/^unsigned int fun_node;$/;"	v
@@ -612,7 +619,13 @@ function_params	src/parser.y	/^function_params: { $/;"	l
 function_params_end	src/parser.y	/^function_params_end: {$/;"	l
 function_result_type	src/common.h	/^    sNodeType* function_result_type;$/;"	m	struct:sCompileInfoStruct
 function_struct_type_name	src/parser.y	/^function_struct_type_name: TYPE_NAME {$/;"	l
+gA	code/HelloWorld.c	/^int gA;$/;"	v
 gAAAAAA	code/HelloWorld.c	/^long int gAAAAAA = AAAAA;$/;"	v
+gArray	code/HelloWorld.c	/^int gArray[3] = { 1, 2, 3 };$/;"	v
+gArray2	code/HelloWorld.c	/^char gArray2[3] = "AB";$/;"	v
+gArray3	code/HelloWorld.c	/^int gArray3[] = { 1, 2, 3 };$/;"	v
+gArray4	code/HelloWorld.c	/^int gArray4[3][3][3] = {$/;"	v
+gB	code/HelloWorld.c	/^int gB = 123;$/;"	v
 gClassTable	src/klass.c	/^static sClassTable gClassTable[CLASS_NUM_MAX];$/;"	v	file:
 gFuncs	src/compile.cpp	/^std::map<std::string, std::vector<sFunction>> gFuncs;$/;"	v
 gHeadClassTable	src/klass.c	/^sClassTable* gHeadClassTable = NULL;$/;"	v
@@ -666,6 +679,8 @@ global_variable	src/parser.y	/^global_variable:$/;"	l
 gv_table	src/common.h	/^    sVarTable* gv_table;$/;"	m	struct:sCompileInfoStruct
 included_generics_type	src/node_type.c	/^BOOL included_generics_type(sNodeType* node_type, sCLClass* checked_class[], int* num_checked_class)$/;"	f
 includedir	Makefile	/^includedir=${prefix}\/include\/neo-c2$/;"	m
+inheritFun	code/HelloWorld.c	/^inherit void inheritFun()$/;"	f
+inheritFun	code/HelloWorld.c	/^void inheritFun()$/;"	f
 inherit_	parser.tab.c	/^BOOL inherit_ = FALSE;$/;"	v
 init_node_types	src/node_type.c	/^void init_node_types()$/;"	f
 init_nodes	src/node.c	/^void init_nodes()$/;"	f
@@ -681,6 +696,12 @@ is_typeof_type	src/node_type.c	/^BOOL is_typeof_type(sNodeType* node_type)$/;"	f
 it	parser.tab.c	/^unsigned int it;$/;"	v
 ival	parser.tab.c	/^    int ival;$/;"	m	union:YYSTYPE	file:
 ival	parser.tab.h	/^    int ival;$/;"	m	union:YYSTYPE
+kA	code/HelloWorld.c	/^enum { kA, kB, kC };$/;"	e	enum:__anon1	file:
+kA2	code/HelloWorld.c	/^enum { kA2 = 123, kB2, kC2 };$/;"	e	enum:__anon2	file:
+kB	code/HelloWorld.c	/^enum { kA, kB, kC };$/;"	e	enum:__anon1	file:
+kB2	code/HelloWorld.c	/^enum { kA2 = 123, kB2, kC2 };$/;"	e	enum:__anon2	file:
+kC	code/HelloWorld.c	/^enum { kA, kB, kC };$/;"	e	enum:__anon1	file:
+kC2	code/HelloWorld.c	/^enum { kA2 = 123, kB2, kC2 };$/;"	e	enum:__anon2	file:
 kNodeTYpeMod	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeCoroutine };$/;"	e	enum:eNodeType
 kNodeTypeAdd	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeCoroutine };$/;"	e	enum:eNodeType
 kNodeTypeAnd	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeCoroutine };$/;"	e	enum:eNodeType
@@ -765,181 +786,181 @@ loop_top_block	src/common.h	/^    void* loop_top_block;$/;"	m	struct:sCompileInf
 loop_top_lv_table	src/common.h	/^    sVarTable* loop_top_lv_table;$/;"	m	struct:sCompileInfoStruct
 lv_table	src/common.h	/^    sVarTable* lv_table;$/;"	m	struct:sCompileInfoStruct
 lv_table_value	src/common.h	/^    void* lv_table_value;$/;"	m	struct:sCompileInfoStruct
-mAlloc	src/common.h	/^            BOOL mAlloc;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon3
-mAnonymous	src/common.h	/^            BOOL mAnonymous;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon14
-mArrayDimentionNum	src/common.h	/^            int mArrayDimentionNum;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon16
-mArrayDimentionNum	src/common.h	/^            int mArrayDimentionNum;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon17
+mAlloc	src/common.h	/^            BOOL mAlloc;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon5
+mAnonymous	src/common.h	/^            BOOL mAnonymous;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon16
+mArrayDimentionNum	src/common.h	/^            int mArrayDimentionNum;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon18
+mArrayDimentionNum	src/common.h	/^            int mArrayDimentionNum;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon19
 mArrayDimentionNum	src/common.h	/^    int mArrayDimentionNum;$/;"	m	struct:sNodeTypeStruct
 mArrayInitializeNum	src/common.h	/^    int mArrayInitializeNum;$/;"	m	struct:sNodeTypeStruct
 mArrayNum	src/common.h	/^    int mArrayNum[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTypeStruct
-mArrayValues	src/common.h	/^            unsigned int mArrayValues[INIT_ARRAY_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon18
-mBaseName	src/common.h	/^            char mBaseName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mArrayValues	src/common.h	/^            unsigned int mArrayValues[INIT_ARRAY_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon20
+mBaseName	src/common.h	/^            char mBaseName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mBaseName	src/compile.cpp	/^    char mBaseName[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mBlockLevel	src/common.h	/^    int mBlockLevel;$/;"	m	struct:sVarStruct
 mBlockLevel	src/common.h	/^    int mBlockLevel;$/;"	m	struct:sVarTableStruct
 mBuf	src/buffer.h	/^    char* mBuf;$/;"	m	struct:sBufStruct
-mCaseAfterReturn	src/common.h	/^            BOOL mCaseAfterReturn;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
-mCharValue	src/common.h	/^        char mCharValue;$/;"	m	union:sNodeTreeStruct::__anon1
+mCaseAfterReturn	src/common.h	/^            BOOL mCaseAfterReturn;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
+mCharValue	src/common.h	/^        char mCharValue;$/;"	m	union:sNodeTreeStruct::__anon3
 mClass	src/common.h	/^    sCLClass* mClass;$/;"	m	struct:sNodeTypeStruct
 mConstant	src/common.h	/^    BOOL mConstant;$/;"	m	struct:sNodeTypeStruct
 mConstant	src/common.h	/^    BOOL mConstant;$/;"	m	struct:sVarStruct
-mCoroutine	src/common.h	/^            BOOL mCoroutine;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mCoroutine	src/common.h	/^            BOOL mCoroutine;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mCoroutine	src/compile.cpp	/^    BOOL mCoroutine;$/;"	m	struct:sFunctionStruct	file:
 mCoroutineTop	src/common.h	/^    BOOL mCoroutineTop;$/;"	m	struct:sVarTableStruct
-mCreateLVTable	src/common.h	/^            BOOL mCreateLVTable;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
+mCreateLVTable	src/common.h	/^            BOOL mCreateLVTable;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
 mDummyHeap	src/common.h	/^    BOOL mDummyHeap;$/;"	m	struct:sNodeTypeStruct
 mDynamicArrayNum	src/common.h	/^    unsigned int mDynamicArrayNum;$/;"	m	struct:sNodeTypeStruct
-mElifBlocks	src/common.h	/^            unsigned int mElifBlocks[ELIF_NUM_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mElifExps	src/common.h	/^            unsigned int mElifExps[ELIF_NUM_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mElifNum	src/common.h	/^            int mElifNum;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mElseBlock	src/common.h	/^            unsigned int mElseBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mExpression	src/common.h	/^            unsigned int mExpression;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon21
-mExpression	src/common.h	/^            unsigned int mExpression;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
-mExpressionNode	src/common.h	/^            unsigned int mExpressionNode;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon19
-mExpressionNode	src/common.h	/^            unsigned int mExpressionNode;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon20
-mExpressionNode2	src/common.h	/^            unsigned int mExpressionNode2;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon19
-mExpressionNode3	src/common.h	/^            unsigned int mExpressionNode3;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon19
-mExtern	src/common.h	/^            BOOL mExtern;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon15
-mExternal	src/common.h	/^            BOOL mExternal;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mElifBlocks	src/common.h	/^            unsigned int mElifBlocks[ELIF_NUM_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mElifExps	src/common.h	/^            unsigned int mElifExps[ELIF_NUM_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mElifNum	src/common.h	/^            int mElifNum;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mElseBlock	src/common.h	/^            unsigned int mElseBlock;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mExpression	src/common.h	/^            unsigned int mExpression;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon23
+mExpression	src/common.h	/^            unsigned int mExpression;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
+mExpressionNode	src/common.h	/^            unsigned int mExpressionNode;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon21
+mExpressionNode	src/common.h	/^            unsigned int mExpressionNode;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon22
+mExpressionNode2	src/common.h	/^            unsigned int mExpressionNode2;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon21
+mExpressionNode3	src/common.h	/^            unsigned int mExpressionNode3;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon21
+mExtern	src/common.h	/^            BOOL mExtern;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon17
+mExternal	src/common.h	/^            BOOL mExternal;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mExternal	src/compile.cpp	/^    BOOL mExternal;$/;"	m	struct:sFunctionStruct	file:
-mFields	src/common.h	/^            unsigned int mFields;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon14
+mFields	src/common.h	/^            unsigned int mFields;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon16
 mFields	src/common.h	/^    struct sNodeTypeStruct* mFields[STRUCT_FIELD_MAX];$/;"	m	struct:sCLClassStruct	typeref:struct:sCLClassStruct::sNodeTypeStruct
 mFinalizeGenericsFunNum	src/common.h	/^    int mFinalizeGenericsFunNum;$/;"	m	struct:sNodeTypeStruct
-mFirstCase	src/common.h	/^            BOOL mFirstCase;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
-mFirstStatment	src/common.h	/^            unsigned int mFirstStatment;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
+mFirstCase	src/common.h	/^            BOOL mFirstCase;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
+mFirstStatment	src/common.h	/^            unsigned int mFirstStatment;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
 mFlags	src/common.h	/^    clint64 mFlags;$/;"	m	struct:sCLClassStruct
-mForNodeBlock	src/common.h	/^            unsigned int mForNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon19
+mForNodeBlock	src/common.h	/^            unsigned int mForNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon21
 mFreed	src/common.h	/^    BOOL mFreed;$/;"	m	struct:sClassTableStruct
-mFunName	src/common.h	/^            char mFunName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
-mGenerics	src/common.h	/^            BOOL mGenerics;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon14
-mGenerics	src/common.h	/^            BOOL mGenerics;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mFunName	src/common.h	/^            char mFunName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
+mGenerics	src/common.h	/^            BOOL mGenerics;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon16
+mGenerics	src/common.h	/^            BOOL mGenerics;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mGenerics	src/compile.cpp	/^    BOOL mGenerics;$/;"	m	struct:sFunctionStruct	file:
 mGenericsNum	src/common.h	/^    int mGenericsNum;$/;"	m	struct:sCLClassStruct
 mGenericsTypes	src/common.h	/^    struct sNodeTypeStruct* mGenericsTypes[GENERICS_TYPES_MAX];$/;"	m	struct:sNodeTypeStruct	typeref:struct:sNodeTypeStruct::sNodeTypeStruct
-mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon15
-mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon18
-mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon3
+mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon17
+mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon20
+mGlobal	src/common.h	/^            BOOL mGlobal;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon5
 mGlobal	src/common.h	/^    BOOL mGlobal;$/;"	m	struct:sVarStruct
 mHeap	src/common.h	/^    BOOL mHeap;$/;"	m	struct:sNodeTypeStruct
 mID	src/common.h	/^    int mID;$/;"	m	struct:sVarTableStruct
 mID	src/compile.cpp	/^    char mID[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
-mIfBlock	src/common.h	/^            unsigned int mIfBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mIfExp	src/common.h	/^            unsigned int mIfExp;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon11
-mIndex	src/common.h	/^            unsigned int mIndex[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon16
-mIndex	src/common.h	/^            unsigned int mIndex[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon17
+mIfBlock	src/common.h	/^            unsigned int mIfBlock;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mIfExp	src/common.h	/^            unsigned int mIfExp;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon13
+mIndex	src/common.h	/^            unsigned int mIndex[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon18
+mIndex	src/common.h	/^            unsigned int mIndex[ARRAY_DIMENTION_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon19
 mIndex	src/common.h	/^    int mIndex;$/;"	m	struct:sVarStruct
-mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
-mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
+mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
+mInherit	src/common.h	/^            BOOL mInherit;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
 mInherit	src/compile.cpp	/^    BOOL mInherit;$/;"	m	struct:sFunctionStruct	file:
 mInitialized	src/common.h	/^    BOOL mInitialized;$/;"	m	struct:sClassTableStruct
-mInline	src/common.h	/^            BOOL mInline;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mInline	src/common.h	/^            BOOL mInline;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mInline	src/compile.cpp	/^    BOOL mInline;$/;"	m	struct:sFunctionStruct	file:
-mIntValue	src/common.h	/^        int mIntValue;$/;"	m	union:sNodeTreeStruct::__anon1
+mIntValue	src/common.h	/^        int mIntValue;$/;"	m	union:sNodeTreeStruct::__anon3
 mItem	src/common.h	/^    sCLClass* mItem;$/;"	m	struct:sClassTableStruct
 mItem	src/typedef.c	/^    char mItem[VAR_NAME_MAX];$/;"	m	struct:sTypeDefTable	file:
 mLLVMFunction	src/compile.cpp	/^    Function* mLLVMFunction;$/;"	m	struct:sFunctionStruct	file:
 mLLVMValue	src/common.h	/^    void* mLLVMValue;$/;"	m	struct:sVarStruct
-mLVTable	src/common.h	/^            sVarTable* mLVTable;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
-mLVTable	src/common.h	/^            sVarTable* mLVTable;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mLVTable	src/common.h	/^            sVarTable* mLVTable;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
+mLVTable	src/common.h	/^            sVarTable* mLVTable;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mLVTable	src/compile.cpp	/^    sVarTable* mLVTable;$/;"	m	struct:sFunctionStruct	file:
-mLambdaCall	src/common.h	/^            BOOL mLambdaCall;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
-mLastCase	src/common.h	/^            BOOL mLastCase;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
-mLastStatment	src/common.h	/^            unsigned int mLastStatment;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon22
+mLambdaCall	src/common.h	/^            BOOL mLambdaCall;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
+mLastCase	src/common.h	/^            BOOL mLastCase;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
+mLastStatment	src/common.h	/^            unsigned int mLastStatment;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon24
 mLeft	src/common.h	/^    unsigned int mLeft;$/;"	m	struct:sNodeTreeStruct
 mLen	src/buffer.h	/^    int mLen;$/;"	m	struct:sBufStruct
 mLine	src/common.h	/^    int mLine;$/;"	m	struct:sNodeTreeStruct
 mLocalVariables	src/common.h	/^    sVar mLocalVariables[LOCAL_VARIABLE_MAX];  \/\/ open address hash$/;"	m	struct:sVarTableStruct
 mMaxBlockVarNum	src/common.h	/^    int mMaxBlockVarNum;$/;"	m	struct:sVarTableStruct
-mMessagePassing	src/common.h	/^            BOOL mMessagePassing;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
-mMethodGenerics	src/common.h	/^            BOOL mMethodGenerics;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mMessagePassing	src/common.h	/^            BOOL mMessagePassing;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
+mMethodGenerics	src/common.h	/^            BOOL mMethodGenerics;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mMethodGenerics	src/compile.cpp	/^    BOOL mMethodGenerics;$/;"	m	struct:sFunctionStruct	file:
 mMethodGenericsNum	src/common.h	/^    int mMethodGenericsNum;$/;"	m	struct:sCLClassStruct
 mMiddle	src/common.h	/^    unsigned int mMiddle;$/;"	m	struct:sNodeTreeStruct
-mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon14
-mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon25
-mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon16
+mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon27
+mName	src/common.h	/^            char mName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mName	src/common.h	/^    char mName[VAR_NAME_MAX];$/;"	m	struct:sCLClassStruct
 mName	src/common.h	/^    char mName[VAR_NAME_MAX];$/;"	m	struct:sParserParamStruct
 mName	src/common.h	/^    char mName[VAR_NAME_MAX];$/;"	m	struct:sVarStruct
 mName	src/common.h	/^    char* mName;$/;"	m	struct:sClassTableStruct
 mName	src/compile.cpp	/^    char mName[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mName	src/typedef.c	/^    char mName[VAR_NAME_MAX];$/;"	m	struct:sTypeDefTable	file:
-mNameFields	src/common.h	/^            char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon13
+mNameFields	src/common.h	/^            char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon15
 mNameFields	src/common.h	/^    char mNameFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];$/;"	m	struct:sCLClassStruct
 mNext	src/common.h	/^    struct sVarTableStruct* mNext;              \/\/ for free var table$/;"	m	struct:sVarTableStruct	typeref:struct:sVarTableStruct::sVarTableStruct
 mNextClass	src/common.h	/^    struct sClassTableStruct* mNextClass;$/;"	m	struct:sClassTableStruct	typeref:struct:sClassTableStruct::sClassTableStruct
 mNoHeap	src/common.h	/^    BOOL mNoHeap;$/;"	m	struct:sNodeTypeStruct
-mNodeBlock	src/common.h	/^            unsigned int mNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mNodeBlock	src/common.h	/^            unsigned int mNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mNodeBlock	src/compile.cpp	/^    unsigned int mNodeBlock;$/;"	m	struct:sFunctionStruct	file:
 mNodeType	src/common.h	/^    enum eNodeType mNodeType;$/;"	m	struct:sNodeTreeStruct	typeref:enum:sNodeTreeStruct::eNodeType
-mNodes	src/common.h	/^            unsigned int* mNodes;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
+mNodes	src/common.h	/^            unsigned int* mNodes;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
 mNullable	src/common.h	/^    BOOL mNullable;$/;"	m	struct:sNodeTypeStruct
-mNumArrayValue	src/common.h	/^            int mNumArrayValue;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon18
-mNumFields	src/common.h	/^            int mNumFields;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon13
+mNumArrayValue	src/common.h	/^            int mNumArrayValue;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon20
+mNumFields	src/common.h	/^            int mNumFields;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon15
 mNumFields	src/common.h	/^    int mNumFields;$/;"	m	struct:sCLClassStruct
 mNumFields	src/common.h	/^    int mNumFields;$/;"	m	struct:sNodeTypeStruct
 mNumGenericsTypes	src/common.h	/^    int mNumGenericsTypes;$/;"	m	struct:sNodeTypeStruct
-mNumNodes	src/common.h	/^            unsigned int mNumNodes;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
-mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon10
-mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
-mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
-mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon9
+mNumNodes	src/common.h	/^            unsigned int mNumNodes;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
+mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon11
+mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon12
+mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
+mNumParams	src/common.h	/^            int mNumParams;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
 mNumParams	src/common.h	/^    int mNumParams;$/;"	m	struct:sNodeTypeStruct
 mNumParams	src/compile.cpp	/^    int mNumParams;$/;"	m	struct:sFunctionStruct	file:
-mNumSwitchExpression	src/common.h	/^            int mNumSwitchExpression;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon21
+mNumSwitchExpression	src/common.h	/^            int mNumSwitchExpression;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon23
 mNumVarTables	src/vtable.c	/^static int mNumVarTables = 0;$/;"	v	file:
 mParamNames	src/compile.cpp	/^    char mParamNames[PARAMS_MAX][VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mParamTypes	src/common.h	/^    struct sNodeTypeStruct* mParamTypes[PARAMS_MAX];$/;"	m	struct:sNodeTypeStruct	typeref:struct:sNodeTypeStruct::sNodeTypeStruct
 mParamTypes	src/compile.cpp	/^    char mParamTypes[PARAMS_MAX][VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
-mParams	src/common.h	/^            sParserParam mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
-mParams	src/common.h	/^            sParserParam mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon9
-mParams	src/common.h	/^            unsigned int mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon10
-mParams	src/common.h	/^            unsigned mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon6
+mParams	src/common.h	/^            sParserParam mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon11
+mParams	src/common.h	/^            sParserParam mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
+mParams	src/common.h	/^            unsigned int mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon12
+mParams	src/common.h	/^            unsigned mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon8
 mParent	src/common.h	/^    struct sVarTableStruct* mParent;            \/\/ make linked list$/;"	m	struct:sVarTableStruct	typeref:struct:sVarTableStruct::sVarTableStruct
 mPointerNum	src/common.h	/^    int mPointerNum;$/;"	m	struct:sNodeTypeStruct
 mRegister	src/common.h	/^    BOOL mRegister;$/;"	m	struct:sNodeTypeStruct
 mResultType	src/common.h	/^    struct sNodeTypeStruct* mResultType;$/;"	m	struct:sNodeTypeStruct	typeref:struct:sNodeTypeStruct::sNodeTypeStruct
-mResultTypeName	src/common.h	/^            char mResultTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mResultTypeName	src/common.h	/^            char mResultTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mResultTypeName	src/compile.cpp	/^    char mResultTypeName[VAR_NAME_MAX];$/;"	m	struct:sFunctionStruct	file:
 mRight	src/common.h	/^    unsigned int mRight;$/;"	m	struct:sNodeTreeStruct
 mSName	src/common.h	/^    char mSName[PATH_MAX];$/;"	m	struct:sNodeTreeStruct
 mSize	src/buffer.h	/^    int mSize;$/;"	m	struct:sBufStruct
-mSizeNodes	src/common.h	/^            unsigned int mSizeNodes;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
+mSizeNodes	src/common.h	/^            unsigned int mSizeNodes;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
 mSizeNum	src/common.h	/^    int mSizeNum;$/;"	m	struct:sNodeTypeStruct
-mSource	src/common.h	/^            sBuf mSource;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon2
-mStatic	src/common.h	/^            BOOL mStatic;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mSource	src/common.h	/^            sBuf mSource;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon4
+mStatic	src/common.h	/^            BOOL mStatic;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mStatic	src/common.h	/^    BOOL mStatic;$/;"	m	struct:sNodeTypeStruct
 mStatic	src/compile.cpp	/^    BOOL mStatic;$/;"	m	struct:sFunctionStruct	file:
-mStrValue	src/common.h	/^        char mStrValue[512];$/;"	m	union:sNodeTreeStruct::__anon1
-mSwitchExpression	src/common.h	/^            unsigned int mSwitchExpression[SWITCH_STASTMENT_NODE_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon21
+mStrValue	src/common.h	/^        char mStrValue[512];$/;"	m	union:sNodeTreeStruct::__anon3
+mSwitchExpression	src/common.h	/^            unsigned int mSwitchExpression[SWITCH_STASTMENT_NODE_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon23
 mType	src/common.h	/^    sNodeType* mType;$/;"	m	struct:sParserParamStruct
 mType	src/common.h	/^    sNodeType* mType;$/;"	m	struct:sVarStruct
-mTypeFields	src/common.h	/^            char mTypeFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon13
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon12
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon15
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon23
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon24
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon25
-mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon3
+mTypeFields	src/common.h	/^            char mTypeFields[STRUCT_FIELD_MAX][VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon15
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon14
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon17
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon25
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon26
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon27
+mTypeName	src/common.h	/^            char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon5
 mTypeName	src/common.h	/^    char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTypeStruct
 mTypeName	src/common.h	/^    char mTypeName[VAR_NAME_MAX];$/;"	m	struct:sParserParamStruct
 mTypeOfExpression	src/common.h	/^    unsigned int mTypeOfExpression;$/;"	m	struct:sNodeTypeStruct
 mTypePointerNum	src/common.h	/^    int mTypePointerNum;$/;"	m	struct:sNodeTypeStruct
 mUndefinedStructType	src/common.h	/^    void* mUndefinedStructType;$/;"	m	struct:sCLClassStruct
 mUnsigned	src/common.h	/^    BOOL mUnsigned;$/;"	m	struct:sNodeTypeStruct
-mVarArg	src/common.h	/^            BOOL mVarArg;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon5
+mVarArg	src/common.h	/^            BOOL mVarArg;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon7
 mVarArg	src/compile.cpp	/^    BOOL mVarArg;$/;"	m	struct:sFunctionStruct	file:
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon15
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon18
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon24
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon3
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon4
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon7
-mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon1::__anon8
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon10
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon17
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon20
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon26
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon5
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon6
+mVarName	src/common.h	/^            char mVarName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon3::__anon9
 mVarNum	src/common.h	/^    int mVarNum;$/;"	m	struct:sVarTableStruct
 mVersion	src/compile.cpp	/^    int mVersion;$/;"	m	struct:sFunctionStruct	file:
 mVolatile	src/common.h	/^    BOOL mVolatile;$/;"	m	struct:sNodeTypeStruct
-mWhileNodeBlock	src/common.h	/^            unsigned int mWhileNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon1::__anon20
+mWhileNodeBlock	src/common.h	/^            unsigned int mWhileNodeBlock;$/;"	m	struct:sNodeTreeStruct::__anon3::__anon22
 main	a.c	/^int main() {$/;"	f
 main	code/HelloWorld.c	/^int main() $/;"	f
 main	src/main.c	/^int main(int argc, char** argv)$/;"	f
@@ -1062,8 +1083,8 @@ restore_var_table	src/vtable.c	/^void restore_var_table(sVarTable* left, sVarTab
 right_value_objects	src/common.h	/^    void* right_value_objects;$/;"	m	struct:sCompileInfoStruct
 rval	parser.tab.c	/^    int rval;$/;"	m	union:YYSTYPE	file:
 rval	parser.tab.h	/^    int rval;$/;"	m	union:YYSTYPE
-sArrayInitializer	src/common.h	/^        } sArrayInitializer;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon18
-sBlock	src/common.h	/^        } sBlock;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon2
+sArrayInitializer	src/common.h	/^        } sArrayInitializer;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon20
+sBlock	src/common.h	/^        } sBlock;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon4
 sBuf	src/buffer.h	/^typedef struct sBufStruct sBuf;$/;"	t	typeref:struct:sBufStruct
 sBufStruct	src/buffer.h	/^struct sBufStruct {$/;"	s
 sBuf_append	src/buffer.c	/^void sBuf_append(sBuf* self, void* str, size_t size)$/;"	f
@@ -1075,26 +1096,26 @@ sBuf_clone	src/buffer.c	/^void sBuf_clone(sBuf* self, sBuf* buf)$/;"	f
 sBuf_init	src/buffer.c	/^void sBuf_init(sBuf* self)$/;"	f
 sCLClass	src/common.h	/^typedef struct sCLClassStruct sCLClass;$/;"	t	typeref:struct:sCLClassStruct
 sCLClassStruct	src/common.h	/^struct sCLClassStruct {$/;"	s
-sCase	src/common.h	/^        } sCase;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon22
-sCast	src/common.h	/^        } sCast;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon23
+sCase	src/common.h	/^        } sCase;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon24
+sCast	src/common.h	/^        } sCast;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon25
 sClassTable	src/common.h	/^typedef struct sClassTableStruct sClassTable;$/;"	t	typeref:struct:sClassTableStruct
 sClassTableStruct	src/common.h	/^struct sClassTableStruct$/;"	s
 sCompileInfo	src/common.h	/^typedef struct sCompileInfoStruct sCompileInfo;$/;"	t	typeref:struct:sCompileInfoStruct
 sCompileInfoStruct	src/common.h	/^struct sCompileInfoStruct$/;"	s
-sCreateObject	src/common.h	/^        } sCreateObject;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon12
-sDefineVariable	src/common.h	/^        } sDefineVariable;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon15
-sFields	src/common.h	/^        } sFields;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon13
-sFor	src/common.h	/^        } sFor;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon19
-sFunction	src/common.h	/^        } sFunction;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon5
+sCreateObject	src/common.h	/^        } sCreateObject;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon14
+sDefineVariable	src/common.h	/^        } sDefineVariable;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon17
+sFields	src/common.h	/^        } sFields;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon15
+sFor	src/common.h	/^        } sFor;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon21
+sFunction	src/common.h	/^        } sFunction;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon7
 sFunction	src/compile.cpp	/^typedef sFunctionStruct sFunction;$/;"	t	file:
-sFunctionCall	src/common.h	/^        } sFunctionCall;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon6
-sFunctionParams	src/common.h	/^        } sFunctionParams;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon9
+sFunctionCall	src/common.h	/^        } sFunctionCall;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon8
+sFunctionParams	src/common.h	/^        } sFunctionParams;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon11
 sFunctionStruct	src/compile.cpp	/^struct sFunctionStruct {$/;"	s	file:
 sHeapDebug	src/memalloc-stdc.c	/^struct sHeapDebug {$/;"	s	file:
-sIf	src/common.h	/^        } sIf;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon11
-sLoadElement	src/common.h	/^        } sLoadElement;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon17
-sLoadField	src/common.h	/^        } sLoadField;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon7
-sLoadVariable	src/common.h	/^        } sLoadVariable;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon4
+sIf	src/common.h	/^        } sIf;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon13
+sLoadElement	src/common.h	/^        } sLoadElement;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon19
+sLoadField	src/common.h	/^        } sLoadField;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon9
+sLoadVariable	src/common.h	/^        } sLoadVariable;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon6
 sNodeTree	src/common.h	/^typedef struct sNodeTreeStruct sNodeTree;$/;"	t	typeref:struct:sNodeTreeStruct
 sNodeTreeStruct	src/common.h	/^struct sNodeTreeStruct $/;"	s
 sNodeTree_case_expression	src/node.c	/^unsigned int sNodeTree_case_expression(unsigned int expression_node, BOOL first_case, BOOL last_case, BOOL case_after_return, unsigned int first_statment, BOOL last_statment, char* sname, int sline)$/;"	f
@@ -1171,22 +1192,22 @@ sNodeTree_switch_statment	src/node.c	/^unsigned int sNodeTree_switch_statment(un
 sNodeTree_while_statment	src/node.c	/^unsigned int sNodeTree_while_statment(unsigned int expression_node, unsigned int while_node_block, char* sname, int sline)$/;"	f
 sNodeType	src/common.h	/^typedef struct sNodeTypeStruct sNodeType;$/;"	t	typeref:struct:sNodeTypeStruct
 sNodeTypeStruct	src/common.h	/^struct sNodeTypeStruct {$/;"	s
-sParams	src/common.h	/^        } sParams;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon10
+sParams	src/common.h	/^        } sParams;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon12
 sParserParam	src/common.h	/^typedef struct sParserParamStruct sParserParam;$/;"	t	typeref:struct:sParserParamStruct
 sParserParamStruct	src/common.h	/^struct sParserParamStruct $/;"	s
-sSizeOf	src/common.h	/^        } sSizeOf;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon24
-sStoreElement	src/common.h	/^        } sStoreElement;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon16
-sStoreField	src/common.h	/^        } sStoreField;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon8
-sStoreVariable	src/common.h	/^        } sStoreVariable;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon3
-sStruct	src/common.h	/^        } sStruct;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon14
-sSwitch	src/common.h	/^        } sSwitch;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon21
-sTypeDef	src/common.h	/^        } sTypeDef;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon25
+sSizeOf	src/common.h	/^        } sSizeOf;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon26
+sStoreElement	src/common.h	/^        } sStoreElement;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon18
+sStoreField	src/common.h	/^        } sStoreField;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon10
+sStoreVariable	src/common.h	/^        } sStoreVariable;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon5
+sStruct	src/common.h	/^        } sStruct;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon16
+sSwitch	src/common.h	/^        } sSwitch;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon23
+sTypeDef	src/common.h	/^        } sTypeDef;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon27
 sTypeDefTable	src/typedef.c	/^struct sTypeDefTable$/;"	s	file:
 sVar	src/common.h	/^typedef struct sVarStruct sVar;$/;"	t	typeref:struct:sVarStruct
 sVarStruct	src/common.h	/^struct sVarStruct {$/;"	s
 sVarTable	src/common.h	/^typedef struct sVarTableStruct sVarTable;$/;"	t	typeref:struct:sVarTableStruct
 sVarTableStruct	src/common.h	/^struct sVarTableStruct {$/;"	s
-sWhile	src/common.h	/^        } sWhile;$/;"	m	union:sNodeTreeStruct::__anon1	typeref:struct:sNodeTreeStruct::__anon1::__anon20
+sWhile	src/common.h	/^        } sWhile;$/;"	m	union:sNodeTreeStruct::__anon3	typeref:struct:sNodeTreeStruct::__anon3::__anon22
 setCurrentDebugLocation	src/compile.cpp	/^void setCurrentDebugLocation(int sline)$/;"	f
 set_max_block_var_num	src/vtable.c	/^void set_max_block_var_num(sVarTable* lv_table, sVarTable* old_table)$/;"	f
 sharedstatedir	Makefile	/^sharedstatedir=${prefix}\/com$/;"	m
@@ -1244,7 +1265,7 @@ type_name	src/parser.y	/^type_name: $/;"	l
 type_params	parser.tab.c	/^char type_params[VAR_NAME_MAX];$/;"	v
 type_params	src/parser.y	/^type_params: {$/;"	l
 typedef_	src/parser.y	/^typedef_: TYPEDEF type IDENTIFIER ';' {$/;"	l
-uValue	src/common.h	/^    } uValue;$/;"	m	struct:sNodeTreeStruct	typeref:union:sNodeTreeStruct::__anon1
+uValue	src/common.h	/^    } uValue;$/;"	m	struct:sNodeTreeStruct	typeref:union:sNodeTreeStruct::__anon3
 union_	src/parser.y	/^union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;$/;"	l
 unput	lex.yy.c	181;"	d	file:
 value	src/compile.cpp	/^    Value* value;$/;"	m	struct:LVALUEStruct	file:
