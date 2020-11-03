@@ -4741,7 +4741,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             info->generics_type = NULL;
 
             if(inherit_) {
-puts("AAA");
                 sFunction* current_function = (sFunction*)info->function;
 
                 char real_fun_name[VAR_NAME_MAX];
