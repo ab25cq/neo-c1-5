@@ -1745,6 +1745,10 @@ void std_move(Value* var_address, sNodeType* lvar_type, LVALUE* rvalue, BOOL all
 
 void free_right_value_objects(sCompileInfo* info)
 {
+    if(info->no_output) {
+        return;
+    }
+
     std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
 
     std::map<Value*, std::pair<sNodeType*, int>> old_heap_objects(*right_value_objects);
@@ -1804,6 +1808,10 @@ void append_heap_object_to_right_value(LVALUE* llvm_value, sCompileInfo* info)
 
 void free_objects(sVarTable* table, Value* inhibit_free_object_address, sCompileInfo* info)
 {
+    if(info->no_output) {
+        return;
+    }
+
     sVar* p = table->mLocalVariables;
 
     while(1) {
@@ -1831,6 +1839,10 @@ void free_objects(sVarTable* table, Value* inhibit_free_object_address, sCompile
 
 void free_objects_with_parents(Value* inhibit_free_object_address, sCompileInfo* info)
 {
+    if(info->no_output) {
+        return;
+    }
+
     sVarTable* it = info->lv_table;
 
     while(it != NULL) 
@@ -1847,6 +1859,10 @@ void free_objects_with_parents(Value* inhibit_free_object_address, sCompileInfo*
 
 void free_objects_until_loop_top(Value* inhibit_free_object_address, sCompileInfo* info)
 {
+    if(info->no_output) {
+        return;
+    }
+
     sVarTable* it = info->lv_table;
 
     while(it != NULL) 
@@ -2286,6 +2302,11 @@ BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sC
 ///////////////////////////////////////////////////////////////////////
 static BOOL compile_int_value(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("int");
+        return TRUE;
+    }
+
     int value = gNodes[node].uValue.mIntValue;
 
     LVALUE llvm_value;
@@ -2310,6 +2331,11 @@ static BOOL pre_compile_int_value(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_char_value(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("char");
+        return TRUE;
+    }
+
     char value = gNodes[node].uValue.mCharValue;
 
     LVALUE llvm_value;
@@ -2334,6 +2360,11 @@ static BOOL pre_compile_char_value(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_str_value(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("const char*");
+        return TRUE;
+    }
+
     char buf[512];
     xstrncpy(buf, gNodes[node].uValue.mStrValue, 512);
 
@@ -2359,6 +2390,11 @@ static BOOL pre_compile_str_value(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_true(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     LVALUE llvm_value;
     llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(1, 1, true)); 
     llvm_value.type = create_node_type_with_class_name("bool");
@@ -2381,6 +2417,11 @@ static BOOL pre_compile_true(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_false(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     LVALUE llvm_value;
     llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(1, 0, true)); 
     llvm_value.type = create_node_type_with_class_name("bool");
@@ -2415,6 +2456,11 @@ static BOOL compile_add(unsigned int node, sCompileInfo* info)
     int right_node = gNodes[node].mRight;
     if(!compile(right_node, info)) {
         return FALSE;
+    }
+
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
     }
 
     sNodeType* right_type = clone_node_type(info->type);
@@ -2627,6 +2673,11 @@ static BOOL compile_sub(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* right_type = clone_node_type(info->type);
+
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
@@ -2868,6 +2919,11 @@ static BOOL compile_mult(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = clone_node_type(info->type);
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(!(left_type->mPointerNum > 0 && is_number_type(right_type)))
@@ -2941,6 +2997,11 @@ static BOOL compile_div(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* right_type = clone_node_type(info->type);
+
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
@@ -3018,6 +3079,11 @@ static BOOL compile_mod(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = clone_node_type(info->type);
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -3094,6 +3160,11 @@ static BOOL compile_lshift(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = info->type;
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -3165,6 +3236,11 @@ static BOOL compile_rshift(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = info->type;
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -3235,6 +3311,11 @@ static BOOL compile_or(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* right_type = info->type;
+
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
@@ -3308,6 +3389,11 @@ static BOOL compile_and(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = info->type;
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -3379,6 +3465,11 @@ static BOOL compile_xor(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = info->type;
 
+    if(info->no_output) {
+        info->type = clone_node_type(left_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -3444,6 +3535,19 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
     BOOL alloc = gNodes[node].uValue.sStoreVariable.mAlloc;
     BOOL global = gNodes[node].uValue.sStoreVariable.mGlobal;
 
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    if(info->no_output) {
+        info->type = clone_node_type(right_type);
+        return TRUE;
+    }
+
     if(alloc) {
         sNodeType* var_type = create_node_type_with_class_name(type_name);
 
@@ -3465,14 +3569,6 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
             }
         }
     }
-
-    unsigned int right_node = gNodes[node].mRight;
-
-    if(!compile(right_node, info)) {
-        return FALSE;
-    }
-
-    sNodeType* right_type = clone_node_type(info->type);
 
     LVALUE rvalue = *get_value_from_stack(-1);
 
@@ -3801,6 +3897,11 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
+    if(info->no_output) {
+        info->type = var_type;
+        return TRUE;
+    }
+
     BOOL constant = var->mConstant;
 
 /*
@@ -4028,6 +4129,11 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
 
 BOOL compile_function(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
 
@@ -4281,6 +4387,11 @@ BOOL pre_compile_coroutine(unsigned int node, sCompileInfo* info)
 
 BOOL compile_external_function(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char fun_name[VAR_NAME_MAX];
     xstrncpy(fun_name, gNodes[node].uValue.sFunction.mName, VAR_NAME_MAX);
     char fun_base_name[VAR_NAME_MAX];
@@ -4329,6 +4440,11 @@ BOOL pre_compile_external_function(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_return(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     int right_node = gNodes[node].mRight;
     int middle_node = gNodes[node].mMiddle;
 
@@ -4607,19 +4723,21 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
 
-            if(left_type->mHeap && right_type->mHeap)
-            {
-                if(rvalue.binded_value && rvalue.var)
+            if(!info->no_output) {
+                if(left_type->mHeap && right_type->mHeap)
                 {
-                    std_move(NULL, left_type, &rvalue, FALSE, info);
+                    if(rvalue.binded_value && rvalue.var)
+                    {
+                        std_move(NULL, left_type, &rvalue, FALSE, info);
+                    }
+                    else {
+                        remove_from_right_value_object(rvalue.value, info);
+                    }
                 }
-                else {
-                    remove_from_right_value_object(rvalue.value, info);
+                else if(right_type->mHeap && !rvalue.binded_value)
+                {
+                    append_heap_object_to_right_value(&rvalue, info);
                 }
-            }
-            else if(right_type->mHeap && !rvalue.binded_value)
-            {
-                append_heap_object_to_right_value(&rvalue, info);
             }
 
             llvm_params.push_back(rvalue.value);
@@ -4722,15 +4840,19 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 fun = fun2;
 
-                int sline = gNodes[node].mLine;
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
-                    return FALSE;
+                if(!info->no_output) {
+                    int sline = gNodes[node].mLine;
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
+                        return FALSE;
+                    }
                 }
             }
             else if(fun.mGenerics) {
-                int sline = gNodes[node].mLine;
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
-                    return FALSE;
+                if(!info->no_output) {
+                    int sline = gNodes[node].mLine;
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
+                        return FALSE;
+                    }
                 }
             }
             else {
@@ -4785,9 +4907,11 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 fun = fun2;
 
-                int sline = gNodes[node].mLine;
-                if(!create_generics_function(fun_name, fun_name, NULL, &fun, info, sline)) {
-                    return FALSE;
+                if(!info->no_output) {
+                    int sline = gNodes[node].mLine;
+                    if(!create_generics_function(fun_name, fun_name, NULL, &fun, info, sline)) {
+                        return FALSE;
+                    }
                 }
             }
 
@@ -4845,19 +4969,21 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     return TRUE;
                 }
 
-                if(left_type->mHeap && right_type->mHeap)
-                {
-                    if(rvalue.binded_value && rvalue.var)
+                if(!info->no_output) {
+                    if(left_type->mHeap && right_type->mHeap)
                     {
-                        std_move(NULL, left_type, &rvalue, FALSE, info);
+                        if(rvalue.binded_value && rvalue.var)
+                        {
+                            std_move(NULL, left_type, &rvalue, FALSE, info);
+                        }
+                        else {
+                            remove_from_right_value_object(rvalue.value, info);
+                        }
                     }
-                    else {
-                        remove_from_right_value_object(rvalue.value, info);
+                    else if(right_type->mHeap && !rvalue.binded_value)
+                    {
+                        append_heap_object_to_right_value(&rvalue, info);
                     }
-                }
-                else if(right_type->mHeap && !rvalue.binded_value)
-                {
-                    append_heap_object_to_right_value(&rvalue, info);
                 }
 
                 llvm_params.push_back(rvalue.value);
@@ -4890,15 +5016,17 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     (void)solve_generics(&result_type, info->generics_type, &success_solve);
 
-    LVALUE llvm_value;
-    llvm_value.value = Builder.CreateCall(llvm_fun, llvm_params);
-    llvm_value.type = clone_node_type(result_type);
-    llvm_value.address = nullptr;
-    llvm_value.var = nullptr;
-    llvm_value.binded_value = FALSE;
-    llvm_value.load_field = FALSE;
+    if(!info->no_output) {
+        LVALUE llvm_value;
+        llvm_value.value = Builder.CreateCall(llvm_fun, llvm_params);
+        llvm_value.type = clone_node_type(result_type);
+        llvm_value.address = nullptr;
+        llvm_value.var = nullptr;
+        llvm_value.binded_value = FALSE;
+        llvm_value.load_field = FALSE;
 
-    push_value_to_stack_ptr(&llvm_value, info);
+        push_value_to_stack_ptr(&llvm_value, info);
+    }
 
     info->type = clone_node_type(result_type);
 
@@ -4953,6 +5081,11 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_if(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int else_block = gNodes[node].uValue.sIf.mElseBlock;
     int elif_num = gNodes[node].uValue.sIf.mElifNum;
 
@@ -5203,6 +5336,11 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
     sNodeType* node_type2 = clone_node_type(node_type);
     node_type2->mHeap = TRUE;
 
+    if(info->no_output) {
+        info->type = node_type2;
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     Value* object_num;
@@ -5397,6 +5535,11 @@ static BOOL pre_compile_clone(unsigned int node, sCompileInfo* info)
 
 BOOL compile_struct(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char struct_name[VAR_NAME_MAX];
     xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
     unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
@@ -5441,6 +5584,11 @@ BOOL pre_compile_struct(unsigned int node, sCompileInfo* info)
 
 BOOL compile_union(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char struct_name[VAR_NAME_MAX];
     xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
     unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
@@ -5481,6 +5629,11 @@ BOOL pre_compile_union(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char var_name[VAR_NAME_MAX];
     xstrncpy(var_name, gNodes[node].uValue.sDefineVariable.mVarName, VAR_NAME_MAX);
     char type_name[VAR_NAME_MAX];
@@ -5772,6 +5925,11 @@ static BOOL pre_compile_define_variable(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_equals(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -5845,6 +6003,11 @@ static BOOL pre_compile_equals(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_not_equals(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -5968,6 +6131,11 @@ static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
 
         info->type = create_node_type_with_class_name("int"); // dummy
 
+        return TRUE;
+    }
+
+    if(info->no_output) {
+        info->type = field_type;
         return TRUE;
     }
 
@@ -6126,6 +6294,11 @@ static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = clone_node_type(info->type);
 
+    if(info->no_output) {
+        info->type = right_type;
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
 
@@ -6269,6 +6442,11 @@ static BOOL pre_compile_store_field(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     sFunction* fun = (sFunction*)info->function;
 
     Function* llvm_function = fun->mLLVMFunction;
@@ -6399,6 +6577,11 @@ static BOOL pre_compile_and_and(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     sFunction* fun = (sFunction*)info->function;
 
     Function* llvm_function = fun->mLLVMFunction;
@@ -6528,6 +6711,11 @@ static BOOL pre_compile_or_or(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_gt(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -6604,6 +6792,11 @@ static BOOL pre_compile_gt(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_lt(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -6680,6 +6873,11 @@ static BOOL pre_compile_lt(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_ge(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -6756,6 +6954,11 @@ static BOOL pre_compile_ge(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_le(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -6832,6 +7035,11 @@ static BOOL pre_compile_le(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_logical_denial(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -6907,6 +7115,11 @@ static BOOL compile_complement(unsigned int node, sCompileInfo* info)
     }
 
     sNodeType* left_node_type = clone_node_type(info->type);
+
+    if(info->no_output) {
+        info->type = left_node_type;
+        return TRUE;
+    }
 
     LVALUE lvalue = *get_value_from_stack(-1);
     
@@ -7014,6 +7227,11 @@ static BOOL compile_dereffernce(unsigned int node, sCompileInfo* info)
 
     sNodeType* derefference_type = clone_node_type(left_type);
 
+    if(info->no_output) {
+        info->type = derefference_type;
+        return TRUE;
+    }
+
     if(derefference_type->mPointerNum == 0) {
         compile_err_msg(info, "This is not pointer type1(%s)", derefference_type->mClass->mName);
         info->err_num++;
@@ -7074,34 +7292,35 @@ static BOOL compile_reffernce(unsigned int node, sCompileInfo* info)
         refference_type->mPointerNum++;
 
         info->type = refference_type;
+
+        return TRUE;
     }
-    else {
-        if(lvalue.address == nullptr) {
-            compile_err_msg(info, "Can't get address of this value on & operator");
-            info->err_num++;
 
-            info->type = create_node_type_with_class_name("int"); // dummy
-            return TRUE;
-        }
+    if(lvalue.address == nullptr) {
+        compile_err_msg(info, "Can't get address of this value on & operator");
+        info->err_num++;
 
-        sNodeType* left_type = info->type;
-
-        sNodeType* refference_type = clone_node_type(left_type);
-
-        refference_type->mPointerNum++;
-
-        LVALUE llvm_value;
-        llvm_value.value = lvalue.address;
-        llvm_value.type = refference_type;
-        llvm_value.address = nullptr;
-        llvm_value.var = nullptr;
-        llvm_value.binded_value = FALSE;
-        llvm_value.load_field = FALSE;
-
-        push_value_to_stack_ptr(&llvm_value, info);
-
-        info->type = refference_type;
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
     }
+
+    sNodeType* left_type = info->type;
+
+    sNodeType* refference_type = clone_node_type(left_type);
+
+    refference_type->mPointerNum++;
+
+    LVALUE llvm_value;
+    llvm_value.value = lvalue.address;
+    llvm_value.type = refference_type;
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = refference_type;
 
     return TRUE;
 }
@@ -7119,6 +7338,11 @@ static BOOL pre_compile_reffernce(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_plus_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7233,16 +7457,14 @@ static BOOL compile_plus_eq(unsigned int node, sCompileInfo* info)
             }
         }
 
-        if(!info->no_output) {
-            Value* address = lvalue.address;
+        Value* address = lvalue.address;
 
-            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-            Value* add_rvalue = rvalue.value;
+        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+        Value* add_rvalue = rvalue.value;
 
-            Value* value = Builder.CreateAdd(add_lvalue, add_rvalue, "addtmp", false, true);
+        Value* value = Builder.CreateAdd(add_lvalue, add_rvalue, "addtmp", false, true);
 
-            Builder.CreateAlignedStore(value, address, 8);
-        }
+        Builder.CreateAlignedStore(value, address, 8);
     }
 
     return TRUE;
@@ -7267,6 +7489,11 @@ static BOOL pre_compile_plus_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_minus_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7381,16 +7608,14 @@ static BOOL compile_minus_eq(unsigned int node, sCompileInfo* info)
             }
         }
 
-        if(!info->no_output) {
-            Value* address = lvalue.address;
+        Value* address = lvalue.address;
 
-            Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-            Value* add_rvalue = rvalue.value;
+        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+        Value* add_rvalue = rvalue.value;
 
-            Value* value = Builder.CreateSub(add_lvalue, add_rvalue, "subtmp", false, true);
+        Value* value = Builder.CreateSub(add_lvalue, add_rvalue, "subtmp", false, true);
 
-            Builder.CreateAlignedStore(value, address, 8);
-        }
+        Builder.CreateAlignedStore(value, address, 8);
     }
 
     return TRUE;
@@ -7417,6 +7642,11 @@ static BOOL pre_compile_minus_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_mult_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7455,16 +7685,14 @@ static BOOL compile_mult_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateMul(add_lvalue, add_rvalue, "multmp", false, true);
+    Value* value = Builder.CreateMul(add_lvalue, add_rvalue, "multmp", false, true);
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7488,6 +7716,11 @@ static BOOL pre_compile_mult_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_div_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7526,22 +7759,20 @@ static BOOL compile_div_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value;
-        if(left_type->mUnsigned) {
-            value = Builder.CreateUDiv(add_lvalue, add_rvalue, "divtmp");
-        }
-        else {
-            value = Builder.CreateSDiv(add_lvalue, add_rvalue, "divtmp");
-        }
-
-        Builder.CreateAlignedStore(value, address, 8);
+    Value* value;
+    if(left_type->mUnsigned) {
+        value = Builder.CreateUDiv(add_lvalue, add_rvalue, "divtmp");
     }
+    else {
+        value = Builder.CreateSDiv(add_lvalue, add_rvalue, "divtmp");
+    }
+
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7565,6 +7796,11 @@ static BOOL pre_compile_div_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_mod_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7603,22 +7839,20 @@ static BOOL compile_mod_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value;
-        if(left_type->mUnsigned) {
-            value = Builder.CreateURem(add_lvalue, add_rvalue, "remtmp");
-        }
-        else {
-            value = Builder.CreateSRem(add_lvalue, add_rvalue, "remtmp");
-        }
-
-        Builder.CreateAlignedStore(value, address, 8);
+    Value* value;
+    if(left_type->mUnsigned) {
+        value = Builder.CreateURem(add_lvalue, add_rvalue, "remtmp");
     }
+    else {
+        value = Builder.CreateSRem(add_lvalue, add_rvalue, "remtmp");
+    }
+
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7642,6 +7876,11 @@ static BOOL pre_compile_mod_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_and_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7680,16 +7919,14 @@ static BOOL compile_and_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateAnd(add_lvalue, add_rvalue, "andtmp");
+    Value* value = Builder.CreateAnd(add_lvalue, add_rvalue, "andtmp");
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7713,6 +7950,11 @@ static BOOL pre_compile_and_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_xor_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7751,16 +7993,14 @@ static BOOL compile_xor_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateXor(add_lvalue, add_rvalue, "xortmp");
+    Value* value = Builder.CreateXor(add_lvalue, add_rvalue, "xortmp");
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7784,6 +8024,11 @@ static BOOL pre_compile_xor_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_or_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7822,16 +8067,14 @@ static BOOL compile_or_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateOr(add_lvalue, add_rvalue, "ortmp");
+    Value* value = Builder.CreateOr(add_lvalue, add_rvalue, "ortmp");
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7855,6 +8098,11 @@ static BOOL pre_compile_or_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_lshift_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7893,16 +8141,14 @@ static BOOL compile_lshift_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateShl(add_lvalue, add_rvalue, "lshifttmp");
+    Value* value = Builder.CreateShl(add_lvalue, add_rvalue, "lshifttmp");
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -7926,6 +8172,11 @@ static BOOL pre_compile_lshift_eq(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_rshift_eq(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     unsigned int left_node = gNodes[node].mLeft;
 
     BOOL derefference = gNodes[left_node].mNodeType == kNodeTypeDerefference;
@@ -7964,16 +8215,14 @@ static BOOL compile_rshift_eq(unsigned int node, sCompileInfo* info)
         }
     }
 
-    if(!info->no_output) {
-        Value* address = lvalue.address;
+    Value* address = lvalue.address;
 
-        Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
-        Value* add_rvalue = rvalue.value;
+    Value* add_lvalue = Builder.CreateAlignedLoad(address, alignment);
+    Value* add_rvalue = rvalue.value;
 
-        Value* value = Builder.CreateAShr(add_lvalue, add_rvalue, "rshifttmp");
+    Value* value = Builder.CreateAShr(add_lvalue, add_rvalue, "rshifttmp");
 
-        Builder.CreateAlignedStore(value, address, 8);
-    }
+    Builder.CreateAlignedStore(value, address, 8);
 
     return TRUE;
 }
@@ -8074,6 +8323,11 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
     //if(var_type->mPointerNum == 0) {
         var_type->mHeap = FALSE;
     //}
+
+    if(info->no_output) {
+        info->type = var_type;
+        return TRUE;
+    }
 
     /// go ///
     Value* element_value;
@@ -8433,6 +8687,11 @@ BOOL compile_store_element(unsigned int node, sCompileInfo* info)
 
     sNodeType* right_type = info->type;
 
+    if(info->no_output) {
+        info->type = clone_node_type(right_type);
+        return TRUE;
+    }
+
     LVALUE rvalue = *get_value_from_stack(-1);
 
     sNodeType* var_type = clone_node_type(left_type);
@@ -8667,6 +8926,11 @@ BOOL pre_compile_store_element(unsigned int node, sCompileInfo* info)
 
 BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     int num_array_value = gNodes[node].uValue.sArrayInitializer.mNumArrayValue;
     unsigned int array_values[INIT_ARRAY_MAX];
     memcpy(array_values, gNodes[node].uValue.sArrayInitializer.mArrayValues, sizeof(unsigned int)*INIT_ARRAY_MAX);
@@ -9244,7 +9508,6 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
         }
     }
 
-
     info->type = create_node_type_with_class_name("void");
 
     return TRUE;
@@ -9289,6 +9552,11 @@ BOOL pre_compile_array_initializer(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     void* switch_expression = info->switch_expression;
     info->switch_expression = NULL;
 
@@ -9459,6 +9727,11 @@ static BOOL pre_compile_for_statment(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_while_statment(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     void* switch_expression_before = info->switch_expression;
     info->switch_expression = NULL;
 
@@ -9591,6 +9864,11 @@ static BOOL pre_compile_while_statment(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_do_while_statment(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     void* switch_expression_before = info->switch_expression;
     info->switch_expression = NULL;
 
@@ -9710,6 +9988,11 @@ static BOOL pre_compile_do_while_statment(unsigned int node, sCompileInfo* info)
 
 BOOL compile_switch_statment(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     unsigned int* switch_expression = gNodes[node].uValue.sSwitch.mSwitchExpression;
     int num_switch_expression = gNodes[node].uValue.sSwitch.mNumSwitchExpression;
     unsigned int expression_node = gNodes[node].uValue.sSwitch.mExpression;
@@ -9820,6 +10103,11 @@ BOOL pre_compile_switch_statment(unsigned int node, sCompileInfo* info)
 
 BOOL compile_case_expression(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     unsigned int expression_node = gNodes[node].uValue.sCase.mExpression;
     BOOL first_case = gNodes[node].uValue.sCase.mFirstCase;
     BOOL last_case = gNodes[node].uValue.sCase.mLastCase;
@@ -9947,6 +10235,11 @@ BOOL pre_compile_case_expression(unsigned int node, sCompileInfo* info)
 
 BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     if(info->num_loop <= 0) {
         compile_err_msg(info, "No in the loop");
         info->err_num++;
@@ -9986,6 +10279,11 @@ BOOL pre_compile_break_expression(unsigned int node, sCompileInfo* info)
 
 BOOL compile_continue_expression(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = clone_node_type("void");
+        return TRUE;
+    }
+
     if(info->num_loop2 <= 0) {
         compile_err_msg(info, "No in the loop");
         info->err_num++;
@@ -10035,6 +10333,11 @@ BOOL compile_cast(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
+    if(info->no_output) {
+        info->type = right_type;
+        return TRUE;
+    }
+
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
         return FALSE;
@@ -10073,6 +10376,15 @@ BOOL pre_compile_cast(unsigned int node, sCompileInfo* info)
 
 static BOOL compile_sizeof1(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+#ifdef __32BIT_CPU__
+        info->type = create_node_type_with_class_name("int");
+#else
+        info->type = create_node_type_with_class_name("long");
+#endif
+        return TRUE;
+    }
+
     char type_name[VAR_NAME_MAX];
     xstrncpy(type_name, gNodes[node].uValue.sSizeOf.mTypeName, VAR_NAME_MAX);
     sNodeType* node_type2 = create_node_type_with_class_name(type_name);
@@ -10129,6 +10441,15 @@ static BOOL pre_compile_sizeof1(unsigned int node, sCompileInfo* info)
 
 BOOL compile_sizeof2(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+#ifdef __32BIT_CPU__
+        info->type = create_node_type_with_class_name("int");
+#else
+        info->type = create_node_type_with_class_name("long");
+#endif
+        return TRUE;
+    }
+
     char var_name[VAR_NAME_MAX];
     xstrncpy(var_name, gNodes[node].uValue.sSizeOf.mVarName, VAR_NAME_MAX);
     sVar* var = get_variable_from_table(info->lv_table, var_name);
@@ -10201,6 +10522,11 @@ BOOL pre_compile_sizeof2(unsigned int node, sCompileInfo* info)
 
 BOOL compile_typedef(unsigned int node, sCompileInfo* info)
 {
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
     char name[VAR_NAME_MAX];
     xstrncpy(name, gNodes[node].uValue.sTypeDef.mName, VAR_NAME_MAX);
 

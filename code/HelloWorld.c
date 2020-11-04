@@ -229,9 +229,9 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-//    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
+    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
 
-    //xassert("function pointer test", aaa(1) == 124);
+    xassert("function pointer test", aaa(1) == 124);
 
     xassert("eqeq test", xxx == 123);
 
@@ -251,12 +251,11 @@ int main()
 
     xassert("generics fun test", data2.show() == 123);
 
-/*
     xassert("method generics fun test", fun2(123) == 124);
 
-//    xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
+    xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
-//    xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
+    xassert("map test", data2.map(int lambda(int c) { return c + 1; }) == 124);
 
     inheritFun();
 
@@ -480,7 +479,6 @@ int main()
 
     long aaaaaaa = 123;
     long unsigned int bbbbbbbb = 123;
-*/
 
     funXXX();
 
