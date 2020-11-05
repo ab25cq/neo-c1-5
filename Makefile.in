@@ -98,8 +98,8 @@ distclean: clean
 #########################################
 test: 
 	@echo "Compile to test code..."
-	./neo-c2 code/HelloWorld.c
-	clang -o code/HelloWorld code/HelloWorld.c.ll
+	./neo-c2 -g code/HelloWorld.c
+	clang -o code/HelloWorld -g code/HelloWorld.c.ll
 	./code/HelloWorld
 
 #########################################

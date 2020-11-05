@@ -8927,7 +8927,7 @@ BOOL pre_compile_store_element(unsigned int node, sCompileInfo* info)
 BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -9553,7 +9553,7 @@ BOOL pre_compile_array_initializer(unsigned int node, sCompileInfo* info)
 static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -9728,7 +9728,7 @@ static BOOL pre_compile_for_statment(unsigned int node, sCompileInfo* info)
 static BOOL compile_while_statment(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -9865,7 +9865,7 @@ static BOOL pre_compile_while_statment(unsigned int node, sCompileInfo* info)
 static BOOL compile_do_while_statment(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -9989,7 +9989,7 @@ static BOOL pre_compile_do_while_statment(unsigned int node, sCompileInfo* info)
 BOOL compile_switch_statment(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -10104,7 +10104,7 @@ BOOL pre_compile_switch_statment(unsigned int node, sCompileInfo* info)
 BOOL compile_case_expression(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -10236,7 +10236,7 @@ BOOL pre_compile_case_expression(unsigned int node, sCompileInfo* info)
 BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
@@ -10280,7 +10280,7 @@ BOOL pre_compile_break_expression(unsigned int node, sCompileInfo* info)
 BOOL compile_continue_expression(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
-        info->type = clone_node_type("void");
+        info->type = create_node_type_with_class_name("void");
         return TRUE;
     }
 
