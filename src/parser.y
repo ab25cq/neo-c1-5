@@ -44,6 +44,8 @@ unsigned int fun_node;
 sVarTable* gLVTable;
 %}
 
+%locations
+
 %union {
     int ival;
     char char_val;
@@ -317,13 +319,10 @@ type:
             unsigned int fields = $3;
             BOOL anonymous = TRUE;
             BOOL generics = FALSE;
-printf("yylineno %d\n", yylineno);
 
-            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
 
             compile(node, &cinfo);
-
-printf("yylineno %d\n", yylineno);
 
             xstrncpy($$, buf, VAR_NAME_MAX);
     }
@@ -337,7 +336,7 @@ printf("yylineno %d\n", yylineno);
             unsigned int fields = $3;
             BOOL anonymous = TRUE;
 
-            unsigned int node = sNodeTree_create_union(union_name, fields, anonymous, gSName, yylineno);
+            unsigned int node = sNodeTree_create_union(union_name, fields, anonymous, gSName, @1.first_line);
 
             compile(node, &cinfo);
 
@@ -588,12 +587,12 @@ typedef_:
     TYPEDEF type IDENTIFIER ';' {
         char* name = $3;
         char* type_name = $2;
-        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     | TYPEDEF type TYPE_NAME ';' {
         char* name = $3;
         char* type_name = $2;
-        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     | TYPEDEF STRUCT IDENTIFIER '{' fields '}' IDENTIFIER ';' {
             char buf[VAR_NAME_MAX];
@@ -604,14 +603,14 @@ typedef_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
 
             compile(node, &cinfo);
 
             char* name = $7;
             char* type_name = buf;
 
-            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     | TYPEDEF STRUCT IDENTIFIER '{' fields '}' TYPE_NAME ';' {
             char buf[VAR_NAME_MAX];
@@ -622,14 +621,14 @@ typedef_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
 
             compile(node, &cinfo);
 
             char* name = $7;
             char* type_name = buf;
 
-            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     | TYPEDEF STRUCT TYPE_NAME IDENTIFIER ';' {
             char buf[VAR_NAME_MAX];
@@ -638,7 +637,7 @@ typedef_:
             char* name = buf;
             char* type_name = $3;
 
-            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     | TYPEDEF STRUCT TYPE_NAME TYPE_NAME ';' {
             char buf[VAR_NAME_MAX];
@@ -647,7 +646,7 @@ typedef_:
             char* name = buf;
             char* type_name = $3;
 
-            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, @1.first_line);
     }
     ;
 
@@ -759,7 +758,7 @@ union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
             unsigned int fields = $4;
             BOOL anonymous = FALSE;
 
-            $$ = sNodeTree_create_union(union_name, fields, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_union(union_name, fields, anonymous, gSName, @1.first_line);
         }
         ;
 
@@ -770,7 +769,7 @@ struct_:
             BOOL anonymous = FALSE;
             BOOL generics = num_struct_generics_types > 0;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
         }
         | STRUCT IDENTIFIER '{' fields '}' ';' {
             char* struct_name = $2;
@@ -778,7 +777,7 @@ struct_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
         }
         | STRUCT TYPE_NAME '{' fields '}' ';' {
             char* struct_name = $2;
@@ -786,7 +785,7 @@ struct_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
         }
         | STRUCT IDENTIFIER ';' {
             char* struct_name = $2;
@@ -794,7 +793,7 @@ struct_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
         }
         | STRUCT TYPE_NAME ';' {
             char* struct_name = $2;
@@ -802,7 +801,7 @@ struct_:
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 
-            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, @1.first_line);
         }
         ;
 
@@ -822,7 +821,7 @@ struct_generics_types: {
     ;
 
 fields:  { 
-            fields = sNodeTree_create_struct_fields(gSName, yylineno); $$ = fields; 
+            fields = sNodeTree_create_struct_fields(gSName, @1.first_line); $$ = fields; 
         }
         | fields type_and_variable_name ';' { 
             $$ = fields; append_field_to_fields(fields, variable_names[--num_variable_names], $2); 
@@ -842,11 +841,11 @@ enum_fields: {
         BOOL alloc = TRUE;
         BOOL global = TRUE;
         char* var_name = $1;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, @1.first_line);
 
         char* type_name = "int";
 
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, @1.first_line); 
 
         compile(node, &cinfo);
 
@@ -858,11 +857,11 @@ enum_fields: {
         BOOL alloc = TRUE;
         BOOL global = TRUE;
         char* var_name = $1;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, @1.first_line);
 
         char* type_name = "int";
 
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, @1.first_line); 
 
         compile(node, &cinfo);
 
@@ -872,11 +871,11 @@ enum_fields: {
         BOOL alloc = TRUE;
         BOOL global = TRUE;
         char* var_name = $3;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, @1.first_line);
 
         char* type_name = "int";
 
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, @1.first_line); 
 
         compile(node, &cinfo);
 
@@ -888,11 +887,11 @@ enum_fields: {
         BOOL alloc = TRUE;
         BOOL global = TRUE;
         char* var_name = $3;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, @1.first_line);
 
         char* type_name = "int";
 
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, @1.first_line); 
 
         compile(node, &cinfo);
 
@@ -907,7 +906,7 @@ global_variable:
             BOOL global = TRUE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
         }
 
         | type IDENTIFIER const_array_type '=' '{' array_value '}' ';' { 
@@ -920,9 +919,9 @@ global_variable:
             BOOL global = TRUE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | type IDENTIFIER '[' ']' '=' '{' array_value '}' ';' { 
             char type_name[VAR_NAME_MAX];
@@ -937,9 +936,9 @@ global_variable:
             BOOL global = TRUE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | type IDENTIFIER const_array_type '=' CSTRING ';' { 
             char type_name[VAR_NAME_MAX];
@@ -951,7 +950,7 @@ global_variable:
             BOOL global = TRUE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
             unsigned int array_values[512];
 
@@ -962,20 +961,20 @@ global_variable:
 
             int i;
             for(i=0; i<strlen($5); i++) {
-                array_values[i] = sNodeTree_create_char_value($5[i], gSName, yylineno);
+                array_values[i] = sNodeTree_create_char_value($5[i], gSName, @1.first_line);
             }
-            array_values[i] = sNodeTree_create_char_value('\0', gSName, yylineno);
+            array_values[i] = sNodeTree_create_char_value('\0', gSName, @1.first_line);
 
             int num_array_value = strlen($5) + 1;
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
 
         | type_and_variable_name '=' exp ';'  { 
             BOOL alloc = TRUE;
             BOOL global = TRUE;
 
-            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, @1.first_line); 
         }
         ;
 
@@ -1042,7 +1041,7 @@ function:
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1054,7 +1053,7 @@ function:
             char* result_type = $2;
             char* fun_name = $3;
             unsigned int function_params = $5;
-            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1070,7 +1069,7 @@ function:
             BOOL generics = FALSE;
             BOOL method_generics = FALSE;
 
-            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, yylineno);
+            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1111,7 +1110,7 @@ function:
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, yylineno);
+            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1127,7 +1126,7 @@ function:
             BOOL generics = FALSE;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, yylineno);
+            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, num_method_generics_types, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1168,7 +1167,7 @@ function:
             BOOL generics = num_function_generics_types > 0;
             BOOL method_generics = num_method_generics_types > 0;
 
-            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, yylineno);
+            $$ = it = sNodeTree_create_function(fun_node, fun_name, fun_base_name, function_params, result_type, node_block, var_arg, inline_, static_, inherit_, generics, method_generics, gSName, @1.first_line);
 
             num_function_generics_types = 0;
             num_method_generics_types = 0;
@@ -1179,13 +1178,13 @@ function:
         ;
 
 function_params: { 
-            func_params = sNodeTree_create_function_params(gSName, yylineno); $$ = func_params; var_arg = FALSE; 
+            func_params = sNodeTree_create_function_params(gSName, @1.first_line); $$ = func_params; var_arg = FALSE; 
         }
         | VOID { 
-            func_params = sNodeTree_create_function_params(gSName, yylineno); $$ = func_params; 
+            func_params = sNodeTree_create_function_params(gSName, @1.first_line); $$ = func_params; 
         }
         | type_and_variable_name {
-            func_params = sNodeTree_create_function_params(gSName, yylineno);
+            func_params = sNodeTree_create_function_params(gSName, @1.first_line);
             $$ = func_params; 
             var_arg = FALSE; 
             append_param_to_function_params(func_params, $1, variable_names[--num_variable_names]);
@@ -1200,7 +1199,7 @@ function_params: {
         ;
 
 function_params_end: {
-        $$ = fun_node = sNodeTree_pre_create_function(func_params, gSName, yylineno);
+        $$ = fun_node = sNodeTree_pre_create_function(func_params, gSName, @1.first_line);
         }
         ;
 
@@ -1272,7 +1271,7 @@ block:  statment                  {
 
             BOOL create_lv_table = TRUE;
 
-            block = sNodeTree_create_block(create_lv_table, gSName, yylineno); append_node_to_node_block(block, $1); $$ = block; 
+            block = sNodeTree_create_block(create_lv_table, gSName, @1.first_line); append_node_to_node_block(block, $1); $$ = block; 
         } 
         | block statment          { 
             $$ = block; append_node_to_node_block(block, $2); 
@@ -1290,7 +1289,7 @@ function_block:  statment                  {
 
             BOOL create_lv_table = FALSE;
 
-            block = sNodeTree_create_block(create_lv_table, gSName, yylineno); append_node_to_node_block(block, $1); $$ = block; 
+            block = sNodeTree_create_block(create_lv_table, gSName, @1.first_line); append_node_to_node_block(block, $1); $$ = block; 
         } 
         | function_block statment          { 
             $$ = block; append_node_to_node_block(block, $2); 
@@ -1309,12 +1308,12 @@ block_end: {
         };
 
 statment: comma_exp ';'              { $$ = $1; }
-    | RETURN ';'               { $$ = sNodeTree_create_return(0, 0, gSName, yylineno); }
-    | RETURN '(' comma_exp ')' ';'   { $$ = sNodeTree_create_return($3, 0, gSName, yylineno); }
-    | RETURN comma_exp ';'  { $$ = sNodeTree_create_return($2, 0, gSName, yylineno); }
-    | RETURN ';' after_return_case_statment { $$ = sNodeTree_create_return(0, $3, gSName, yylineno); }
-    | RETURN '(' comma_exp ')' ';' after_return_case_statment   { $$ = sNodeTree_create_return($3, $6, gSName, yylineno); }
-    | RETURN comma_exp ';' after_return_case_statment  { $$ = sNodeTree_create_return($2, $4, gSName, yylineno); }
+    | RETURN ';'               { $$ = sNodeTree_create_return(0, 0, gSName, @1.first_line); }
+    | RETURN '(' comma_exp ')' ';'   { $$ = sNodeTree_create_return($3, 0, gSName, @1.first_line); }
+    | RETURN comma_exp ';'  { $$ = sNodeTree_create_return($2, 0, gSName, @1.first_line); }
+    | RETURN ';' after_return_case_statment { $$ = sNodeTree_create_return(0, $3, gSName, @1.first_line); }
+    | RETURN '(' comma_exp ')' ';' after_return_case_statment   { $$ = sNodeTree_create_return($3, $6, gSName, @1.first_line); }
+    | RETURN comma_exp ';' after_return_case_statment  { $$ = sNodeTree_create_return($2, $4, gSName, @1.first_line); }
     | IF '(' comma_exp ')' '{' block '}' block_end {
         unsigned int if_exp = $3;
         unsigned int if_block = $6;
@@ -1323,7 +1322,7 @@ statment: comma_exp ';'              { $$ = $1; }
         unsigned int elif_blocks[ELIF_NUM_MAX];
         unsigned else_block = 0;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, @1.first_line);
     }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE '{' block '}' block_end 
     {
@@ -1334,7 +1333,7 @@ statment: comma_exp ';'              { $$ = $1; }
         unsigned int elif_blocks[ELIF_NUM_MAX];
         unsigned int else_block = $11;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, @1.first_line);
     }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
     {
@@ -1342,14 +1341,14 @@ statment: comma_exp ';'              { $$ = $1; }
         unsigned int if_block = $6;
         unsigned int else_block = $15;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, @1.first_line);
     }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
         unsigned int if_exp = $3;
         unsigned int if_block = $6;
         unsigned else_block = 0;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, @1.first_line);
     }
     | FOR '(' comma_exp ';' comma_exp ';' comma_exp ')' '{' block '}' block_end {
         unsigned int expression_node1 = $3;
@@ -1358,19 +1357,19 @@ statment: comma_exp ';'              { $$ = $1; }
 
         unsigned int for_node_block = $10;
 
-        $$ = sNodeTree_for_statment(expression_node1, expression_node2, expression_node3, for_node_block, gSName, yylineno);
+        $$ = sNodeTree_for_statment(expression_node1, expression_node2, expression_node3, for_node_block, gSName, @1.first_line);
     }
     | WHILE '(' comma_exp ')' '{' block '}' block_end {
         unsigned int expression_node1 = $3;
 
         unsigned int while_node_block = $6;
 
-        $$ = sNodeTree_while_statment(expression_node1, while_node_block, gSName, yylineno);
+        $$ = sNodeTree_while_statment(expression_node1, while_node_block, gSName, @1.first_line);
     }
     | SWITCH '(' comma_exp ')' '{' switch_block '}' {
         unsigned int expression_node = $3;
 
-        $$ = sNodeTree_switch_statment(expression_node, num_switch_expression, switch_expression, gSName, yylineno);
+        $$ = sNodeTree_switch_statment(expression_node, num_switch_expression, switch_expression, gSName, @1.first_line);
     }
     | case_statment  {
         $$ = $1;
@@ -1382,20 +1381,20 @@ statment: comma_exp ';'              { $$ = $1; }
         unsigned int first_statment = 0;
         unsigned int last_statment = 0;
 
-        $$ = sNodeTree_case_expression(0, first_case, last_case, case_after_return, first_statment, last_statment, gSName, yylineno);
+        $$ = sNodeTree_case_expression(0, first_case, last_case, case_after_return, first_statment, last_statment, gSName, @1.first_line);
     }
     | BREAK ';' {
-        $$ = sNodeTree_create_break_expression(gSName, yylineno);
+        $$ = sNodeTree_create_break_expression(gSName, @1.first_line);
     }
     | CONTINUE ';' {
-        $$ = sNodeTree_create_continue_expression(gSName, yylineno);
+        $$ = sNodeTree_create_continue_expression(gSName, @1.first_line);
     }
     | DO '{' block '}' block_end WHILE '(' comma_exp ')' ';' {
         unsigned int expression_node1 = $8;
 
         unsigned int while_node_block = $3;
 
-        $$ = sNodeTree_do_while_expression(expression_node1, while_node_block, gSName, yylineno);
+        $$ = sNodeTree_do_while_expression(expression_node1, while_node_block, gSName, @1.first_line);
     }
     | type_and_variable_name ';' {
         char* type_name = $1;
@@ -1403,7 +1402,7 @@ statment: comma_exp ';'              { $$ = $1; }
         BOOL global = FALSE;
         BOOL extern_ = FALSE;
 
-        $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+        $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
     }
     ;
 
@@ -1417,7 +1416,7 @@ case_statment: CASE exp ':' {
         unsigned int first_statment = 0;
         unsigned int last_statment = 0;
 
-        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, yylineno);
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, @1.first_line);
     }
     | case_statment CASE exp ':' {
         BOOL first_case = FALSE;
@@ -1430,7 +1429,7 @@ case_statment: CASE exp ':' {
 
         gNodes[last_statment].uValue.sCase.mLastCase = FALSE;
 
-        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, yylineno);
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, @1.first_line);
     }
     ;
 
@@ -1444,7 +1443,7 @@ after_return_case_statment: CASE exp ':' {
         unsigned int first_statment = 0;
         unsigned int last_statment = 0;
 
-        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, yylineno);
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, @1.first_line);
     }
     | after_return_case_statment CASE exp ':' {
         BOOL first_case = FALSE;
@@ -1457,7 +1456,7 @@ after_return_case_statment: CASE exp ':' {
 
         gNodes[last_statment].uValue.sCase.mLastCase = FALSE;
 
-        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, yylineno);
+        $$ = sNodeTree_case_expression(expression_node, first_case, last_case, case_after_return, first_statment, last_statment, gSName, @1.first_line);
     }
     ;
 
@@ -1535,37 +1534,37 @@ comma_exp: exp {
 exp: node {
         $$ = $1;
     }
-    | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, yylineno); }
-    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, gSName, yylineno); }
-    | exp '*' exp   { $$ = sNodeTree_create_mult($1, $3,  gSName, yylineno); }
-    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, yylineno); }
-    | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, yylineno); }
-    | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
-    | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, yylineno); }
-    | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, yylineno); }
-    | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, yylineno); }
-    | exp LTEQ exp   { $$ = sNodeTree_create_le($1, $3, gSName, yylineno); }
-    | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, yylineno); }
-    | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, yylineno); }
-    | exp LSHIFT exp { $$ = sNodeTree_create_lshift($1, $3, gSName, yylineno); }
-    | exp RSHIFT exp { $$ = sNodeTree_create_rshift($1, $3, gSName, yylineno); }
-    | exp '|' exp    { $$ = sNodeTree_create_or($1, $3, gSName, yylineno); }
-    | exp '^' exp    { $$ = sNodeTree_create_xor($1, $3, gSName, yylineno); }
-    | exp '&' exp    { $$ = sNodeTree_create_and($1, $3, gSName, yylineno); }
+    | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, @1.first_line); }
+    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, gSName, @1.first_line); }
+    | exp '*' exp   { $$ = sNodeTree_create_mult($1, $3,  gSName, @1.first_line); }
+    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, @1.first_line); }
+    | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, @1.first_line); }
+    | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, @1.first_line); }
+    | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, @1.first_line); }
+    | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, @1.first_line); }
+    | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, @1.first_line); }
+    | exp LTEQ exp   { $$ = sNodeTree_create_le($1, $3, gSName, @1.first_line); }
+    | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, @1.first_line); }
+    | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, @1.first_line); }
+    | exp LSHIFT exp { $$ = sNodeTree_create_lshift($1, $3, gSName, @1.first_line); }
+    | exp RSHIFT exp { $$ = sNodeTree_create_rshift($1, $3, gSName, @1.first_line); }
+    | exp '|' exp    { $$ = sNodeTree_create_or($1, $3, gSName, @1.first_line); }
+    | exp '^' exp    { $$ = sNodeTree_create_xor($1, $3, gSName, @1.first_line); }
+    | exp '&' exp    { $$ = sNodeTree_create_and($1, $3, gSName, @1.first_line); }
     | '(' comma_exp ')'    { $$ = $2; }
-    | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, yylineno); }
-    | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, yylineno); }
-    | '&' node       { $$ = sNodeTree_create_refference($2, gSName, yylineno); }
+    | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, @1.first_line); }
+    | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, @1.first_line); }
+    | '&' node       { $$ = sNodeTree_create_refference($2, gSName, @1.first_line); }
     ;
 
 cstring_array_value2: CSTRING {
-        $$ = sNodeTree_create_c_string($1, gSName, yylineno);
+        $$ = sNodeTree_create_c_string($1, gSName, @1.first_line);
 
         num_array_value = 0;
         array_values[num_array_value++] = $$;
     }
     | cstring_array_value2 ',' CSTRING {
-        $$ = sNodeTree_create_c_string($3, gSName, yylineno);
+        $$ = sNodeTree_create_c_string($3, gSName, @1.first_line);
 
         array_values[num_array_value++] = $$;
     };
@@ -1573,25 +1572,25 @@ cstring_array_value2: CSTRING {
 node: source_point_macro exp {
             $$ = $2;
             }
-        | INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, yylineno); }
-        | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, yylineno); }
+        | INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, @1.first_line); }
+        | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, @1.first_line); }
         | CSTRING {
-            $$ = it = sNodeTree_create_c_string($1, gSName, yylineno);
+            $$ = it = sNodeTree_create_c_string($1, gSName, @1.first_line);
         }
         | TOKEN_TRUE {
-            $$ = sNodeTree_create_true(gSName, yylineno);
+            $$ = sNodeTree_create_true(gSName, @1.first_line);
         }
         | TOKEN_FALSE {
-            $$ = sNodeTree_create_false(gSName, yylineno);
+            $$ = sNodeTree_create_false(gSName, @1.first_line);
         }
         | IDENTIFIER {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
         }
         | type_and_variable_name '=' comma_exp  { 
             BOOL alloc = TRUE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, @1.first_line); 
         }
         | type IDENTIFIER const_array_type '=' '{' cstring_array_value2 '}' { 
             char type_name[VAR_NAME_MAX];
@@ -1603,9 +1602,9 @@ node: source_point_macro exp {
             BOOL global = FALSE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | type IDENTIFIER const_array_type '=' '{' array_value '}' { 
             char type_name[VAR_NAME_MAX];
@@ -1617,9 +1616,9 @@ node: source_point_macro exp {
             BOOL global = FALSE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | type IDENTIFIER '[' ']' '=' '{' array_value '}' { 
             char type_name[VAR_NAME_MAX];
@@ -1635,9 +1634,9 @@ node: source_point_macro exp {
             BOOL global = FALSE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | type IDENTIFIER const_array_type '=' CSTRING { 
             char type_name[VAR_NAME_MAX];
@@ -1649,7 +1648,7 @@ node: source_point_macro exp {
             BOOL global = FALSE;
             BOOL extern_ = FALSE;
 
-            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, @1.first_line);
 
             unsigned int array_values[512];
 
@@ -1660,116 +1659,116 @@ node: source_point_macro exp {
 
             int i;
             for(i=0; i<strlen($5); i++) {
-                array_values[i] = sNodeTree_create_char_value($5[i], gSName, yylineno);
+                array_values[i] = sNodeTree_create_char_value($5[i], gSName, @1.first_line);
             }
-            array_values[i] = sNodeTree_create_char_value('\0', gSName, yylineno);
+            array_values[i] = sNodeTree_create_char_value('\0', gSName, @1.first_line);
 
             int num_array_value = strlen($5) + 1;
 
-            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, yylineno);
+            $$ = sNodeTree_create_array_initializer($$, var_name, num_array_value, array_values, global, gSName, @1.first_line);
         }
         | IDENTIFIER '=' comma_exp { 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $3, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $3, alloc, global, gSName, @1.first_line); 
         }
 
         | IDENTIFIER array_index {
-            unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
+            unsigned int array = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int* index_node = array_index_index_node;
             int num_dimention = array_index_num_dimention;
 
-            $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, yylineno);
+            $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, @1.first_line);
         }
         | IDENTIFIER array_index '=' comma_exp {
-            unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
+            unsigned int array = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int* index_node = array_index_index_node;
             int num_dimention = array_index_num_dimention;
 
             unsigned int right_node = $4;
 
-            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, @1.first_line);
         }
 
         | IDENTIFIER '(' ')' {
             BOOL existance = function_existance($1);
 
             if(existance) {
-                $$ = sNodeTree_create_function_call($1, 0, FALSE, FALSE, gSName, yylineno);
+                $$ = sNodeTree_create_function_call($1, 0, FALSE, FALSE, gSName, @1.first_line);
             }
             else {
-                unsigned int node = sNodeTree_create_load_variable($1, gSName, yylineno);
-                $$ = sNodeTree_create_lambda_call(node, 0, gSName, yylineno);
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, @1.first_line);
+                $$ = sNodeTree_create_lambda_call(node, 0, gSName, @1.first_line);
             }
         }
         | IDENTIFIER '(' params ')' {
             BOOL existance = function_existance($1);
 
             if(existance) {
-                $$ = sNodeTree_create_function_call($1, $3, FALSE, FALSE, gSName, yylineno);
+                $$ = sNodeTree_create_function_call($1, $3, FALSE, FALSE, gSName, @1.first_line);
             }
             else {
-                unsigned int node = sNodeTree_create_load_variable($1, gSName, yylineno);
-                $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, @1.first_line);
+                $$ = sNodeTree_create_lambda_call(node, $3, gSName, @1.first_line);
             }
         }
         | exp '.' IDENTIFIER '(' ')' {
-            params = sNodeTree_create_params(gSName, yylineno); 
+            params = sNodeTree_create_params(gSName, @1.first_line); 
             append_param_to_params(params, $1);
 
-            $$ = sNodeTree_create_function_call($3, params, TRUE, FALSE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call($3, params, TRUE, FALSE, gSName, @1.first_line);
         }
         | exp '.' IDENTIFIER '(' params ')' {
             append_param_to_params($5, $1);
-            $$ = sNodeTree_create_function_call($3, $5, TRUE, FALSE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call($3, $5, TRUE, FALSE, gSName, @1.first_line);
         }
         | INHERIT '(' ')' {
-            $$ = sNodeTree_create_function_call("inherit", 0, FALSE, TRUE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call("inherit", 0, FALSE, TRUE, gSName, @1.first_line);
         }
         | INHERIT '(' params ')' {
-            $$ = sNodeTree_create_function_call("inherit", $3, FALSE, TRUE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call("inherit", $3, FALSE, TRUE, gSName, @1.first_line);
         }
         | exp '.' INHERIT '(' ')' {
-            params = sNodeTree_create_params(gSName, yylineno); 
+            params = sNodeTree_create_params(gSName, @1.first_line); 
             append_param_to_params(params, $1);
 
-            $$ = sNodeTree_create_function_call("inherit", params, TRUE, TRUE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call("inherit", params, TRUE, TRUE, gSName, @1.first_line);
         }
         | exp '.' INHERIT '(' params ')' {
             append_param_to_params($5, $1);
-            $$ = sNodeTree_create_function_call("inherit", $5, TRUE, TRUE, gSName, yylineno);
+            $$ = sNodeTree_create_function_call("inherit", $5, TRUE, TRUE, gSName, @1.first_line);
         }
         | exp '.' IDENTIFIER {
-            $$ = sNodeTree_create_load_field($3, $1, gSName, yylineno);
+            $$ = sNodeTree_create_load_field($3, $1, gSName, @1.first_line);
         }
         | exp '-' '>' IDENTIFIER {
-            $$ = sNodeTree_create_load_field($4, $1, gSName, yylineno);
+            $$ = sNodeTree_create_load_field($4, $1, gSName, @1.first_line);
         }
         | exp '.' IDENTIFIER '=' comma_exp  { 
-            $$ = sNodeTree_create_store_field($3, $1, $5, gSName, yylineno); 
+            $$ = sNodeTree_create_store_field($3, $1, $5, gSName, @1.first_line); 
         }
         | exp '-' '>' IDENTIFIER '=' comma_exp  { 
-            $$ = sNodeTree_create_store_field($4, $1, $6, gSName, yylineno); 
+            $$ = sNodeTree_create_store_field($4, $1, $6, gSName, @1.first_line); 
         }
         | NEW type {
             char* type_name = $2;
             unsigned int object_num = 0;
 
-            $$ = sNodeTree_create_object(type_name, object_num, gSName, yylineno);
+            $$ = sNodeTree_create_object(type_name, object_num, gSName, @1.first_line);
         }
         | NEW type '[' comma_exp ']'  {
             char* type_name = $2;
             unsigned int object_num = $4;
 
-            $$ = sNodeTree_create_object(type_name, object_num, gSName, yylineno);
+            $$ = sNodeTree_create_object(type_name, object_num, gSName, @1.first_line);
         }
         | CLONE exp {
             unsigned int exp = $2;
 
-            $$ = sNodeTree_create_clone(exp, gSName, yylineno);
+            $$ = sNodeTree_create_clone(exp, gSName, @1.first_line);
         }
         | type LAMBDA '(' function_params ')' '{' function_block '}' block_end 
         {
@@ -1777,364 +1776,364 @@ node: source_point_macro exp {
             unsigned int function_params = $4;
             unsigned int node_block = $7;
 
-            $$ = sNodeTree_create_coroutine(function_params, result_type_name, node_block, var_arg, gSName, yylineno);
+            $$ = sNodeTree_create_coroutine(function_params, result_type_name, node_block, var_arg, gSName, @1.first_line);
         }
         | exp '(' params ')' {
-            $$ = sNodeTree_create_lambda_call($1, $3, gSName, yylineno);
+            $$ = sNodeTree_create_lambda_call($1, $3, gSName, @1.first_line);
         }
         | pointer '(' exp ')'     { 
-            $$ = sNodeTree_create_derefference($3, gSName, yylineno); 
+            $$ = sNodeTree_create_derefference($3, gSName, @1.first_line); 
 
             int i;
             for(i=0; i<strlen($1)-1; i++) {
-                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+                $$ = sNodeTree_create_derefference($$, gSName, @1.first_line); 
             }
         }
         | pointer IDENTIFIER     { 
-            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($2, gSName, @1.first_line);
             int i;
             for(i=0; i<strlen($1); i++) {
-                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+                $$ = sNodeTree_create_derefference($$, gSName, @1.first_line); 
             }
         }
         | IDENTIFIER PLUS_PLUS { 
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
-            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_add($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_sub($$, int_value, gSName, @1.first_line);
         }
         | '(' comma_exp ')' PLUS_PLUS { 
             unsigned int left = $2;
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int right = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_plus_eq(left, right, gSName, @1.first_line);
         }
         | PLUS_PLUS IDENTIFIER { 
-            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($2, gSName, @1.first_line);
 
-            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_add($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | FUNCTION_POINTER IDENTIFIER ')' PLUS_PLUS {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
 
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int right = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_plus_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER MINUS_MINUS { 
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
-            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno); 
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_sub($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_add($$, int_value, gSName, @1.first_line);
         }
         | MINUS_MINUS IDENTIFIER { 
-            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($2, gSName, @1.first_line);
 
-            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno); 
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_sub($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | FUNCTION_POINTER IDENTIFIER ')' MINUS_MINUS {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
 
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int right = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_minus_eq(left, right, gSName, @1.first_line);
         }
         | '(' comma_exp ')' MINUS_MINUS { 
             unsigned int left = $2;
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
+            unsigned int right = sNodeTree_create_int_value(1, gSName, @1.first_line);
 
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_minus_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER PLUS_EQ comma_exp { 
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_add($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_sub($$, int_value, gSName, @1.first_line);
         }
         | '(' comma_exp ')' PLUS_EQ comma_exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_plus_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' PLUS_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_plus_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER MINUS_EQ comma_exp { 
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_sub($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
 
-            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_add($$, int_value, gSName, @1.first_line);
         }
         | '(' comma_exp ')' MINUS_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_minus_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' MINUS_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_minus_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER MULT_EQ comma_exp { 
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_mult($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_mult($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' MULT_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_mult_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_mult_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' MULT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_mult_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_mult_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER DIV_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_div($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_div($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' DIV_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_div_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_div_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' DIV_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_div_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_div_eq(left, right, gSName, @1.first_line);
         }
         | IDENTIFIER MOD_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_mod($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_mod($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' MOD_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_mod_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_mod_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' MOD_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_mod_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_mod_eq(left, right, gSName, @1.first_line);
         }
 
         | IDENTIFIER AND_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_and($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_and($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' AND_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_and_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_and_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' AND_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_and_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_and_eq(left, right, gSName, @1.first_line);
         }
 
         | IDENTIFIER XOR_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_xor($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_xor($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' XOR_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_xor_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_xor_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' XOR_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_xor_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_xor_eq(left, right, gSName, @1.first_line);
         }
 
         | IDENTIFIER OR_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_or($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_or($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' OR_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_or_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_or_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' OR_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_or_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_or_eq(left, right, gSName, @1.first_line);
         }
 
         | IDENTIFIER LSHIFT_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_lshift($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_lshift($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' LSHIFT_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_lshift_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_lshift_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' LSHIFT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_lshift_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_lshift_eq(left, right, gSName, @1.first_line);
         }
 
         | IDENTIFIER RSHIFT_EQ comma_exp {
-            $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
+            $$ = sNodeTree_create_load_variable($1, gSName, @1.first_line);
 
             unsigned int int_value = $3;
 
-            $$ = sNodeTree_create_rshift($$, int_value, gSName, yylineno);
+            $$ = sNodeTree_create_rshift($$, int_value, gSName, @1.first_line);
 
             BOOL alloc = FALSE;
             BOOL global = FALSE;
 
-            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
+            $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, @1.first_line); 
         }
         | '(' comma_exp ')' RSHIFT_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_rshift_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_rshift_eq(left, right, gSName, @1.first_line);
         }
         | FUNCTION_POINTER IDENTIFIER ')' RSHIFT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
+            unsigned int left = sNodeTree_create_load_variable($2, gSName, @1.first_line);
+            left = sNodeTree_create_derefference(left, gSName, @1.first_line); 
             unsigned int right = $5;
 
-            $$ = sNodeTree_create_rshift_eq(left, right, gSName, yylineno);
+            $$ = sNodeTree_create_rshift_eq(left, right, gSName, @1.first_line);
         }
 
         | '(' type ')' exp {
@@ -2144,17 +2143,17 @@ node: source_point_macro exp {
 
             unsigned int lnode = $4;
 
-            $$ = sNodeTree_create_cast(type_name, lnode, gSName, yylineno);
+            $$ = sNodeTree_create_cast(type_name, lnode, gSName, @1.first_line);
         }
         | SIZEOF '(' IDENTIFIER ')' {
             char* var_name = $3;
 
-            $$ = sNodeTree_create_sizeof2(var_name, gSName, yylineno);
+            $$ = sNodeTree_create_sizeof2(var_name, gSName, @1.first_line);
         }
         | SIZEOF '(' type ')' {
             char* type_name = $3;
 
-            $$ = sNodeTree_create_sizeof1(type_name, gSName, yylineno);
+            $$ = sNodeTree_create_sizeof1(type_name, gSName, @1.first_line);
         }
         ;
 
@@ -2180,11 +2179,11 @@ array_index: '[' exp ']' {
     ;
 
 params: { 
-        params = sNodeTree_create_params(gSName, yylineno); 
+        params = sNodeTree_create_params(gSName, @1.first_line); 
         $$ = params; 
     }
     | exp { 
-        params = sNodeTree_create_params(gSName, yylineno); 
+        params = sNodeTree_create_params(gSName, @1.first_line); 
         append_param_to_params(params, $1); 
         $$ = params; 
     }
@@ -2197,6 +2196,6 @@ params: {
 %%
 int yyerror(char *msg)
 {
-    fprintf(stderr, "%s %d: %s\n", gSName, yylineno, msg);
+    fprintf(stderr, "%s %d: %s\n", gSName, @1.first_line, msg);
     return 0;
 }

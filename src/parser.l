@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 
+#define YY_USER_ACTION yylloc.first_line = yyloc.last_line = yylineno;
 
 char buf[512];
 char* p;
@@ -44,11 +45,11 @@ BOOL is_type_name(char* name)
 }
 %}
 
+%option yylineno
+
 %x str
 %x comment
 %x comment2
-
-%option yylineno
 
 %%
 
@@ -157,23 +158,15 @@ BOOL is_type_name(char* name)
 
 <comment>[^*\n]*
 <comment>"*"+[^*/\n]*
-<comment>\n  yylineno++;
 <comment>"*"+"/"    BEGIN(INITIAL);
 
 "//" BEGIN(comment2);
 
 <comment2>[^\n]*
-<comment2>\n { yylineno++; BEGIN(INITIAL); }
+<comment2>\n { BEGIN(INITIAL); }
+<comment2>\n { BEGIN(INITIAL); }
 
 [ \t\n]+ {
-    char* p = yytext;
-    while(*p) {
-        if(*p == '\n') {
-printf("yylineno %s %d\n", gSName, yylineno);
-            yylineno++;
-        }
-        p++;
-    }
 }
 
 == {
@@ -286,9 +279,8 @@ printf("yylineno %s %d\n", gSName, yylineno);
     return(LSHIFT_EQ); 
 }
 
-#[ \t]*error.*\n {
+#[ \t]*error.* {
     strncpy(yylval.cval, yytext, 128);
-    yylineno++;
 
     return(ERROR);
 }

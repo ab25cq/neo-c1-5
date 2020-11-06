@@ -36,7 +36,7 @@ void parser_err_msg(char* msg)
     static int output_num = 0;
 
     if(output_num < PARSER_ERR_MSG_MAX) {
-        fprintf(stderr, "%s:%d: %s\n", gSName, yylineno, msg);
+        //fprintf(stderr, "%s:%d: %s\n", gSName, yylloc.first_line, msg);
     }
 
     output_num++;
