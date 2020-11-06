@@ -278,7 +278,7 @@ unsigned int sNodeTree_pre_create_function(unsigned int function_params, char* s
         sNodeType* var_type = create_node_type_with_class_name(param_type);
 
         if(var_type == NULL || var_type->mClass == NULL) {
-            fprintf(stderr, "%s %d: Invalid type name %s\n", gSName, gSLine, var_name);
+            fprintf(stderr, "%s %d: Invalid type name %s\n", gSName, yylineno, var_name);
             return FALSE;
         }
 
@@ -322,12 +322,12 @@ unsigned int sNodeTree_create_function(unsigned int node, char* fun_name, char* 
     gNodes[node].uValue.sFunction.mNodeBlock = node_block;
 
     if(!pre_compile(node, &cinfo)) {
-        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, gSLine);
+        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, yylineno);
         exit(2);
     }
 
     if(!pre_compile_block(node_block, &cinfo)) {
-        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, gSLine);
+        fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, yylineno);
         exit(2);
     }
 

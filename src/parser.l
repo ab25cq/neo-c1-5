@@ -48,6 +48,8 @@ BOOL is_type_name(char* name)
 %x comment
 %x comment2
 
+%option yylineno
+
 %%
 
 \"  p = buf; BEGIN(str);
@@ -155,20 +157,20 @@ BOOL is_type_name(char* name)
 
 <comment>[^*\n]*
 <comment>"*"+[^*/\n]*
-<comment>\n  gSLine++;
+<comment>\n  yylineno++;
 <comment>"*"+"/"    BEGIN(INITIAL);
 
 "//" BEGIN(comment2);
 
 <comment2>[^\n]*
-<comment2>\n { gSLine++; BEGIN(INITIAL); }
+<comment2>\n { yylineno++; BEGIN(INITIAL); }
 
 [ \t\n]+ {
     char* p = yytext;
     while(*p) {
         if(*p == '\n') {
-printf("gSLine %s %d\n", gSName, gSLine);
-            gSLine++;
+printf("yylineno %s %d\n", gSName, yylineno);
+            yylineno++;
         }
         p++;
     }
@@ -286,7 +288,7 @@ printf("gSLine %s %d\n", gSName, gSLine);
 
 #[ \t]*error.*\n {
     strncpy(yylval.cval, yytext, 128);
-    gSLine++;
+    yylineno++;
 
     return(ERROR);
 }
@@ -532,7 +534,7 @@ __extension__ {
 }
 
 . { 
-    fprintf(stderr, "%s %d: Illegal charcter %c, ignored\n", gSName, gSLine, yytext[0]); 
+    fprintf(stderr, "%s %d: Illegal charcter %c, ignored\n", gSName, yylineno, yytext[0]); 
 }
 
 %%

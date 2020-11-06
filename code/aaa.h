@@ -2,10 +2,7 @@
 
 
 struct { 
-    int a; 
+    int a +; 
     int b; 
 } data;
 
-
-
-aaaa

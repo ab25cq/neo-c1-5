@@ -26,7 +26,6 @@ static void compiler_final()
 char* gVersion = "0.0.1";
 
 char gSName[PATH_MAX];
-int gSLine;
 
 char gSNameOriginal[PATH_MAX];
 
@@ -37,7 +36,7 @@ void parser_err_msg(char* msg)
     static int output_num = 0;
 
     if(output_num < PARSER_ERR_MSG_MAX) {
-        fprintf(stderr, "%s:%d: %s\n", gSName, gSLine, msg);
+        fprintf(stderr, "%s:%d: %s\n", gSName, yylineno, msg);
     }
 
     output_num++;
@@ -93,8 +92,6 @@ int main(int argc, char** argv)
     }
 
     compiler_init();
-
-    gSLine = 1;
 
     memset(&cinfo, 0, sizeof(sCompileInfo));
 

@@ -2533,7 +2533,7 @@ void arrange_stack(sCompileInfo* info, int top)
         dec_stack_ptr(info->stack_num-top, info);
     }
     if(info->stack_num < top) {
-        fprintf(stderr, "%s %d: unexpected stack value. The stack num is %d. top is %d\n", gSName, gSLine, info->stack_num, top);
+        fprintf(stderr, "%s %d: unexpected stack value. The stack num is %d. top is %d\n", gSName, yylineno, info->stack_num, top);
         exit(2);
     }
 }
