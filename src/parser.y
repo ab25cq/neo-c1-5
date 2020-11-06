@@ -110,6 +110,7 @@ sVarTable* gLVTable;
 %token <cval> CONTINUE
 %token <cval> DEFAULT
 %token <cval> SIZEOF
+%token <cval> ERROR
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -160,6 +161,10 @@ source_point_macro: '#' INTNUM CSTRING {
 program:
         source_point_macro {
         }
+        | ERROR {
+            fprintf(stderr, "%s\n", $1);
+            exit(2);
+        }
         |
         function {
             $$ = compile($1, &cinfo);
@@ -177,6 +182,10 @@ program:
             $$ = compile($1, &cinfo);
         }
         | enum_ {
+        }
+        | program ERROR {
+            fprintf(stderr, "%s\n", $2);
+            exit(2);
         }
         | program source_point_macro {
         }
@@ -204,8 +213,11 @@ type:
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
         }
-        else if(strcmp($1, "shor ") == 0) {
+        else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned short ") == 0) {
+            xstrncpy($$, "unsigned short", VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
@@ -223,9 +235,12 @@ type:
             xstrncpy($$, "long", VAR_NAME_MAX);
             xstrncat($$, $2, VAR_NAME_MAX);
         }
-        else if(strcmp($1, "shor ") == 0) {
+        else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
             xstrncat($$, $2, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned short ") == 0) {
+            xstrncpy($$, "unsigned short", VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
@@ -433,7 +448,65 @@ type_attribute:
     ;
 
 type_name: 
-    TYPE_NAME {
+    STRUCT TYPE_NAME {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($2, type_name);
+
+        int i;
+        for(i=0; i<num_function_generics_types; i++) {
+            if(strcmp(type_name, function_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_struct_generics_types; i++) {
+            if(strcmp(type_name, struct_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_method_generics_types; i++) {
+            if(strcmp(type_name, method_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "mgenerics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+    }
+    | UNION TYPE_NAME {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($2, type_name);
+
+        int i;
+        for(i=0; i<num_function_generics_types; i++) {
+            if(strcmp(type_name, function_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_struct_generics_types; i++) {
+            if(strcmp(type_name, struct_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_method_generics_types; i++) {
+            if(strcmp(type_name, method_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "mgenerics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+    }
+    | TYPE_NAME {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
 
@@ -508,7 +581,8 @@ type_name:
     }
     ;
 
-typedef_: TYPEDEF type IDENTIFIER ';' {
+typedef_: 
+    TYPEDEF type IDENTIFIER ';' {
         char* name = $3;
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
@@ -517,6 +591,60 @@ typedef_: TYPEDEF type IDENTIFIER ';' {
         char* name = $3;
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
+    }
+    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' IDENTIFIER ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $3, VAR_NAME_MAX);
+
+            char* struct_name = buf;
+            unsigned int fields = $5;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+
+            compile(node, &cinfo);
+
+            char* name = $7;
+            char* type_name = buf;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
+    }
+    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' TYPE_NAME ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $3, VAR_NAME_MAX);
+
+            char* struct_name = buf;
+            unsigned int fields = $5;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+
+            compile(node, &cinfo);
+
+            char* name = $7;
+            char* type_name = buf;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
+    }
+    | TYPEDEF STRUCT TYPE_NAME IDENTIFIER ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $4, VAR_NAME_MAX);
+
+            char* name = buf;
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
+    }
+    | TYPEDEF STRUCT TYPE_NAME TYPE_NAME ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $4, VAR_NAME_MAX);
+
+            char* name = buf;
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, gSLine);
     }
     ;
 
@@ -644,6 +772,30 @@ struct_:
         | STRUCT IDENTIFIER '{' fields '}' ';' {
             char* struct_name = $2;
             unsigned int fields = $4;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+        }
+        | STRUCT TYPE_NAME '{' fields '}' ';' {
+            char* struct_name = $2;
+            unsigned int fields = $4;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+        }
+        | STRUCT IDENTIFIER ';' {
+            char* struct_name = $2;
+            unsigned int fields = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            $$ = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
+        }
+        | STRUCT TYPE_NAME ';' {
+            char* struct_name = $2;
+            unsigned int fields = 0;
             BOOL anonymous = FALSE;
             BOOL generics = FALSE;
 

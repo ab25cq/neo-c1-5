@@ -1,3 +1,9 @@
+#include <stdio.h>
+
+struct sData;
+typedef struct sData sDataType;
+
+sDataType* gSData;
 
 #define AAAAA 12345
 
@@ -207,8 +213,13 @@ int gArray4[3][3][3] = {
     17, 18, 19 }
 };
 
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
 int main() 
 {
+    gSData = NULL;
     puts("HELLO WORLD");
 
     char*% start_str = string("AAA");

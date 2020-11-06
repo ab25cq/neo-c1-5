@@ -102,12 +102,12 @@ void class_final();
 BOOL is_type_name(char* name);
 
 sCLClass* get_class(char* class_name);
-sCLClass* alloc_struct(char* class_name, BOOL anonymous);
+sCLClass* alloc_struct(const char* class_name, BOOL anonymous);
 sCLClass* alloc_enum(char* class_name);
-void add_field_to_struct(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type);
+void add_field_to_struct(sCLClass* klass, const char* field_name, struct sNodeTypeStruct* field_type);
 sCLClass* alloc_union(char* class_name, BOOL anonymous, BOOL anonymous_var_name);
 void add_field_to_union(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type);
-unsigned int get_hash_key(char* name, unsigned int max);
+unsigned int get_hash_key(const char* name, unsigned int max);
 int get_field_index(sCLClass* klass, char* var_name, int* parent_field_index);
 sCLClass* clone_class(sCLClass* klass);
 

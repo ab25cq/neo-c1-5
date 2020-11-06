@@ -195,7 +195,7 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             (*p)+= 5;
             skip_spaces_for_parse_class_name(p);
         }
-        else if(strstr(*p, "singed") == *p) {
+        else if(strstr(*p, "signed ") == *p) {
             node_type->mUnsigned = FALSE;
             (*p)+= 6;
             skip_spaces_for_parse_class_name(p);
@@ -467,6 +467,10 @@ sNodeType* create_node_type_with_class_name(const char* class_name_)
     char* p2 = buf;
 
     sNodeType* result = parse_class_name(&p, &p2, buf);
+
+    if(result == NULL) {
+        return NULL;
+    }
 
     if(result->mClass == get_class("lambda")) {
         result->mPointerNum++;

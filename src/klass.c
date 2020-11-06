@@ -3,10 +3,10 @@
 sClassTable* gHeadClassTable = NULL;
 static sClassTable gClassTable[CLASS_NUM_MAX];
 
-unsigned int get_hash_key(char* name, unsigned int max)
+unsigned int get_hash_key(const char* name, unsigned int max)
 {
     unsigned int result = 0;
-    char* p = name;
+    const char* p = name;
     while(*p) {
         result += *p;
         p++;
@@ -20,7 +20,7 @@ static void free_class(sCLClass* klass)
     free(klass);
 }
 
-static void remove_class(char* class_name_)
+static void remove_class(const char* class_name_)
 {
     unsigned int hash_key = get_hash_key(class_name_, CLASS_NUM_MAX);
     sClassTable* table = gClassTable;
@@ -73,7 +73,7 @@ static void remove_class(char* class_name_)
     }
 }
 
-static BOOL put_class_to_table(char* class_name_, sCLClass* klass)
+static BOOL put_class_to_table(const char* class_name_, sCLClass* klass)
 {
     remove_class(class_name_);
 
@@ -138,7 +138,7 @@ sCLClass* get_class(char* class_name_)
     return NULL;
 }
 
-static sCLClass* alloc_class(char* class_name_, BOOL primitive_, BOOL struct_, BOOL number_type, BOOL unsigned_number, int generics_number, int method_generics_number, BOOL union_, BOOL anonymous, BOOL enum_, BOOL anonymous_var_name)
+static sCLClass* alloc_class(const char* class_name_, BOOL primitive_, BOOL struct_, BOOL number_type, BOOL unsigned_number, int generics_number, int method_generics_number, BOOL union_, BOOL anonymous, BOOL enum_, BOOL anonymous_var_name)
 {
     sCLClass* klass = xcalloc(1, sizeof(sCLClass));
 
@@ -190,7 +190,7 @@ sCLClass* clone_class(sCLClass* klass)
     return klass2;
 }
 
-sCLClass* alloc_struct(char* class_name_, BOOL anonymous)
+sCLClass* alloc_struct(const char* class_name_, BOOL anonymous)
 {
     sCLClass* klass = alloc_class(class_name_, FALSE, TRUE, FALSE, FALSE, -1, -1, FALSE, anonymous, FALSE, FALSE);
 
@@ -204,7 +204,7 @@ sCLClass* alloc_enum(char* class_name_)
     return klass;
 }
 
-void add_field_to_struct(sCLClass* klass, char* field_name, struct sNodeTypeStruct* field_type)
+void add_field_to_struct(sCLClass* klass, const char* field_name, struct sNodeTypeStruct* field_type)
 {
     xstrncpy(klass->mNameFields[klass->mNumFields], field_name, VAR_NAME_MAX);
     klass->mFields[klass->mNumFields] = clone_node_type(field_type);

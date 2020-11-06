@@ -38,7 +38,9 @@ BOOL is_type_name(char* name)
         }
     }
 
-    return get_class(name2) != NULL;
+    sNodeType* node_type = create_node_type_with_class_name(name2);
+
+    return node_type != NULL;
 }
 %}
 
@@ -281,6 +283,12 @@ BOOL is_type_name(char* name)
     return(LSHIFT_EQ); 
 }
 
+#[ \t]*error.*\n {
+    strncpy(yylval.cval, yytext, 128);
+
+    return(ERROR);
+}
+
 [=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#] { 
     return(yytext[0]); 
 }
@@ -499,6 +507,9 @@ continue {
 sizeof {
     strncpy(yylval.cval, yytext, 128);
     return(SIZEOF);
+}
+
+__extension__ {
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {

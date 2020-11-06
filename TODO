@@ -1,6 +1,8 @@
-precompile すべての演算子のcompileをprecompileで通さないといけない。すべてのコンパイルでprecompile時もCoroutineとStoreの検出。
+clone
 
-それかblockはパース時にvar_tableを作りパース時に変数を作成する。そしてパース時にコルーチンのコンパイルを行うか。
+output to the debug code when creating generics functions.
+
+finalize
 
 #include <stdio.h>
 preprocesser
@@ -78,3 +80,5 @@ cast
 
 sizeof
 debug info
+precompile すべての演算子のcompileをprecompileで通さないといけない。すべてのコンパイルでprecompile時もCoroutineとStoreの検出。
+それかblockはパース時にvar_tableを作りパース時に変数を作成する。そしてパース時にコルーチンのコンパイルを行うか。
