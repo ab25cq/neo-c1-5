@@ -317,10 +317,13 @@ type:
             unsigned int fields = $3;
             BOOL anonymous = TRUE;
             BOOL generics = FALSE;
+printf("gSLine %d\n", gSLine);
 
             unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, gSLine);
 
             compile(node, &cinfo);
+
+printf("gSLine %d\n", gSLine);
 
             xstrncpy($$, buf, VAR_NAME_MAX);
     }

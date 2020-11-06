@@ -1,4 +1,6 @@
-#include <stdio.h>
+//#include <stdio.h>
+
+#include "aaa.h"
 
 struct sData;
 typedef struct sData sDataType;

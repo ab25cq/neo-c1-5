@@ -167,6 +167,7 @@ BOOL is_type_name(char* name)
     char* p = yytext;
     while(*p) {
         if(*p == '\n') {
+printf("gSLine %s %d\n", gSName, gSLine);
             gSLine++;
         }
         p++;
@@ -285,6 +286,7 @@ BOOL is_type_name(char* name)
 
 #[ \t]*error.*\n {
     strncpy(yylval.cval, yytext, 128);
+    gSLine++;
 
     return(ERROR);
 }
