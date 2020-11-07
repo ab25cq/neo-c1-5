@@ -4,8 +4,6 @@
 #include <string.h>
 #include <limits.h>
 
-#define YY_USER_ACTION yylloc.first_line = yyloc.last_line = yylineno;
-
 char buf[512];
 char* p;
 
@@ -166,7 +164,10 @@ BOOL is_type_name(char* name)
 <comment2>\n { BEGIN(INITIAL); }
 <comment2>\n { BEGIN(INITIAL); }
 
-[ \t\n]+ {
+[ \t]+ {
+}
+
+\n {
 }
 
 == {

@@ -3,7 +3,8 @@ source_filename = "Module code/HelloWorld.c.pp"
 
 %anonmous_struct0 = type { i32, i32 }
 
-@data = global %anonmous_struct0 zeroinitializer, align 8
+@aaa = global %anonmous_struct0 zeroinitializer, align 8
+@yyyyyyyy = global i32 zeroinitializer, align 4
 
 !llvm.module.flags = !{!0, !1}
 
