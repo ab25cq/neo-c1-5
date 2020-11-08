@@ -23,6 +23,7 @@ char variable_names[VAR_NAME_MAX][128];
 int num_variable_names = 0;
 char variable_name[VAR_NAME_MAX];
 char type_params[VAR_NAME_MAX];
+char typedef_type_params[VAR_NAME_MAX];
 int num_struct_generics_types = 0;
 char struct_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];
 int num_function_generics_types = 0;
@@ -120,6 +121,14 @@ sVarTable* gLVTable;
 %token <cval> __SCANF__
 %token <cval> __RESTRICT
 %token <cval> __ASM__
+%token <cval> __NONNULL__
+%token <cval> __PURE__
+%token <cval> __MODE__
+%token <cval> __QI__
+%token <cval> __HI__
+%token <cval> __SI__
+%token <cval> __DI__
+%token <cval> __WORD__
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -131,7 +140,8 @@ sVarTable* gLVTable;
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ end function_attribute function_attribute_core, restrict;
+%type <cval> typedef_type_params_
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ end function_attribute function_attribute_core, restrict typedef_attribute, typedef_attribute_core;
 
 %left OROR
 %left ANDAND
@@ -220,6 +230,77 @@ program:
 restrict: {
     }
     | __RESTRICT {
+    }
+    ;
+
+enum_: ENUM '{' enum_fields '}' ';' {
+    }
+    ;
+
+enum_fields: {
+        enum_number = 0;
+    }
+    | IDENTIFIER {
+        enum_number = 0;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $1;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+
+        char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | IDENTIFIER '=' INTNUM {
+        enum_number = $3;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $1;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+
+        char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | enum_fields ',' IDENTIFIER {
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $3;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+
+        char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | enum_fields ',' IDENTIFIER '=' INTNUM {
+        enum_number = $5;
+
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $3;
+        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
+
+        char* type_name = "int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
     }
     ;
 
@@ -354,6 +435,10 @@ type:
             compile(node, &cinfo);
 
             xstrncpy($$, buf, VAR_NAME_MAX);
+    }
+
+    | ENUM '{' enum_fields '}'  {
+        xstrncpy($$, "int", VAR_NAME_MAX);
     }
     ;
 
@@ -606,18 +691,63 @@ type_name:
     }
     ;
 
+typedef_attribute_core:
+    __MODE__ '(' __QI__ ')' { } 
+    | __MODE__ '(' __HI__ ')' { } 
+    | __MODE__ '(' __SI__ ')' { } 
+    | __MODE__ '(' __DI__ ')' { } 
+    | __MODE__ '(' __WORD__ ')' { } 
+    | typedef_attribute_core __MODE__ '(' __QI__ ')' { } 
+    | typedef_attribute_core __MODE__ '(' __HI__ ')' { } 
+    | typedef_attribute_core __MODE__ '(' __SI__ ')' { } 
+    | typedef_attribute_core __MODE__ '(' __DI__ ')' { } 
+    | typedef_attribute_core __MODE__ '(' __WORD__ ')' { } 
+    ;
+
+typedef_attribute: {
+    }
+    | __ATTRIBUTE__ '(' '(' typedef_attribute_core ')' ')' { }
+
+    | typedef_attribute __ATTRIBUTE__ '(' '(' typedef_attribute_core ')' ')' { }
+    ;
+    
+typedef_type_params_: {
+        xstrncpy(typedef_type_params, "", VAR_NAME_MAX);
+        xstrncpy($$, typedef_type_params, VAR_NAME_MAX);
+    }
+    | type IDENTIFIER {
+        xstrncpy(typedef_type_params, $1, VAR_NAME_MAX);
+        xstrncpy($$, typedef_type_params, VAR_NAME_MAX);
+    }
+    | typedef_type_params_ ',' type IDENTIFIER {
+        xstrncat(typedef_type_params, ",", VAR_NAME_MAX);
+        xstrncat(typedef_type_params, $3, VAR_NAME_MAX);
+        xstrncpy($$, typedef_type_params, VAR_NAME_MAX);
+    };
+
 typedef_: 
-    TYPEDEF type IDENTIFIER ';' {
+    TYPEDEF type IDENTIFIER  typedef_attribute ';' {
         char* name = $3;
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF type TYPE_NAME ';' {
+    | TYPEDEF type IDENTIFIER '(' typedef_type_params_ ')' ';' {
+        char* name = $3;
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $2, VAR_NAME_MAX);
+        xstrncat(type_name, " lambda(", VAR_NAME_MAX);
+        xstrncat(type_name, $5, VAR_NAME_MAX);
+        xstrncat(type_name, ")", VAR_NAME_MAX);
+
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF type TYPE_NAME  typedef_attribute ';' {
         char* name = $3;
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' IDENTIFIER ';' {
+    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' IDENTIFIER  typedef_attribute ';' {
             char buf[VAR_NAME_MAX];
             xstrncpy(buf, $3, VAR_NAME_MAX);
 
@@ -635,7 +765,7 @@ typedef_:
 
             $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' TYPE_NAME ';' {
+    | TYPEDEF STRUCT IDENTIFIER '{' fields '}' TYPE_NAME  typedef_attribute ';' {
             char buf[VAR_NAME_MAX];
             xstrncpy(buf, $3, VAR_NAME_MAX);
 
@@ -653,7 +783,7 @@ typedef_:
 
             $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF STRUCT TYPE_NAME IDENTIFIER ';' {
+    | TYPEDEF STRUCT TYPE_NAME IDENTIFIER  typedef_attribute ';' {
             char buf[VAR_NAME_MAX];
             xstrncpy(buf, $4, VAR_NAME_MAX);
 
@@ -662,7 +792,7 @@ typedef_:
 
             $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF STRUCT TYPE_NAME TYPE_NAME ';' {
+    | TYPEDEF STRUCT TYPE_NAME TYPE_NAME  typedef_attribute ';' {
             char buf[VAR_NAME_MAX];
             xstrncpy(buf, $4, VAR_NAME_MAX);
 
@@ -850,77 +980,6 @@ fields:  {
             $$ = fields; append_field_to_fields(fields, variable_names[--num_variable_names], $2); 
         }
         ;
-
-enum_: ENUM '{' enum_fields '}' ';' {
-    }
-    ;
-
-enum_fields: {
-        enum_number = 0;
-    }
-    | IDENTIFIER {
-        enum_number = 0;
-
-        BOOL alloc = TRUE;
-        BOOL global = TRUE;
-        char* var_name = $1;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
-
-        char* type_name = "int";
-
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
-
-        compile(node, &cinfo);
-
-        enum_number++;
-    }
-    | IDENTIFIER '=' INTNUM {
-        enum_number = $3;
-
-        BOOL alloc = TRUE;
-        BOOL global = TRUE;
-        char* var_name = $1;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
-
-        char* type_name = "int";
-
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
-
-        compile(node, &cinfo);
-
-        enum_number++;
-    }
-    | enum_fields ',' IDENTIFIER {
-        BOOL alloc = TRUE;
-        BOOL global = TRUE;
-        char* var_name = $3;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
-
-        char* type_name = "int";
-
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
-
-        compile(node, &cinfo);
-
-        enum_number++;
-    }
-    | enum_fields ',' IDENTIFIER '=' INTNUM {
-        enum_number = $5;
-
-        BOOL alloc = TRUE;
-        BOOL global = TRUE;
-        char* var_name = $3;
-        unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
-
-        char* type_name = "int";
-
-        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
-
-        compile(node, &cinfo);
-
-        enum_number++;
-    }
-    ;
 
 global_variable:
         type_and_variable_name ';' {
@@ -1271,11 +1330,15 @@ function_attribute_core:
     | __MALLOC__ { }
     | __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
     | __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    | __PURE__ { }
+    | __NONNULL__ '(' INTNUM ')' { }
     | function_attribute_core ',' __NOTHROW__ { }
     | function_attribute_core ',' __LEAF__ { }
     | function_attribute_core ',' __MALLOC__ { }
     | function_attribute_core ',' __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
     | function_attribute_core ',' __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    | function_attribute_core ',' __PURE__ { }
+    | function_attribute_core __NONNULL__ '(' INTNUM ')' { }
     ;
 
 function_attribute: {

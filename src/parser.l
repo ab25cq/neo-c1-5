@@ -554,6 +554,46 @@ sizeof {
 __extension__ {
 }
 
+__pure__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__PURE__);
+}
+
+__nonnull__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__NONNULL__);
+}
+
+__mode__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__MODE__);
+}
+__QI__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__QI__);
+}
+__HI__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__HI__);
+}
+__SI__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__SI__);
+}
+__DI__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__DI__);
+}
+__word__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__WORD__);
+}
+
+__inline {
+    strncpy(yylval.cval, yytext, 128);
+    return(INLINE);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
 
@@ -564,9 +604,13 @@ __extension__ {
         return(SHORT); 
     }
     else if(is_type_name(yytext)) {
+puts("TYPE_NAME");
+puts(yytext);
         return(TYPE_NAME); 
     }
     else {
+puts("IDENTIFIER");
+puts(yytext);
         return(IDENTIFIER); 
     }
 }
