@@ -235,6 +235,11 @@ __restrict {
     return(__RESTRICT); 
 }
 
+restrict {
+    strncpy(yylval.cval, yytext, 128);
+    return(__RESTRICT); 
+}
+
 \([ \t]*\*  {
     strncpy(yylval.cval, yytext, 128);
     return(FUNCTION_POINTER); 
@@ -336,19 +341,87 @@ __restrict {
 }
 
 0[0-9]+ {
-    int value = strtol(yytext, NULL, 8);
+    long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+u {
+    unsigned long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+l {
+    long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+ll {
+    long long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+ull {
+    unsigned long long value = strtol(yytext, NULL, 8);
     yylval.ival = value;
     return(INTNUM);
 }
 
 0x[0-9abcdefABCDEF]+ {
-    int value = strtol(yytext, NULL, 16);
+    long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+u {
+    unsigned long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+l {
+    long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ll {
+    long long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ull {
+    unsigned long long value = strtol(yytext, NULL, 16);
     yylval.ival = value;
     return(INTNUM);
 }
 
 [0-9]* { 
-    sscanf(yytext, "%d", &yylval.ival);
+    sscanf(yytext, "%lld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*u { 
+    sscanf(yytext, "%llu", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*l { 
+    sscanf(yytext, "%lld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*ll { 
+    sscanf(yytext, "%lld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*ull { 
+    sscanf(yytext, "%llu", &yylval.ival);
     return(INTNUM); 
 }
 
@@ -590,6 +663,11 @@ __word__ {
 }
 
 __inline {
+    strncpy(yylval.cval, yytext, 128);
+    return(INLINE);
+}
+
+inline {
     strncpy(yylval.cval, yytext, 128);
     return(INLINE);
 }

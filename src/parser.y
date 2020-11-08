@@ -46,7 +46,7 @@ sVarTable* gLVTable;
 %}
 
 %union {
-    int ival;
+    long ival;
     char char_val;
     unsigned int node;
     char cval[128];
@@ -322,7 +322,7 @@ type:
             xstrncpy($$, "singed int", VAR_NAME_MAX);
         }
         else {
-            fprintf(stderr, "invalid type name (%s)\n", $1);
+            fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
             exit(1);
         }
     }
@@ -347,7 +347,7 @@ type:
             xstrncat($$, $3, VAR_NAME_MAX);
         }
         else {
-            fprintf(stderr, "invalid type name (%s)\n", $1);
+            fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
             exit(1);
         }
     }
@@ -373,7 +373,7 @@ type:
             xstrncat($$, "%", VAR_NAME_MAX);
         }
         else {
-            fprintf(stderr, "invalid type name (%s)\n", $1);
+            fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
             exit(1);
         }
     }
@@ -419,6 +419,19 @@ type:
             compile(node, &cinfo);
 
             xstrncpy($$, buf, VAR_NAME_MAX);
+    }
+    | STRUCT IDENTIFIER pointer {
+        char* struct_name = $2;
+        unsigned int fields = 0;
+        BOOL anonymous = FALSE;
+        BOOL generics = FALSE;
+
+        unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+
+        compile(node, &cinfo);
+
+        xstrncpy($$, struct_name, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
     }
     | UNION '{' fields '}' {
             static int anonyomous_union_num = 0;
@@ -979,6 +992,50 @@ fields:  {
         | fields type_and_variable_name ';' { 
             $$ = fields; append_field_to_fields(fields, variable_names[--num_variable_names], $2); 
         }
+        | UNION '{' fields '}' ';' {
+                static int anonyomous_union_num = 0;
+                char buf[VAR_NAME_MAX];
+               
+                snprintf(buf, VAR_NAME_MAX, "anonmous_union_a%d", anonyomous_union_num);
+                anonyomous_union_num++;
+                char* union_name = buf;
+                unsigned int fields = $3;
+                BOOL anonymous = TRUE;
+
+                unsigned int node = sNodeTree_create_union(union_name, fields, anonymous, gSName, yylineno);
+
+                compile(node, &cinfo);
+
+                static int anonyomous_union_name_num = 0;
+                char var_name[VAR_NAME_MAX];
+               
+                snprintf(var_name, VAR_NAME_MAX, "anonmous_union_name%d", anonyomous_union_name_num);
+                anonyomous_union_name_num++;
+
+                $$ = fields; append_field_to_fields(fields, var_name, union_name); 
+        }
+        | fields UNION '{' fields '}' ';' {
+                static int anonyomous_union_num = 0;
+                char buf[VAR_NAME_MAX];
+               
+                snprintf(buf, VAR_NAME_MAX, "anonmous_union_a%d", anonyomous_union_num);
+                anonyomous_union_num++;
+                char* union_name = buf;
+                unsigned int fields = $4;
+                BOOL anonymous = TRUE;
+
+                unsigned int node = sNodeTree_create_union(union_name, fields, anonymous, gSName, yylineno);
+
+                compile(node, &cinfo);
+
+                static int anonyomous_union_name_num = 0;
+                char var_name[VAR_NAME_MAX];
+               
+                snprintf(var_name, VAR_NAME_MAX, "anonmous_union_name%d", anonyomous_union_name_num);
+                anonyomous_union_name_num++;
+
+                $$ = fields; append_field_to_fields(fields, var_name, union_name); 
+        }
         ;
 
 global_variable:
@@ -1332,6 +1389,7 @@ function_attribute_core:
     | __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
     | __PURE__ { }
     | __NONNULL__ '(' INTNUM ')' { }
+    | __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
     | function_attribute_core ',' __NOTHROW__ { }
     | function_attribute_core ',' __LEAF__ { }
     | function_attribute_core ',' __MALLOC__ { }
@@ -1339,6 +1397,7 @@ function_attribute_core:
     | function_attribute_core ',' __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
     | function_attribute_core ',' __PURE__ { }
     | function_attribute_core __NONNULL__ '(' INTNUM ')' { }
+    | function_attribute_core __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
     ;
 
 function_attribute: {

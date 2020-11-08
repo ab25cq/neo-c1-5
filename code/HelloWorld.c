@@ -1,15 +1,165 @@
+
+/*
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+*/
+
+/*
+#ifndef __USE_XOPEN
+#define __USE_XOPEN
+#endif
+#ifndef _USE_MISC
+#define _USE_MISC
+#endif
+#ifndef __USE_BSD
+#define __USE_BSD
+#endif
+*/
+
+#undef __GNUC__
+#undef __clang__
+
 //#include <stdio.h>
 //#include <stdlib.h>
-struct __locale_struct
+
+struct __pthread_cond_s
 {
-  struct __locale_data *__locales[13];
-
-  const unsigned short int *__ctype_b;
-  const int *__ctype_tolower;
-  const int *__ctype_toupper;
-
-  const char *__names[13];
+  union
+  {
+    int __wseq;
+    struct
+    {
+      int __low;
+      int __high;
+    } __wseq32;
+  };
+  union
+  {
+    //unsigned long long int __g1_start;
+    struct
+    {
+      unsigned int __low;
+      unsigned int __high;
+    } __g1_start32;
+  };
+  unsigned int __g_refs[2] ;
+  unsigned int __g_size[2];
+  unsigned int __g1_orig_size;
+  unsigned int __wrefs;
+  unsigned int __g_signals[2];
 };
+
+/*
+struct __pthread_rwlock_arch_t
+{
+  unsigned int __readers;
+  unsigned int __writers;
+  unsigned int __wrphase_futex;
+  unsigned int __writers_futex;
+  unsigned int __pad3;
+  unsigned int __pad4;
+
+  int __cur_writer;
+  int __shared;
+  signed char __rwelision;
+
+
+
+
+  unsigned char __pad1[7];
+
+
+  unsigned long int __pad2;
+};
+
+
+typedef struct __pthread_internal_list
+{
+  struct __pthread_internal_list *__prev;
+  struct __pthread_internal_list *__next;
+} __pthread_list_t;
+
+struct __pthread_mutex_s
+{
+  int __lock ;
+  unsigned int __count;
+  int __owner;
+
+  unsigned int __nusers;
+
+  int __kind;
+ 
+
+
+
+
+  short __spins; 
+  short __elision;
+  __pthread_list_t __list;
+ 
+};
+
+
+struct __pthread_cond_s
+{
+  union
+  {
+    unsigned long long int __wseq;
+    struct
+    {
+      unsigned int __low;
+      unsigned int __high;
+    } __wseq32;
+  };
+  union
+  {
+    unsigned long long int __g1_start;
+    struct
+    {
+      unsigned int __low;
+      unsigned int __high;
+    } __g1_start32;
+  };
+  unsigned int __g_refs[2] ;
+  unsigned int __g_size[2];
+  unsigned int __g1_orig_size;
+  unsigned int __wrefs;
+  unsigned int __g_signals[2];
+};
+
+typedef unsigned long int pthread_t;
+
+
+typedef union
+{
+  char __size[4];
+  int __align;
+} pthread_mutexattr_t;
+
+
+typedef union
+{
+  char __size[4];
+  int __align;
+} pthread_condattr_t;
+
+
+typedef unsigned int pthread_key_t;
+
+
+typedef int pthread_once_t;
+
+
+union pthread_attr_t
+{
+  char __size[56];
+  long int __align;
+};
+
+typedef union pthread_attr_t pthread_attr_t;
+*/
+
 
 struct sData;
 typedef struct sData sDataType;

@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     }
 #else
     if(cflags) {
-        snprintf(cmd, 1024, "cpp %s -D_GNU_SOURCE -C %s > %s", cflags, sname, gSName);
+        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE %s -C %s > %s", cflags, sname, gSName);
     }
     else {
         snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -C %s > %s", sname, gSName);
