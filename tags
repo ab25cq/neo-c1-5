@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AAAAA	code/HelloWorld.c	8;"	d	file:
+AAAAA	code/HelloWorld.c	10;"	d	file:
 ALIGNMENT_H	src/alignment.h	2;"	d
 ALLOC	src/xfunc.h	4;"	d
 ANDAND	parser.tab.c	/^    ANDAND = 286,$/;"	e	enum:yytokentype	file:
@@ -22,7 +22,7 @@ BUFFER_H	src/buffer.h	2;"	d
 CASE	parser.tab.c	/^    CASE = 310,$/;"	e	enum:yytokentype	file:
 CASE	parser.tab.h	/^    CASE = 310,$/;"	e	enum:yytokentype
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
 CHARNUM	parser.tab.c	/^    CHARNUM = 259,$/;"	e	enum:yytokentype	file:
 CHARNUM	parser.tab.h	/^    CHARNUM = 259,$/;"	e	enum:yytokentype
 CLASS_FLAGS_ANONYMOUS	src/common.h	64;"	d
@@ -48,7 +48,7 @@ CONTINUE	parser.tab.h	/^    CONTINUE = 312,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 264,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 264,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DBuilder	src/compile.cpp	/^DIBuilder* DBuilder;$/;"	v
 DEFAULT	parser.tab.c	/^    DEFAULT = 313,$/;"	e	enum:yytokentype	file:
 DEFAULT	parser.tab.h	/^    DEFAULT = 313,$/;"	e	enum:yytokentype
@@ -151,7 +151,7 @@ NEW	parser.tab.h	/^    NEW = 279,$/;"	e	enum:yytokentype
 NODE_TYPE_PAGE_SIZE	src/node_type.c	8;"	d	file:
 NOT_EQ	parser.tab.c	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype	file:
 NOT_EQ	parser.tab.h	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype
-NULL	code/HelloWorld.c	217;"	d	file:
+NULL	code/HelloWorld.c	221;"	d	file:
 OBJS	Makefile	/^OBJS=src\/klass.o src\/node_type.o src\/typedef.o src\/vtable.o src\/node.o$/;"	m
 OROR	parser.tab.c	/^    OROR = 287,$/;"	e	enum:yytokentype	file:
 OROR	parser.tab.h	/^    OROR = 287,$/;"	e	enum:yytokentype
@@ -542,7 +542,7 @@ const_test	code/HelloWorld.c	/^bool const_test(const char* str) $/;"	f
 createDebugFunctionInfo	src/compile.cpp	/^void createDebugFunctionInfo(int sline, const char* fun_name, sFunction* function, Function* llvm_function)$/;"	f
 createDebugFunctionType	src/compile.cpp	/^static DISubroutineType* createDebugFunctionType(sFunction* function, DIFile* unit)$/;"	f	file:
 create_debug_type	src/compile.cpp	/^static DIType* create_debug_type(sNodeType* node_type) $/;"	f	file:
-create_generics_function	src/compile.cpp	/^static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, sCompileInfo* info, int sline) $/;"	f	file:
+create_generics_function	src/compile.cpp	/^static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline) $/;"	f	file:
 create_global_lvtable	src/compile.cpp	/^void create_global_lvtable(sCompileInfo* info)$/;"	f
 create_internal_functions	src/compile.cpp	/^void create_internal_functions()$/;"	f
 create_llvm_function	src/compile.cpp	/^static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompileInfo* info, int sline)$/;"	f	file:
@@ -926,6 +926,7 @@ mParams	src/common.h	/^            unsigned int mParams[PARAMS_MAX];$/;"	m	struc
 mParams	src/common.h	/^            unsigned mParams[PARAMS_MAX];$/;"	m	struct:sNodeTreeStruct::__anon4::__anon9
 mParent	src/common.h	/^    struct sVarTableStruct* mParent;            \/\/ make linked list$/;"	m	struct:sVarTableStruct	typeref:struct:sVarTableStruct::sVarTableStruct
 mPointerNum	src/common.h	/^    int mPointerNum;$/;"	m	struct:sNodeTypeStruct
+mRealFunName	src/common.h	/^            char mRealFunName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon4::__anon9
 mRegister	src/common.h	/^    BOOL mRegister;$/;"	m	struct:sNodeTypeStruct
 mResultType	src/common.h	/^    struct sNodeTypeStruct* mResultType;$/;"	m	struct:sNodeTypeStruct	typeref:struct:sNodeTypeStruct::sNodeTypeStruct
 mResultTypeName	src/common.h	/^            char mResultTypeName[VAR_NAME_MAX];$/;"	m	struct:sNodeTreeStruct::__anon4::__anon8

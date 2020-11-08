@@ -338,6 +338,7 @@ struct sNodeTreeStruct
             BOOL mMessagePassing;
             BOOL mLambdaCall;
             BOOL mInherit;
+            char mRealFunName[VAR_NAME_MAX];
         } sFunctionCall;
         struct {
             char mVarName[VAR_NAME_MAX];

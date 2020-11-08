@@ -142,19 +142,19 @@ sVarTable* gLVTable;
 
 source_point_macro: '#' INTNUM CSTRING {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
+        yylineno = $2 + 1;
         }
         | '#' INTNUM CSTRING INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
+        yylineno = $2 + 1;
         }
         | '#' INTNUM CSTRING INTNUM INTNUM INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
+        yylineno = $2 + 1;
         }
         | '#' INTNUM CSTRING INTNUM INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
+        yylineno = $2 + 1;
         }
         ;
 

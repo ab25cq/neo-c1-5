@@ -156,12 +156,12 @@ BOOL is_type_name(char* name)
 
 <comment>[^*\n]*
 <comment>"*"+[^*/\n]*
+<comment>\n  
 <comment>"*"+"/"    BEGIN(INITIAL);
 
 "//" BEGIN(comment2);
 
 <comment2>[^\n]*
-<comment2>\n { BEGIN(INITIAL); }
 <comment2>\n { BEGIN(INITIAL); }
 
 [ \t]+ {

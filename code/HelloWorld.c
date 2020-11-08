@@ -1,4 +1,6 @@
 #include "aaa.h"
+#include "aaa.h"
+#include "aaa.h"
 
 struct sData;
 typedef struct sData sDataType;
@@ -105,15 +107,15 @@ struct GenericsData!<T> {
 int GenericsData!<T>::show(GenericsData!<T> self)
 {
     T a;
-    a = 123;
-    T b = 234;
+    a = 555;
+    T b = 666;
 
     self.a = a;
     self.b = b;
 
     printf("%d %d\n", self.a, self.b);
 
-    int (*xxx)(int) = int lambda(int c) { return 123 + c; };
+    int (*xxx)(int) = int lambda(int c) { return 555 + c; };
 
     xassert("generics lambda test", xxx(1) == self.a + 1);
 
@@ -146,7 +148,6 @@ template !<M> M GenericsData!<T>::map(GenericsData!<T> self, M (*aaa)(T))
     self.a = 123;
     return aaa(self.a);
 }
-
 
 void inheritFun()
 {
@@ -213,13 +214,15 @@ int gArray4[3][3][3] = {
     17, 18, 19 }
 };
 
+
+
+
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
 
 int main() 
 {
-    gSData = NULL;
     puts("HELLO WORLD");
 
     char*% start_str = string("AAA");
@@ -253,6 +256,8 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
+    gSData = NULL;
+
     GenericsData!<int> data2;
 
     data2.a = 123;
@@ -260,7 +265,7 @@ int main()
 
     xassert("load field and store test2", data2.a == 123 && data2.b == 234);
 
-    xassert("generics fun test", data2.show() == 123);
+    xassert("generics fun test", data2.show() == 555);
 
     xassert("method generics fun test", fun2(123) == 124);
 
@@ -505,4 +510,6 @@ int main()
             continue;
         }
     }
+*/
+/*
 */

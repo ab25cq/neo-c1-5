@@ -1049,6 +1049,8 @@ BOOL cast_right_type_to_left_type(sNodeType* left_type, sNodeType** right_type, 
                 Value* cmp_right_value = ConstantInt::get(Type::getInt8Ty(TheContext), (uint8_t)0);
                 rvalue->value = Builder.CreateICmpNE(rvalue->value, cmp_right_value);
             }
+            else if(type_identify_with_class_name(*right_type, "bool")) {
+            }
             else {
                 rvalue->value = Builder.CreateCast(Instruction::Trunc, rvalue->value, IntegerType::get(TheContext, 1));
             }
@@ -2835,11 +2837,9 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     return TRUE;
 }
 
-static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, sCompileInfo* info, int sline) 
+static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline) 
 {
     sFunction generics_fun = *fun;
-
-    char real_fun_name2[VAR_NAME_MAX];
 
     if(klass) {
         xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
@@ -4596,6 +4596,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
         sNodeType* result_type = var_type;
 
         info->type = clone_node_type(result_type);
+
 //    }
 
     return TRUE;
@@ -5028,6 +5029,11 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     sNodeType* result_type;
     sNodeType* generics_type = info->generics_type;
 
+    char fun_name[VAR_NAME_MAX];
+
+    xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
+
+
     if(lambda_call) {
         unsigned int lambda_node = gNodes[node].mLeft;
 
@@ -5123,10 +5129,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         llvm_fun = lambda_value.value;
     }
     else {
-        char fun_name[VAR_NAME_MAX];
-
-        xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
-
         sNodeType* param_types[PARAMS_MAX];
         LVALUE param_values[PARAMS_MAX];
 
@@ -5176,6 +5178,53 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 fun = gFuncs[real_fun_name][current_function->mVersion-1];
 
                 xstrncpy(fun_name, fun.mBaseName, VAR_NAME_MAX);
+
+                if(fun.mMethodGenerics) {
+                    char* method_generics_types[GENERICS_TYPES_MAX];
+                    int i;
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
+                    }
+                    determine_method_generics(method_generics_types, &fun, param_types2);
+
+                    sFunction fun2 = fun;
+
+                    solve_method_generics(fun2.mResultTypeName, method_generics_types);
+
+                    for(i=0; i<fun2.mNumParams; i++) {
+                        solve_method_generics(fun2.mParamTypes[i], method_generics_types);
+                    }
+
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        free(method_generics_types[i]);
+                    }
+
+                    fun = fun2;
+
+                    char real_fun_name2[VAR_NAME_MAX];
+                    int sline = gNodes[node].mLine;
+                    info->no_output = FALSE;
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+                        return FALSE;
+                    }
+                    info->no_output = TRUE;
+
+                    xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+                }
+                else if(fun.mGenerics) {
+                    int sline = gNodes[node].mLine;
+                    char real_fun_name2[VAR_NAME_MAX];
+                    info->no_output = FALSE;
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+                        return FALSE;
+                    }
+                    info->no_output = TRUE;
+
+                    xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+                }
+                else {
+                    fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+                }
             }
             else {
                 xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
@@ -5195,41 +5244,18 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             }
 
             if(fun.mMethodGenerics) {
-                char* method_generics_types[GENERICS_TYPES_MAX];
-                int i;
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
-                }
-                determine_method_generics(method_generics_types, &fun, param_types2);
+                char* real_fun_name2 = gNodes[node].uValue.sFunctionCall.mRealFunName;
+                
+                std::vector<sFunction> v = gFuncs[real_fun_name2];
 
-                sFunction fun2 = fun;
-
-                solve_method_generics(fun2.mResultTypeName, method_generics_types);
-
-                for(i=0; i<fun2.mNumParams; i++) {
-                    solve_method_generics(fun2.mParamTypes[i], method_generics_types);
-                }
-
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
-
-                fun = fun2;
-
-                if(!info->no_output) {
-                    int sline = gNodes[node].mLine;
-                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
-                        return FALSE;
-                    }
-                }
+                fun = v[v.size()-1];
             }
             else if(fun.mGenerics) {
-                if(!info->no_output) {
-                    int sline = gNodes[node].mLine;
-                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, info, sline)) {
-                        return FALSE;
-                    }
-                }
+                char* real_fun_name2 = gNodes[node].uValue.sFunctionCall.mRealFunName;
+                
+                std::vector<sFunction> v = gFuncs[real_fun_name2];
+
+                fun = v[v.size()-1];
             }
             else {
                 fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
@@ -5257,38 +5283,49 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 }
 
                 fun = gFuncs[real_fun_name][current_function->mVersion-1];
+                if(fun.mMethodGenerics) {
+                    char* method_generics_types[GENERICS_TYPES_MAX];
+                    int i;
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
+                    }
+                    determine_method_generics(method_generics_types, &fun, param_types2);
+
+                    sFunction fun2 = fun;
+
+                    solve_method_generics(fun2.mResultTypeName, method_generics_types);
+
+                    for(i=0; i<fun2.mNumParams; i++) {
+                        solve_method_generics(fun2.mParamTypes[i], method_generics_types);
+                    }
+
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        free(method_generics_types[i]);
+                    }
+
+                    fun = fun2;
+
+                    char real_fun_name2[VAR_NAME_MAX];
+                    int sline = gNodes[node].mLine;
+                    info->no_output = FALSE;
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+                        return FALSE;
+                    }
+                    info->no_output = TRUE;
+
+                    xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+                }
             }
             else {
                 fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
             }
 
             if(fun.mMethodGenerics) {
-                char* method_generics_types[GENERICS_TYPES_MAX];
-                int i;
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
-                }
-                determine_method_generics(method_generics_types, &fun, param_types2);
+                char* real_fun_name2 = gNodes[node].uValue.sFunctionCall.mRealFunName;
+                
+                std::vector<sFunction> v = gFuncs[real_fun_name2];
 
-                sFunction fun2 = fun;
-
-                solve_method_generics(fun2.mResultTypeName, method_generics_types);
-
-                for(i=0; i<fun2.mNumParams; i++) {
-                    solve_method_generics(fun2.mParamTypes[i], method_generics_types);
-                }
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
-
-                fun = fun2;
-
-                if(!info->no_output) {
-                    int sline = gNodes[node].mLine;
-                    if(!create_generics_function(fun_name, fun_name, NULL, &fun, info, sline)) {
-                        return FALSE;
-                    }
-                }
+                fun = v[v.size()-1];
             }
 
             if(!fun.existance) {
@@ -5381,7 +5418,9 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             }
         }
 
+
         result_type = create_node_type_with_class_name(fun.mResultTypeName);
+
         llvm_fun = fun.mLLVMFunction;
 
         if(llvm_fun == nullptr) {
@@ -5409,8 +5448,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     info->generics_type = generics_type;
 
     return TRUE;
-}
-
+} 
 BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 {
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
@@ -5429,6 +5467,10 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
     std::vector<Value*> llvm_params;
     sNodeType* result_type;
     sNodeType* generics_type = info->generics_type;
+
+    char fun_name[VAR_NAME_MAX];
+
+    xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
 
     if(lambda_call) {
         unsigned int lambda_node = gNodes[node].mLeft;
@@ -5451,6 +5493,166 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
             }
         }
     }
+
+    /// generate generics function ///
+    BOOL no_output = info->no_output;
+    info->no_output = TRUE;
+
+    if(lambda_call) {
+    }
+    else {
+        sNodeType* param_types[PARAMS_MAX];
+        LVALUE param_values[PARAMS_MAX];
+
+        for(i=0; i<num_params; i++) {
+            if(!compile(params[i], info)) {
+                return FALSE;
+            }
+
+            param_types[i] = clone_node_type(info->type);
+            param_values[i] = *get_value_from_stack(-1);
+        }
+        sNodeType* param_types2[PARAMS_MAX];
+        LVALUE param_values2[PARAMS_MAX];
+
+        for(i=0; i<num_params; i++) {
+            param_types2[i] = param_types[num_params-i-1];
+            param_values2[i] = param_values[num_params-i-1];
+        }
+
+        sFunction fun;
+        memset(&fun, 0, sizeof(sFunction));
+
+        if(message_passing) {
+            info->generics_type = clone_node_type(param_types2[0]);
+
+            sCLClass* klass = param_types2[0]->mClass;
+
+            char real_fun_name[VAR_NAME_MAX];
+
+            if(inherit_) {
+                info->no_output = no_output;
+                return TRUE;
+            }
+            else {
+                xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
+                xstrncat(real_fun_name, "_", VAR_NAME_MAX);
+                xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
+
+                if(gFuncs[real_fun_name].size() == 0) {
+                    compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return FALSE;
+                }
+
+                fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+            }
+
+            if(fun.mMethodGenerics) {
+                char* method_generics_types[GENERICS_TYPES_MAX];
+                int i;
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
+                }
+                determine_method_generics(method_generics_types, &fun, param_types2);
+
+                sFunction fun2 = fun;
+
+                solve_method_generics(fun2.mResultTypeName, method_generics_types);
+
+                for(i=0; i<fun2.mNumParams; i++) {
+                    solve_method_generics(fun2.mParamTypes[i], method_generics_types);
+                }
+
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
+
+                fun = fun2;
+
+                char real_fun_name2[VAR_NAME_MAX];
+                int sline = gNodes[node].mLine;
+                info->no_output = FALSE;
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+                    return FALSE;
+                }
+                info->no_output = TRUE;
+
+                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+            }
+            else if(fun.mGenerics) {
+                int sline = gNodes[node].mLine;
+                char real_fun_name2[VAR_NAME_MAX];
+                info->no_output = FALSE;
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+                    return FALSE;
+                }
+                info->no_output = TRUE;
+
+                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+            }
+            else {
+                fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+            }
+        }
+        else {
+            info->generics_type = NULL;
+
+            if(inherit_) {
+                info->no_output = no_output;
+                return TRUE;
+            }
+            else {
+                fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+            }
+
+            if(fun.mMethodGenerics) {
+                char* method_generics_types[GENERICS_TYPES_MAX];
+                int i;
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    method_generics_types[i] = (char*)xcalloc(1, sizeof(char)*VAR_NAME_MAX);
+                }
+                determine_method_generics(method_generics_types, &fun, param_types2);
+
+                sFunction fun2 = fun;
+
+                solve_method_generics(fun2.mResultTypeName, method_generics_types);
+
+                for(i=0; i<fun2.mNumParams; i++) {
+                    solve_method_generics(fun2.mParamTypes[i], method_generics_types);
+                }
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
+
+                fun = fun2;
+
+                int sline = gNodes[node].mLine;
+                char real_fun_name2[VAR_NAME_MAX];
+                info->no_output = FALSE;
+                if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline)) {
+                    return FALSE;
+                }
+                info->no_output = TRUE;
+
+                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+            }
+
+            if(!fun.existance) {
+                compile_err_msg(info, "Function not found(2) %s\n", fun_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+        }
+    }
+
+    info->no_output = no_output;
 
     return TRUE;
 }
@@ -6318,6 +6520,7 @@ static BOOL compile_equals(unsigned int node, sCompileInfo* info)
     }
 
     int left_node = gNodes[node].mLeft;
+
     if(!compile(left_node, info)) {
         return FALSE;
     }
