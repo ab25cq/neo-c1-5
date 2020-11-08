@@ -1,13 +1,7 @@
-
-int fun() {
-    int a = 0;
-    int b = 1/a;
-    return 123;
-}
+#include <stdio.h>
 
 int main() {
-    int (*aaa)() = int lambda() { return 123; };
-    fun();
+    puts("HELLO WORLD");
 
     return 0;
 }

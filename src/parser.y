@@ -111,6 +111,15 @@ sVarTable* gLVTable;
 %token <cval> DEFAULT
 %token <cval> SIZEOF
 %token <cval> ERROR
+%token <cval> __ATTRIBUTE__
+%token <cval> __LEAF__
+%token <cval> __NOTHROW__
+%token <cval> __MALLOC__
+%token <cval> __FORMAT__
+%token <cval> __PRINTF__
+%token <cval> __SCANF__
+%token <cval> __RESTRICT
+%token <cval> __ASM__
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -122,7 +131,7 @@ sVarTable* gLVTable;
 %type <cval> pointer
 %type <cval> array_type
 %type <cval> const_array_type
-%type <node> program function block function_block block_end statment node function_params exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_params_end;
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ end function_attribute function_attribute_core, restrict;
 
 %left OROR
 %left ANDAND
@@ -142,19 +151,19 @@ sVarTable* gLVTable;
 
 source_point_macro: '#' INTNUM CSTRING {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2 + 1;
+        yylineno = $2;
         }
         | '#' INTNUM CSTRING INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2 + 1;
+        yylineno = $2;
         }
         | '#' INTNUM CSTRING INTNUM INTNUM INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2 + 1;
+        yylineno = $2;
         }
         | '#' INTNUM CSTRING INTNUM INTNUM {
         xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2 + 1;
+        yylineno = $2;
         }
         ;
 
@@ -208,8 +217,14 @@ program:
         }
         ;
 
+restrict: {
+    }
+    | __RESTRICT {
+    }
+    ;
+
 type:
-    type_attribute {
+    type_attribute restrict {
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
         }
@@ -230,50 +245,50 @@ type:
             exit(1);
         }
     }
-    | type_attribute pointer {
+    | type_attribute restrict pointer restrict {
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
         }
         else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned short ") == 0) {
             xstrncpy($$, "unsigned short", VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
         }
         else if(strcmp($1, "singed ") == 0) {
             xstrncpy($$, "singed int", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
         }
         else {
             fprintf(stderr, "invalid type name (%s)\n", $1);
             exit(1);
         }
     }
-    | type_attribute pointer '%' {
+    | type_attribute restrict pointer restrict '%' {
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
         else if(strcmp($1, "shor ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
         else if(strcmp($1, "singed ") == 0) {
             xstrncpy($$, "singed int", VAR_NAME_MAX);
-            xstrncat($$, $2, VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
         else {
@@ -281,31 +296,31 @@ type:
             exit(1);
         }
     }
-    | type_attribute type_name {
+    | type_attribute restrict type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
-    }
-    | type_attribute type_name pointer {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
     }
-    | type_attribute type_name pointer '%' {
+    | type_attribute restrict type_name restrict pointer {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $5, VAR_NAME_MAX);
+    }
+    | type_attribute restrict type_name restrict pointer restrict '%' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $5, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
     }
-    | type_name {
+    | type_name restrict {
         xstrncpy($$, $1, VAR_NAME_MAX);
     }
-    | type_name pointer {
+    | type_name restrict pointer restrict {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
     }
-    | type_name pointer '%' {
+    | type_name restrict pointer restrict '%' {
         xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, $2, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
     }
     | STRUCT '{' fields '}' {
@@ -343,10 +358,17 @@ type:
     ;
 
 pointer: 
-    '*' {
+    '*' restrict {
         xstrncpy($$, "*", VAR_NAME_MAX);
     }
-    | pointer '*' {
+    | '*' restrict CONST{
+        xstrncpy($$, "*", VAR_NAME_MAX);
+    }
+    | pointer restrict '*' restrict {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, "*", VAR_NAME_MAX);
+    }
+    | pointer restrict '*' restrict CONST {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, "*", VAR_NAME_MAX);
     }
@@ -444,6 +466,9 @@ type_attribute:
     | type_attribute INHERIT {
         xstrncpy($$, $1, VAR_NAME_MAX); 
         inherit_ = TRUE;
+    }
+    | type_attribute restrict {
+        xstrncpy($$, $1, VAR_NAME_MAX); 
     }
     ;
 
@@ -906,7 +931,24 @@ global_variable:
 
             $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
         }
+        | EXTERN type_and_variable_name ';' {
+            char* type_name = $2;
+            char* var_name = variable_names[--num_variable_names];
+            BOOL global = TRUE;
+            BOOL extern_ = TRUE;
 
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+        }
+        | EXTERN type IDENTIFIER '[' ']' ';' { 
+            char* type_name[VAR_NAME_MAX];
+            xstrncpy(type_name, $2, VAR_NAME_MAX);
+            xstrncat(type_name, "*", VAR_NAME_MAX);
+            char* var_name = $3;
+            BOOL global = TRUE;
+            BOOL extern_ = TRUE;
+
+            $$ = sNodeTree_create_define_variable(type_name, var_name, global, extern_, gSName, yylineno);
+        }
         | type IDENTIFIER const_array_type '=' '{' array_value '}' ';' { 
             char type_name[VAR_NAME_MAX];
             xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -1035,7 +1077,7 @@ array_value:
     ;
 
 function: 
-        type IDENTIFIER '(' function_params ')' ';' {
+        type IDENTIFIER '(' function_params ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -1047,9 +1089,57 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | EXTERN type IDENTIFIER '(' function_params ')' ';' {
+        | EXTERN type IDENTIFIER '(' function_params ')' function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $3;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type IDENTIFIER '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $9;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type IDENTIFIER '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $10;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type IDENTIFIER '(' function_params2 ')' function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $3;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type IDENTIFIER '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $10;
             unsigned int function_params = $5;
             $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
 
@@ -1175,6 +1265,27 @@ function:
         }
         ;
 
+function_attribute_core:
+    __NOTHROW__ { } 
+    | __LEAF__ { }
+    | __MALLOC__ { }
+    | __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
+    | __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    | function_attribute_core ',' __NOTHROW__ { }
+    | function_attribute_core ',' __LEAF__ { }
+    | function_attribute_core ',' __MALLOC__ { }
+    | function_attribute_core ',' __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
+    | function_attribute_core ',' __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    ;
+
+function_attribute: {
+    }
+    | __ATTRIBUTE__ '(' '(' function_attribute_core ')' ')' { }
+
+    | function_attribute __ATTRIBUTE__ '(' '(' function_attribute_core ')' ')' { }
+    ;
+    
+
 function_params: { 
             func_params = sNodeTree_create_function_params(gSName, yylineno); $$ = func_params; var_arg = FALSE; 
         }
@@ -1192,6 +1303,30 @@ function_params: {
             append_param_to_function_params(func_params, $3, variable_names[--num_variable_names]); 
         }
         | function_params ',' '.' '.' '.' {
+            var_arg = TRUE;
+        }
+        ;
+
+function_params2: { 
+            func_params = sNodeTree_create_function_params(gSName, yylineno); $$ = func_params; var_arg = FALSE; 
+        }
+        | VOID { 
+            func_params = sNodeTree_create_function_params(gSName, yylineno); $$ = func_params; 
+        }
+        | type {
+            func_params = sNodeTree_create_function_params(gSName, yylineno);
+
+            $$ = func_params; 
+            if(strcmp($1, "void") != 0) {
+                var_arg = FALSE; 
+                append_param_to_function_params(func_params, $1,  "");
+            }
+        }
+        | function_params2 ',' type { 
+            $$ = func_params; 
+            append_param_to_function_params(func_params, $3, ""); 
+        }
+        | function_params2 ',' '.' '.' '.' {
             var_arg = TRUE;
         }
         ;

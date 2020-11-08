@@ -97,6 +97,8 @@ int main(int argc, char** argv)
 
     cinfo.gv_table = init_var_table();
 
+    yylineno = 1;
+
     if(gSName[0] == '\0') {
         yyparse();
     }

@@ -2195,15 +2195,61 @@ void declare_builtin_functions()
 
     sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
 
+    int num_fields = 1;
+    sNodeType* field;
+
     const char* field_name = "field";
-    sNodeType* field_type = create_node_type_with_class_name("char*");
+    field = create_node_type_with_class_name("char*");
 
-    add_field_to_struct(va_list_struct, field_name, field_type);
+    add_field_to_struct(va_list_struct, field_name, field);
 
-/*
     sCLClass* builtin_va_list_struct = alloc_struct("__builtin_va_list", FALSE);
 
-    add_fields_to_struct(builtin_va_list_struct, num_fields, field_names, fields2);
+    add_field_to_struct(builtin_va_list_struct, field_name, field);
+
+    sNodeType* node_type = create_node_type_with_class_pointer(va_list_struct);
+
+    std::pair<Type*, sNodeType*> pair_value;
+
+    pair_value.first = struct_type;
+    pair_value.second = clone_node_type(node_type);
+
+    gLLVMStructType["__builtin_va_list"] = pair_value;
+
+
+
+/*
+    sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
+
+    va_list_struct->setBody(fields, false);
+
+    //add_field_to_struct(va_list_struct, field_name, field_type);
+
+    sCLClass* klass = alloc_struct("__builtin_va_list", FALSE);
+
+    sNodeType* field = create_node_type_with_class_name("char*");
+
+    add_field_to_struct(klass, "a", field);
+
+    field = create_node_type_with_class_name("char*");
+
+    add_field_to_struct(klass, "b", field);
+
+    field = create_node_type_with_class_name("char*");
+
+    add_field_to_struct(klass, "c", field);
+
+    field = create_node_type_with_class_name("int");
+
+    add_field_to_struct(klass, "d", field);
+
+    field = create_node_type_with_class_name("int");
+
+    add_field_to_struct(klass, "e", field);
+*/
+
+
+/*
 
     sNodeType* node_type = create_node_type_with_class_pointer(va_list_struct);
 
@@ -6363,6 +6409,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
         Builder.CreateAlignedStore(value, address, alignment);
     }
+/*
     else if(var->mConstant) {
         compile_err_msg(info, "Require right value for constant");
         info->err_num++;
@@ -6371,6 +6418,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
         return TRUE;
     }
+*/
     else if(global) {
         Type* llvm_var_type;
         if(!create_llvm_type_from_node_type(&llvm_var_type, var_type, var_type, info))
@@ -6393,11 +6441,6 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
                 address->setAlignment(alignment);
                 var->mLLVMValue = address;
-
-                BOOL parent = FALSE;
-                int index = get_variable_index(info->lv_table, var_name, &parent);
-
-                store_address_to_lvtable(index, address, info);
             }
         }
         else {
@@ -11138,6 +11181,7 @@ BOOL pre_compile_typedef(unsigned int node, sCompileInfo* info)
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
+//printf("%s %d TYPE %d\n", gSName, yylineno, gNodes[node].mNodeType);
     xstrncpy(info->sname, gNodes[node].mSName, PATH_MAX);
     info->sline = gNodes[node].mLine;
 
@@ -11553,6 +11597,7 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             exit(2);
             break;
     }
+//TheModule->print(llvm::errs(), nullptr);
 
     return TRUE;
 }

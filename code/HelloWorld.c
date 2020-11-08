@@ -1,6 +1,4 @@
-#include "aaa.h"
-#include "aaa.h"
-#include "aaa.h"
+#include <stdio.h>
 
 struct sData;
 typedef struct sData sDataType;
@@ -256,7 +254,7 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
-    gSData = NULL;
+//    gSData = NULL;
 
     GenericsData!<int> data2;
 
@@ -264,7 +262,6 @@ int main()
     data2.b = 234;
 
     xassert("load field and store test2", data2.a == 123 && data2.b == 234);
-
     xassert("generics fun test", data2.show() == 555);
 
     xassert("method generics fun test", fun2(123) == 124);
@@ -496,7 +493,7 @@ int main()
     long aaaaaaa = 123;
     long unsigned int bbbbbbbb = 123;
 
-    funXXX();
+    //funXXX();
 
     return 0;
 }

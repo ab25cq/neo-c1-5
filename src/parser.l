@@ -190,6 +190,51 @@ BOOL is_type_name(char* name)
     return(OROR); 
 }
 
+__attribute__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ATTRIBUTE__); 
+}
+__nothrow__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__NOTHROW__); 
+}
+
+__leaf__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__LEAF__); 
+}
+
+__malloc__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__MALLOC__); 
+}
+
+__printf__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__PRINTF__); 
+}
+
+__asm__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ASM__); 
+}
+
+__scanf__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__SCANF__); 
+}
+
+
+__format__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__FORMAT__); 
+}
+
+__restrict {
+    strncpy(yylval.cval, yytext, 128);
+    return(__RESTRICT); 
+}
+
 \([ \t]*\*  {
     strncpy(yylval.cval, yytext, 128);
     return(FUNCTION_POINTER); 
