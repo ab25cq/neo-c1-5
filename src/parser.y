@@ -129,6 +129,7 @@ sVarTable* gLVTable;
 %token <cval> __SI__
 %token <cval> __DI__
 %token <cval> __WORD__
+%token <cval> ANNOTATE
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -141,7 +142,7 @@ sVarTable* gLVTable;
 %type <cval> array_type
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ end function_attribute function_attribute_core, restrict typedef_attribute, typedef_attribute_core;
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp;
 
 %left OROR
 %left ANDAND
@@ -1390,6 +1391,7 @@ function_attribute_core:
     | __PURE__ { }
     | __NONNULL__ '(' INTNUM ')' { }
     | __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
+    | ANNOTATE '(' CSTRING CSTRING')' { }
     | function_attribute_core ',' __NOTHROW__ { }
     | function_attribute_core ',' __LEAF__ { }
     | function_attribute_core ',' __MALLOC__ { }
@@ -1398,6 +1400,7 @@ function_attribute_core:
     | function_attribute_core ',' __PURE__ { }
     | function_attribute_core __NONNULL__ '(' INTNUM ')' { }
     | function_attribute_core __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
+    | function_attribute_core ANNOTATE '(' CSTRING CSTRING')' { }
     ;
 
 function_attribute: {
@@ -1778,7 +1781,19 @@ elif_statment:
     }
     ;
 
-comma_exp: exp {
+conditional_exp: exp {
+         $$ = $1;
+         }
+         | exp '?' exp ':' exp {
+            unsigned int conditional = $1;
+            unsigned int value1 = $3;
+            unsigned int value2 = $5;
+            
+            $$ = sNodeTree_create_conditional(conditional, value1, value2, gSName, yylineno);
+         }
+         ;
+
+comma_exp: conditional_exp {
          $$ = $1;
          }
          | comma_exp ',' comma_exp {

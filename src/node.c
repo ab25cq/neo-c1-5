@@ -1531,11 +1531,20 @@ unsigned int sNodeTree_create_sizeof2(char* var_name, char* sname, int sline)
     return node;
 }
 
-static BOOL compile_typedef(unsigned int node, sCompileInfo* info)
+unsigned int sNodeTree_create_conditional(unsigned int conditional, unsigned int value1, unsigned int value2, char* sname, int sline)
 {
-    info->type = create_node_type_with_class_name("void");
+    unsigned int node = alloc_node();
 
-    return TRUE;
+    gNodes[node].mNodeType = kNodeTypeConditional;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = conditional;
+    gNodes[node].mRight = value1;
+    gNodes[node].mMiddle = value2;
+
+    return node;
 }
 
 void show_node(unsigned int node)

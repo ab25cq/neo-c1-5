@@ -336,7 +336,7 @@ restrict {
     return(ERROR);
 }
 
-[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#] { 
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#\?] { 
     return(yytext[0]); 
 }
 
@@ -661,6 +661,10 @@ __word__ {
     strncpy(yylval.cval, yytext, 128);
     return(__WORD__);
 }
+__pure__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__PURE__);
+}
 
 __inline {
     strncpy(yylval.cval, yytext, 128);
@@ -670,6 +674,11 @@ __inline {
 inline {
     strncpy(yylval.cval, yytext, 128);
     return(INLINE);
+}
+
+annotate {
+    strncpy(yylval.cval, yytext, 128);
+    return(ANNOTATE);
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
@@ -682,13 +691,9 @@ inline {
         return(SHORT); 
     }
     else if(is_type_name(yytext)) {
-puts("TYPE_NAME");
-puts(yytext);
         return(TYPE_NAME); 
     }
     else {
-puts("IDENTIFIER");
-puts(yytext);
         return(IDENTIFIER); 
     }
 }
