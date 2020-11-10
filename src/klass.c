@@ -290,6 +290,7 @@ void class_init()
         add_typedef("size_t", "long");
     }
     add_typedef("_Bool", "bool");
+    add_typedef("int32_t", "int");
 }
 
 void class_final()

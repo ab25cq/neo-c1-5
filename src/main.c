@@ -69,17 +69,17 @@ int main(int argc, char** argv)
     char cmd[1024];
 #ifdef __DARWIN__
     if(cflags) {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -E %s -I/opt/local/include %s > %s", cflags, sname, gSName);
+        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ -E %s -I/opt/local/include %s > %s", cflags, sname, gSName);
     }
     else {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -E %s -I/opt/local/include > %s", sname, gSName);
+        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ -E %s -I/opt/local/include > %s", sname, gSName);
     }
 #else
     if(cflags) {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE %s -C %s > %s", cflags, sname, gSName);
+        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s -C %s > %s", cflags, sname, gSName);
     }
     else {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -C %s > %s", sname, gSName);
+        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ -C %s > %s", sname, gSName);
     }
 #endif
 

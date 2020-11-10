@@ -492,6 +492,14 @@ type_attribute:
         static_ = FALSE;
         inherit_ = FALSE;
     }
+    | VOLATILE {
+/*
+        xstrncpy($$, "volatile ", VAR_NAME_MAX); 
+*/
+        inline_ = FALSE;
+        static_ = FALSE;
+        inherit_ = FALSE;
+    }
     | UNSIGNED {
         xstrncpy($$, "unsigned ", VAR_NAME_MAX); 
         inline_ = FALSE;
@@ -557,6 +565,13 @@ type_attribute:
         xstrncpy($$, $1, VAR_NAME_MAX); 
         xstrncat($$, "static ", VAR_NAME_MAX); 
         static_ = TRUE;
+    }
+    | type_attribute VOLATILE {
+/*
+        xstrncpy($$, $1, VAR_NAME_MAX); 
+        xstrncat($$, "static ", VAR_NAME_MAX); 
+        static_ = TRUE;
+*/
     }
     | type_attribute INLINE {
         xstrncpy($$, $1, VAR_NAME_MAX); 
@@ -912,14 +927,20 @@ type_params: {
         xstrncpy($$, type_params, VAR_NAME_MAX);
     }
     | type {
-        xstrncpy(type_params, $1, VAR_NAME_MAX);
-        xstrncpy($$, type_params, VAR_NAME_MAX);
+        if(strcmp($1, "void") == 0) {
+            xstrncpy($$, "", VAR_NAME_MAX);
+        }
+        else {
+            xstrncpy(type_params, $1, VAR_NAME_MAX);
+            xstrncpy($$, type_params, VAR_NAME_MAX);
+        }
     }
     | type_params ',' type {
         xstrncat(type_params, ",", VAR_NAME_MAX);
         xstrncat(type_params, $3, VAR_NAME_MAX);
         xstrncpy($$, type_params, VAR_NAME_MAX);
-    };
+    }
+    ;
 
 union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
             unsigned int fields = $4;
@@ -992,6 +1013,10 @@ fields:  {
         }
         | fields type_and_variable_name ';' { 
             $$ = fields; append_field_to_fields(fields, variable_names[--num_variable_names], $2); 
+        }
+        | source_point_macro {
+        }
+        | fields source_point_macro {
         }
         | UNION '{' fields '}' ';' {
                 static int anonyomous_union_num = 0;

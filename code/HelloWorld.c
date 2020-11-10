@@ -1,5 +1,12 @@
-//#include <stdio.h>
+#include <stdio.h>
 //#include <stdlib.h>
+
+extern int at_quick_exit (void (*__func) (void)) ;
+
+
+
+
+extern int on_exit (void (*__func) (int __status, void *__arg), void *__arg);
 
 struct sData;
 typedef struct sData sDataType;

@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AAAAA	code/HelloWorld.c	9;"	d	file:
+AAAAA	code/HelloWorld.c	16;"	d	file:
 ALIGNMENT_H	src/alignment.h	2;"	d
 ALLOC	src/xfunc.h	4;"	d
 ANDAND	parser.tab.c	/^    ANDAND = 286,$/;"	e	enum:yytokentype	file:
@@ -24,7 +24,7 @@ BUFFER_H	src/buffer.h	2;"	d
 CASE	parser.tab.c	/^    CASE = 310,$/;"	e	enum:yytokentype	file:
 CASE	parser.tab.h	/^    CASE = 310,$/;"	e	enum:yytokentype
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
 CHARNUM	parser.tab.c	/^    CHARNUM = 259,$/;"	e	enum:yytokentype	file:
 CHARNUM	parser.tab.h	/^    CHARNUM = 259,$/;"	e	enum:yytokentype
 CLASS_FLAGS_ANONYMOUS	src/common.h	65;"	d
@@ -50,7 +50,7 @@ CONTINUE	parser.tab.h	/^    CONTINUE = 312,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 264,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 264,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DBuilder	src/compile.cpp	/^DIBuilder* DBuilder;$/;"	v
 DEFAULT	parser.tab.c	/^    DEFAULT = 313,$/;"	e	enum:yytokentype	file:
 DEFAULT	parser.tab.h	/^    DEFAULT = 313,$/;"	e	enum:yytokentype
@@ -154,7 +154,7 @@ NEW	parser.tab.h	/^    NEW = 279,$/;"	e	enum:yytokentype
 NODE_TYPE_PAGE_SIZE	src/node_type.c	8;"	d	file:
 NOT_EQ	parser.tab.c	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype	file:
 NOT_EQ	parser.tab.h	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype
-NULL	code/HelloWorld.c	220;"	d	file:
+NULL	code/HelloWorld.c	227;"	d	file:
 OBJS	Makefile	/^OBJS=src\/klass.o src\/node_type.o src\/typedef.o src\/vtable.o src\/node.o$/;"	m
 OROR	parser.tab.c	/^    OROR = 287,$/;"	e	enum:yytokentype	file:
 OROR	parser.tab.h	/^    OROR = 287,$/;"	e	enum:yytokentype
@@ -230,45 +230,45 @@ WHILE	parser.tab.h	/^    WHILE = 307,$/;"	e	enum:yytokentype
 XFUNC_H	src/xfunc.h	2;"	d
 XOR_EQ	parser.tab.c	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype	file:
 XOR_EQ	parser.tab.h	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype
-YYABORT	parser.tab.c	1859;"	d	file:
-YYACCEPT	parser.tab.c	1858;"	d	file:
-YYBACKUP	parser.tab.c	1865;"	d	file:
+YYABORT	parser.tab.c	1869;"	d	file:
+YYACCEPT	parser.tab.c	1868;"	d	file:
+YYBACKUP	parser.tab.c	1875;"	d	file:
 YYBISON	parser.tab.c	48;"	d	file:
 YYBISON_VERSION	parser.tab.c	51;"	d	file:
-YYCASE_	parser.tab.c	2209;"	d	file:
-YYCASE_	parser.tab.c	2220;"	d	file:
+YYCASE_	parser.tab.c	2219;"	d	file:
+YYCASE_	parser.tab.c	2230;"	d	file:
 YYCOPY	parser.tab.c	481;"	d	file:
 YYCOPY	parser.tab.c	484;"	d	file:
 YYCOPY_NEEDED	parser.tab.c	456;"	d	file:
 YYDEBUG	parser.tab.c	143;"	d	file:
 YYDEBUG	parser.tab.h	41;"	d
-YYDPRINTF	parser.tab.c	1896;"	d	file:
-YYDPRINTF	parser.tab.c	2011;"	d	file:
-YYEMPTY	parser.tab.c	1855;"	d	file:
-YYEOF	parser.tab.c	1856;"	d	file:
-YYERRCODE	parser.tab.c	1884;"	d	file:
-YYERROR	parser.tab.c	1860;"	d	file:
+YYDPRINTF	parser.tab.c	1906;"	d	file:
+YYDPRINTF	parser.tab.c	2021;"	d	file:
+YYEMPTY	parser.tab.c	1865;"	d	file:
+YYEOF	parser.tab.c	1866;"	d	file:
+YYERRCODE	parser.tab.c	1894;"	d	file:
+YYERROR	parser.tab.c	1870;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	131;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	132;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	134;"	d	file:
 YYFINAL	parser.tab.c	497;"	d	file:
-YYFPRINTF	parser.tab.c	1893;"	d	file:
+YYFPRINTF	parser.tab.c	1903;"	d	file:
 YYFREE	parser.tab.c	427;"	d	file:
-YYINITDEPTH	parser.tab.c	2020;"	d	file:
+YYINITDEPTH	parser.tab.c	2030;"	d	file:
 YYLAST	parser.tab.c	499;"	d	file:
 YYMALLOC	parser.tab.c	421;"	d	file:
-YYMAXDEPTH	parser.tab.c	2031;"	d	file:
+YYMAXDEPTH	parser.tab.c	2041;"	d	file:
 YYMAXUTOK	parser.tab.c	511;"	d	file:
 YYNNTS	parser.tab.c	504;"	d	file:
 YYNRULES	parser.tab.c	506;"	d	file:
 YYNSTATES	parser.tab.c	508;"	d	file:
 YYNTOKENS	parser.tab.c	502;"	d	file:
 YYPACT_NINF	parser.tab.c	655;"	d	file:
-YYPOPSTACK	parser.tab.c	2336;"	d	file:
+YYPOPSTACK	parser.tab.c	2346;"	d	file:
 YYPULL	parser.tab.c	63;"	d	file:
 YYPURE	parser.tab.c	57;"	d	file:
 YYPUSH	parser.tab.c	60;"	d	file:
-YYRECOVERING	parser.tab.c	1863;"	d	file:
+YYRECOVERING	parser.tab.c	1873;"	d	file:
 YYSIZE_MAXIMUM	parser.tab.c	309;"	d	file:
 YYSIZE_T	parser.tab.c	298;"	d	file:
 YYSIZE_T	parser.tab.c	300;"	d	file:
@@ -297,7 +297,7 @@ YYSTYPE_IS_TRIVIAL	parser.tab.c	255;"	d	file:
 YYSTYPE_IS_TRIVIAL	parser.tab.h	153;"	d
 YYTABLES_NAME	lex.yy.c	3146;"	d	file:
 YYTABLE_NINF	parser.tab.c	660;"	d	file:
-YYTERROR	parser.tab.c	1883;"	d	file:
+YYTERROR	parser.tab.c	1893;"	d	file:
 YYTOKENTYPE	parser.tab.c	151;"	d	file:
 YYTOKENTYPE	parser.tab.h	49;"	d
 YYTRANSLATE	parser.tab.c	515;"	d	file:
@@ -343,7 +343,7 @@ YY_INPUT	lex.yy.c	891;"	d	file:
 YY_INT_ALIGNED	lex.yy.c	4;"	d	file:
 YY_LESS_LINENO	lex.yy.c	172;"	d	file:
 YY_LINENO_REWIND_TO	lex.yy.c	179;"	d	file:
-YY_LOCATION_PRINT	parser.tab.c	1904;"	d	file:
+YY_LOCATION_PRINT	parser.tab.c	1914;"	d	file:
 YY_MORE_ADJ	lex.yy.c	735;"	d	file:
 YY_NEW_FILE	lex.yy.c	127;"	d	file:
 YY_NULL	lex.yy.c	106;"	d	file:
@@ -353,20 +353,20 @@ YY_NULLPTR	parser.tab.c	125;"	d	file:
 YY_NUM_RULES	lex.yy.c	373;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	873;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	875;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2001;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2014;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2011;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2024;"	d	file:
 YY_RESTORE_YY_MORE_OFFSET	lex.yy.c	736;"	d	file:
 YY_RULE_SETUP	lex.yy.c	966;"	d	file:
 YY_SC_TO_UI	lex.yy.c	111;"	d	file:
-YY_STACK_PRINT	parser.tab.c	1970;"	d	file:
-YY_STACK_PRINT	parser.tab.c	2013;"	d	file:
+YY_STACK_PRINT	parser.tab.c	1980;"	d	file:
+YY_STACK_PRINT	parser.tab.c	2023;"	d	file:
 YY_START	lex.yy.c	122;"	d	file:
 YY_START_STACK_INCR	lex.yy.c	933;"	d	file:
 YY_STATE_BUF_SIZE	lex.yy.c	145;"	d	file:
 YY_STATE_EOF	lex.yy.c	125;"	d	file:
 YY_STRUCT_YY_BUFFER_STATE	lex.yy.c	203;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	1908;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	2012;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	1918;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	2022;"	d	file:
 YY_TYPEDEF_YY_BUFFER_STATE	lex.yy.c	148;"	d	file:
 YY_TYPEDEF_YY_SIZE_T	lex.yy.c	153;"	d	file:
 YY_USER_ACTION	lex.yy.c	958;"	d	file:
@@ -1414,14 +1414,14 @@ yyalloc	lex.yy.c	/^void *yyalloc (yy_size_t  size )$/;"	f
 yyalloc	parser.tab.c	/^union yyalloc$/;"	u	file:
 yychar	parser.tab.c	/^int yychar;$/;"	v
 yycheck	parser.tab.c	/^static const yytype_int16 yycheck[] =$/;"	v	file:
-yyclearin	parser.tab.c	1854;"	d	file:
+yyclearin	parser.tab.c	1864;"	d	file:
 yyconst	lex.yy.c	97;"	d	file:
 yydebug	parser.tab.c	/^int yydebug;$/;"	v
 yydefact	parser.tab.c	/^static const yytype_uint16 yydefact[] =$/;"	v	file:
 yydefgoto	parser.tab.c	/^static const yytype_int16 yydefgoto[] =$/;"	v	file:
 yydestruct	parser.tab.c	/^yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)$/;"	f	file:
 yyensure_buffer_stack	lex.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	file:
-yyerrok	parser.tab.c	1853;"	d	file:
+yyerrok	parser.tab.c	1863;"	d	file:
 yyerror	parser.tab.c	/^int yyerror(char *msg)$/;"	f
 yyfree	lex.yy.c	/^void yyfree (void * ptr )$/;"	f
 yyget_debug	lex.yy.c	/^int yyget_debug  (void)$/;"	f
@@ -1462,9 +1462,9 @@ yyset_out	lex.yy.c	/^void yyset_out (FILE *  _out_str )$/;"	f
 yyss_alloc	parser.tab.c	/^  yytype_int16 yyss_alloc;$/;"	m	union:yyalloc	file:
 yystos	parser.tab.c	/^static const yytype_uint8 yystos[] =$/;"	v	file:
 yystpcpy	parser.tab.c	/^yystpcpy (char *yydest, const char *yysrc)$/;"	f	file:
-yystpcpy	parser.tab.c	2055;"	d	file:
+yystpcpy	parser.tab.c	2065;"	d	file:
 yystrlen	parser.tab.c	/^yystrlen (const char *yystr)$/;"	f	file:
-yystrlen	parser.tab.c	2039;"	d	file:
+yystrlen	parser.tab.c	2049;"	d	file:
 yysyntax_error	parser.tab.c	/^yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,$/;"	f	file:
 yytable	parser.tab.c	/^static const yytype_int16 yytable[] =$/;"	v	file:
 yytable_value_is_error	parser.tab.c	662;"	d	file:
