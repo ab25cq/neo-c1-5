@@ -687,6 +687,16 @@ annotate {
     return(ANNOTATE);
 }
 
+__aligned__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ALIGNED__);
+}
+
+__alignof__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ALIGNOF__);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
 

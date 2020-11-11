@@ -129,6 +129,8 @@ sVarTable* gLVTable;
 %token <cval> __SI__
 %token <cval> __DI__
 %token <cval> __WORD__
+%token <cval> __ALIGNED__
+%token <cval> __ALIGNOF__
 %token <cval> ANNOTATE
 %type <cval> type 
 %type <cval> type_name
@@ -143,7 +145,7 @@ sVarTable* gLVTable;
 %type <cval> array_type
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp;
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core;
 
 %left '?' ':'
 %left OROR
@@ -340,6 +342,12 @@ type:
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "unsigned long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "long long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
         }
@@ -359,6 +367,14 @@ type:
     }
     | type_attribute restrict pointer restrict {
         if(strcmp($1, "long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
@@ -388,7 +404,17 @@ type:
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
-        else if(strcmp($1, "shor ") == 0) {
+        else if(strcmp($1, "long long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
@@ -425,7 +451,7 @@ type:
     }
     | type_name restrict {
         xstrncpy($$, $1, VAR_NAME_MAX);
-    }
+    } 
     | type_name restrict pointer restrict {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
@@ -769,6 +795,17 @@ typedef_attribute: {
 
     | typedef_attribute __ATTRIBUTE__ '(' '(' typedef_attribute_core ')' ')' { }
     ;
+
+type_attribute2_core: 
+    __ALIGNED__ '(' __ALIGNOF__ '(' type ')' ')' { } 
+    ;
+
+type_attribute2: {
+    }
+    | __ATTRIBUTE__ '(' '(' type_attribute2_core ')' ')' { }
+
+    | type_attribute2 __ATTRIBUTE__ '(' '(' type_attribute2_core ')' ')' { }
+    ;
     
 typedef_type_params_: {
         xstrncpy(typedef_type_params, "", VAR_NAME_MAX);
@@ -931,7 +968,7 @@ function_pointer_type_params: {
     ;
 
 type_and_variable_name: 
-    type IDENTIFIER {
+    type IDENTIFIER type_attribute2 {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -939,7 +976,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type IDENTIFIER '[' ']' {
+    | type IDENTIFIER '[' ']' type_attribute2 {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -948,7 +985,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type IDENTIFIER array_type {
+    | type IDENTIFIER array_type type_attribute2 {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -957,7 +994,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type IDENTIFIER const_array_type {
+    | type IDENTIFIER const_array_type type_attribute2 {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -966,7 +1003,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type IDENTIFIER ':' INTNUM {
+    | type IDENTIFIER ':' INTNUM type_attribute2 {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
@@ -980,7 +1017,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' {
+    | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' type_attribute2 {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
         xstrncat($$, $6, VAR_NAME_MAX);
@@ -990,7 +1027,7 @@ type_and_variable_name:
 
         xstrncpy(type_params, "", VAR_NAME_MAX);
     }
-    | type FUNCTION_POINTER IDENTIFIER ')' '(' function_pointer_type_params ')' {
+    | type FUNCTION_POINTER IDENTIFIER ')' '(' function_pointer_type_params ')' type_attribute2 {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
         xstrncat($$, $6, VAR_NAME_MAX);
@@ -1710,6 +1747,21 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
+    | IF '(' comma_exp ')' statment {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $5);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = block;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned else_block = 0;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE '{' block '}' block_end 
     {
         unsigned int if_exp = $3;
@@ -1721,6 +1773,38 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
+    | IF '(' comma_exp ')' statment  ELSE '{' block '}' block_end 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $5);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = block;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned int else_block = $8;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp ')' '{' block '}' block_end ELSE statment 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $10);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned int else_block = block;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
     {
         unsigned int if_exp = $3;
@@ -1729,9 +1813,47 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
+    | IF '(' comma_exp ')' statment ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $5);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = block;
+        unsigned int else_block = $12;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE statment 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $14);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = $6;
+        unsigned int else_block = block;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
     | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
         unsigned int if_exp = $3;
         unsigned int if_block = $6;
+        unsigned else_block = 0;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp ')' statment ELSE IF prepare_elif_statment elif_statment {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $5);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = block;
         unsigned else_block = 0;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
@@ -1897,9 +2019,39 @@ elif_statment:
             exit(2);
         }
     }
+    | ELSE IF '(' comma_exp ')' statment {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $6);
+
+        elif_exps[elif_num] = $4;
+        elif_blocks[elif_num] = block;
+        elif_num++;
+
+        if(elif_num >= ELIF_NUM_MAX) {
+            fprintf(stderr, "overflow else if number\n");
+            exit(2);
+        }
+    }
     | elif_statment ELSE IF '(' comma_exp ')' '{' block '}' block_end {
         elif_exps[elif_num] = $5;
         elif_blocks[elif_num] = $8;
+        elif_num++;
+
+        if(elif_num >= ELIF_NUM_MAX) {
+            fprintf(stderr, "overflow else if number\n");
+            exit(2);
+        }
+    }
+    | elif_statment ELSE IF '(' comma_exp ')' statment {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $7);
+
+        elif_exps[elif_num] = $5;
+        elif_blocks[elif_num] = block;
         elif_num++;
 
         if(elif_num >= ELIF_NUM_MAX) {

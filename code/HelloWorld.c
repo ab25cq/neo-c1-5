@@ -1,8 +1,6 @@
-/*
- * #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-*/
 
 struct sData;
 typedef struct sData sDataType;
@@ -505,7 +503,6 @@ int main()
 
     int api_level = 1;
     xassert("conditional2", (api_level == 1 ? api_level: -1) == 1);
-    printf("_SC_IOV_MAX %d\n", _SC_IOV_MAX);
 
     return 0;
 }

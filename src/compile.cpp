@@ -9703,7 +9703,6 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
 
-
             std::vector<Constant*> init_data;
             std::vector<Constant*> init_datas;
             int i;
@@ -9967,6 +9966,21 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
 
                 dec_stack_ptr(1, info);
 
+                sNodeType* var_element_type2 = clone_node_type(var_type);
+                var_element_type2->mArrayDimentionNum = 0;
+
+                if(auto_cast_posibility(var_element_type2, right_type)) {
+                    if(!cast_right_type_to_left_type(var_element_type2, &right_type, &rvalue, info))
+                    {
+                        compile_err_msg(info, "Cast failed");
+                        info->err_num++;
+
+                        info->type = create_node_type_with_class_name("int"); // dummy
+
+                        return TRUE;
+                    }
+                }
+
                 Value* mvalue = ConstantInt::get(Type::getInt64Ty(TheContext), i);
 
                 Value* load_element_addresss = Builder.CreateGEP(lvalue2, mvalue, "element_address");
@@ -10019,6 +10033,21 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
                 LVALUE rvalue = *get_value_from_stack(-1);
 
                 dec_stack_ptr(1, info);
+
+                sNodeType* var_element_type2 = clone_node_type(var_type);
+                var_element_type2->mArrayDimentionNum = 0;
+
+                if(auto_cast_posibility(var_element_type2, right_type)) {
+                    if(!cast_right_type_to_left_type(var_element_type2, &right_type, &rvalue, info))
+                    {
+                        compile_err_msg(info, "Cast failed");
+                        info->err_num++;
+
+                        info->type = create_node_type_with_class_name("int"); // dummy
+
+                        return TRUE;
+                    }
+                }
 
                 Value* mvalue[2];
 
@@ -10109,6 +10138,21 @@ BOOL compile_array_initializer(unsigned int node, sCompileInfo* info)
                 LVALUE rvalue = *get_value_from_stack(-1);
 
                 dec_stack_ptr(1, info);
+
+                sNodeType* var_element_type2 = clone_node_type(var_type);
+                var_element_type2->mArrayDimentionNum = 0;
+
+                if(auto_cast_posibility(var_element_type2, right_type)) {
+                    if(!cast_right_type_to_left_type(var_element_type2, &right_type, &rvalue, info))
+                    {
+                        compile_err_msg(info, "Cast failed");
+                        info->err_num++;
+
+                        info->type = create_node_type_with_class_name("int"); // dummy
+
+                        return TRUE;
+                    }
+                }
 
                 Value* mvalue[3];
 
