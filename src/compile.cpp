@@ -4247,7 +4247,7 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
         }
 
         BOOL readonly = FALSE;
-        BOOL constant = FALSE;
+        BOOL constant = var_type->mConstant;
 
         int index = -1;
         void* llvm_value = NULL;
@@ -4339,32 +4339,51 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
          if(global) {
             var->mLLVMValue = NULL;
 
-            if(TheModule->getNamedGlobal(var_name) != nullptr)
-            {
-                TheModule->getNamedGlobal(var_name)->eraseFromParent();
-            }
+            if(constant) {
+                Value* rvalue2 = rvalue.value;
 
-            GlobalVariable* address = new GlobalVariable(*TheModule, llvm_var_type, var->mConstant, GlobalValue::ExternalLinkage, 0, var_name);
-            address->setAlignment(alignment);
+                if(dyn_cast<Constant>(rvalue2)) {
+                    var->mLLVMValue = dyn_cast<Constant>(rvalue2);
+                }
+                else {
+                    compile_err_msg(info, "Invalid Global Variable Initializer. Require Constant Value");
+                    info->err_num++;
 
-            Value* rvalue2 = rvalue.value;
+                    info->type = create_node_type_with_class_name("int"); // dummy
 
-            if(dyn_cast<Constant>(rvalue2)) {
-                Constant* rvalue3 = dyn_cast<Constant>(rvalue2);
-                address->setInitializer(rvalue3);
+                    return TRUE;
+                }
+
+                info->type = clone_node_type(left_type);
             }
             else {
-                compile_err_msg(info, "Invalid Global Variable Initializer. Require Constant Value");
-                info->err_num++;
+                if(TheModule->getNamedGlobal(var_name) != nullptr)
+                {
+                    TheModule->getNamedGlobal(var_name)->eraseFromParent();
+                }
 
-                info->type = create_node_type_with_class_name("int"); // dummy
+                GlobalVariable* address = new GlobalVariable(*TheModule, llvm_var_type, var->mConstant, GlobalValue::ExternalLinkage, 0, var_name);
+                address->setAlignment(alignment);
 
-                return TRUE;
+                Value* rvalue2 = rvalue.value;
+
+                if(dyn_cast<Constant>(rvalue2)) {
+                    Constant* rvalue3 = dyn_cast<Constant>(rvalue2);
+                    address->setInitializer(rvalue3);
+                }
+                else {
+                    compile_err_msg(info, "Invalid Global Variable Initializer. Require Constant Value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                var->mLLVMValue = address;
+
+                info->type = clone_node_type(left_type);
             }
-
-            var->mLLVMValue = address;
-
-            info->type = clone_node_type(left_type);
         }
         else if(constant) {
             Value* rvalue2 = rvalue.value;
@@ -4543,7 +4562,7 @@ BOOL pre_compile_store_variable(unsigned int node, sCompileInfo* info)
         }
 
         BOOL readonly = FALSE;
-        BOOL constant = FALSE;
+        BOOL constant = var_type->mConstant;
 
         int index = -1;
         void* llvm_value = NULL;
@@ -4593,12 +4612,24 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     }
 
     BOOL constant = var->mConstant;
+    BOOL global = var->mGlobal;
 
-/*
-    if(constant) {
+    if(constant && global) {
+        LVALUE llvm_value;
+        llvm_value.value = (Value*)var->mLLVMValue;
+        llvm_value.type = var_type;
+        llvm_value.address = nullptr;
+        llvm_value.var = var;
+        llvm_value.binded_value = TRUE;
+        llvm_value.load_field = FALSE;
+
+        push_value_to_stack_ptr(&llvm_value, info);
+
+        sNodeType* result_type = var_type;
+
+        info->type = clone_node_type(result_type);
     }
     else {
-*/
         Value* var_address;
         if(var->mGlobal) {
             var_address = (Value*)var->mLLVMValue;
@@ -4643,7 +4674,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
         info->type = clone_node_type(result_type);
 
-//    }
+    }
 
     return TRUE;
 }

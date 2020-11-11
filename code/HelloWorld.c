@@ -1,12 +1,8 @@
-#include <stdio.h>
-//#include <stdlib.h>
-
-extern int at_quick_exit (void (*__func) (void)) ;
-
-
-
-
-extern int on_exit (void (*__func) (int __status, void *__arg), void *__arg);
+/*
+ * #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+*/
 
 struct sData;
 typedef struct sData sDataType;
@@ -506,6 +502,10 @@ int main()
     int conditional = 1;
 
     xassert("conditional", (conditional == 1 ? 2:0) == 2);
+
+    int api_level = 1;
+    xassert("conditional2", (api_level == 1 ? api_level: -1) == 1);
+    printf("_SC_IOV_MAX %d\n", _SC_IOV_MAX);
 
     return 0;
 }

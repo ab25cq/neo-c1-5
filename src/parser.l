@@ -340,6 +340,12 @@ restrict {
     return(yytext[0]); 
 }
 
+-[0-9]+ {
+    long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
 0[0-9]+ {
     long value = strtol(yytext, NULL, 8);
     yylval.ival = value;

@@ -1,7 +1,12 @@
 #include <stdio.h>
 
+enum { A, B=A };
+
 int main() {
-    puts("HELLO WORLD");
+    int a = A;
+    int b = B;
+
+    printf("a %d b %d\n", a, b);
 
     return 0;
 }

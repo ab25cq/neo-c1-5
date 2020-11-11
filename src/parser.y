@@ -135,6 +135,7 @@ sVarTable* gLVTable;
 %type <cval> type_attribute
 %type <cval> type_and_variable_name
 %type <cval> type_params
+%type <cval> function_pointer_type_params;
 %type <cval> generics_types 
 %type <cval> function_generics_types 
 %type <cval> function_struct_type_name 
@@ -144,6 +145,7 @@ sVarTable* gLVTable;
 %type <cval> typedef_type_params_
 %type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp;
 
+%left '?' ':'
 %left OROR
 %left ANDAND
 %left '|'
@@ -249,7 +251,7 @@ enum_fields: {
         char* var_name = $1;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
 
-        char* type_name = "int";
+        char* type_name = "const int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
 
@@ -265,7 +267,21 @@ enum_fields: {
         char* var_name = $1;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
 
-        char* type_name = "int";
+        char* type_name = "const int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | IDENTIFIER '=' exp {
+        unsigned int exp = $3;
+
+        char* var_name = $1;
+        char* type_name = "const int";
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
 
@@ -279,7 +295,7 @@ enum_fields: {
         char* var_name = $3;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
 
-        char* type_name = "int";
+        char* type_name = "const int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
 
@@ -295,7 +311,21 @@ enum_fields: {
         char* var_name = $3;
         unsigned int exp = sNodeTree_create_int_value(enum_number, gSName, yylineno);
 
-        char* type_name = "int";
+        char* type_name = "const int";
+
+        unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
+
+        compile(node, &cinfo);
+
+        enum_number++;
+    }
+    | enum_fields ',' IDENTIFIER '=' exp {
+        BOOL alloc = TRUE;
+        BOOL global = TRUE;
+        char* var_name = $3;
+        unsigned int exp = $5;
+
+        char* type_name = "const int";
 
         unsigned int node = sNodeTree_create_store_variable(var_name, type_name, exp, alloc, global, gSName, yylineno); 
 
@@ -755,12 +785,45 @@ typedef_type_params_: {
     };
 
 typedef_: 
-    TYPEDEF type IDENTIFIER  typedef_attribute ';' {
+    | TYPEDEF type IDENTIFIER  typedef_attribute ';' {
         char* name = $3;
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
+    | TYPEDEF type FUNCTION_POINTER IDENTIFIER ')' '(' typedef_type_params_ ')' ';' {
+        char* name = $4;
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $2, VAR_NAME_MAX);
+        xstrncat(type_name, " lambda(", VAR_NAME_MAX);
+        xstrncat(type_name, $7, VAR_NAME_MAX);
+        xstrncat(type_name, ")", VAR_NAME_MAX);
+
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' ';' {
+        char* name = $4;
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $2, VAR_NAME_MAX);
+        xstrncat(type_name, " lambda(", VAR_NAME_MAX);
+        xstrncat(type_name, $7, VAR_NAME_MAX);
+        xstrncat(type_name, ")", VAR_NAME_MAX);
+
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
     | TYPEDEF type IDENTIFIER '(' typedef_type_params_ ')' ';' {
+        char* name = $3;
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $2, VAR_NAME_MAX);
+        xstrncat(type_name, " lambda(", VAR_NAME_MAX);
+        xstrncat(type_name, $5, VAR_NAME_MAX);
+        xstrncat(type_name, ")", VAR_NAME_MAX);
+
+        $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF type IDENTIFIER '(' type_params ')' ';' {
         char* name = $3;
         char type_name[VAR_NAME_MAX];
 
@@ -847,11 +910,40 @@ generics_types: type {
     }
     ;
 
+function_pointer_type_params: {
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+        xstrncpy($$, type_params, VAR_NAME_MAX);
+    }
+    | type_and_variable_name {
+        if(strcmp($1, "void") == 0) {
+            xstrncpy($$, "", VAR_NAME_MAX);
+        }
+        else {
+            xstrncpy(type_params, $1, VAR_NAME_MAX);
+            xstrncpy($$, type_params, VAR_NAME_MAX);
+        }
+    }
+    | function_pointer_type_params ',' type_and_variable_name {
+        xstrncat(type_params, ",", VAR_NAME_MAX);
+        xstrncat(type_params, $3, VAR_NAME_MAX);
+        xstrncpy($$, type_params, VAR_NAME_MAX);
+    }
+    ;
+
 type_and_variable_name: 
     type IDENTIFIER {
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $1, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+    }
+    | type IDENTIFIER '[' ']' {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, "*", VAR_NAME_MAX);
     
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
@@ -889,6 +981,16 @@ type_and_variable_name:
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
     | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $6, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+    }
+    | type FUNCTION_POINTER IDENTIFIER ')' '(' function_pointer_type_params ')' {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
         xstrncat($$, $6, VAR_NAME_MAX);
@@ -941,6 +1043,7 @@ type_params: {
         xstrncpy($$, type_params, VAR_NAME_MAX);
     }
     ;
+
 
 union_: UNION IDENTIFIER '{' fields '}' ';' { char* union_name = $2;
             unsigned int fields = $4;
@@ -1806,26 +1909,6 @@ elif_statment:
     }
     ;
 
-conditional_exp: exp {
-         $$ = $1;
-         }
-         | exp '?' exp ':' exp {
-            unsigned int conditional = $1;
-            unsigned int value1 = $3;
-            unsigned int value2 = $5;
-            
-            $$ = sNodeTree_create_conditional(conditional, value1, value2, gSName, yylineno);
-         }
-         ;
-
-comma_exp: conditional_exp {
-         $$ = $1;
-         }
-         | comma_exp ',' comma_exp {
-            compile($1, &cinfo); $$ = $3;
-         }
-         ;
-
 exp: node {
         $$ = $1;
     }
@@ -1850,7 +1933,23 @@ exp: node {
     | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, yylineno); }
     | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, yylineno); }
     | '&' node       { $$ = sNodeTree_create_refference($2, gSName, yylineno); }
+    | exp '?' exp ':' exp {
+        unsigned int conditional = $1;
+        unsigned int value1 = $3;
+        unsigned int value2 = $5;
+        
+        $$ = sNodeTree_create_conditional(conditional, value1, value2, gSName, yylineno);
+    }
     ;
+
+comma_exp: exp {
+         $$ = $1;
+         }
+         | comma_exp ',' comma_exp {
+            compile($1, &cinfo); $$ = $3;
+         }
+         ;
+
 
 cstring_array_value2: CSTRING {
         $$ = sNodeTree_create_c_string($1, gSName, yylineno);
