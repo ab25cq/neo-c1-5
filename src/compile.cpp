@@ -1286,6 +1286,7 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
         xstrncpy(param_names[i], fun->mParamNames[i], VAR_NAME_MAX);
     }
 
+
     sNodeType* result_type = create_node_type_with_class_name(result_type_name);
 
     if(result_type == NULL || result_type->mClass == NULL) {
@@ -1318,6 +1319,10 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
         if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
         {
             return FALSE;
+        }
+
+        if(type_identify_with_class_name(param_type, "__builtin_va_list")) {
+            llvm_param_type = PointerType::get(llvm_param_type, 0);
         }
 
         llvm_param_types.push_back(llvm_param_type);
@@ -2173,7 +2178,23 @@ void declare_builtin_functions()
     StructType* struct_type = StructType::create(TheContext, "__builtin_va_list");
 
     std::vector<Type*> fields;
+#ifdef __X86_64_CPU__
+    param1_type = IntegerType::get(TheContext,32);
+    fields.push_back(param1_type);
 
+    param2_type = IntegerType::get(TheContext,32);
+    fields.push_back(param2_type);
+
+    param3_type = PointerType::get(IntegerType::get(TheContext,8), 0);
+    fields.push_back(param3_type);
+
+    param4_type = PointerType::get(IntegerType::get(TheContext,8), 0);
+    fields.push_back(param4_type);
+
+    if(struct_type->isOpaque()) {
+        struct_type->setBody(fields, false);
+    }
+#else
     param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
     fields.push_back(param1_type);
 
@@ -2192,6 +2213,7 @@ void declare_builtin_functions()
     if(struct_type->isOpaque()) {
         struct_type->setBody(fields, false);
     }
+#endif
 
     sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
 
@@ -2216,7 +2238,50 @@ void declare_builtin_functions()
 
     gLLVMStructType["__builtin_va_list"] = pair_value;
 
+    /// va_start ///
+    params.clear();
 
+    {
+        char* param_types[PARAMS_MAX];
+        char* param_names[PARAMS_MAX];
+
+        char* result_type_name = "void";
+
+        int num_params = 1;
+        param_names[0] = "p";
+        param_types[0] = "char*";
+
+        BOOL var_arg = FALSE;
+        BOOL inline_ = FALSE;
+        BOOL inherit_ = FALSE;
+        BOOL static_ = FALSE;
+        BOOL generics = FALSE;
+        BOOL coroutine = FALSE;
+        BOOL method_generics = FALSE;
+        add_function("llvm.va_start", "llvm.va_start", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("__builtin_va_start", "__builtin_va_list", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+    }
+
+    {
+        char* param_types[PARAMS_MAX];
+        char* param_names[PARAMS_MAX];
+
+        char* result_type_name = "void";
+
+        int num_params = 1;
+        param_names[0] = "p";
+        param_types[0] = "char*";
+
+        BOOL var_arg = FALSE;
+        BOOL inline_ = FALSE;
+        BOOL inherit_ = FALSE;
+        BOOL static_ = FALSE;
+        BOOL generics = FALSE;
+        BOOL coroutine = FALSE;
+        BOOL method_generics = FALSE;
+        add_function("llvm.va_end", "llvm.va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("__builtin_va_end", "__builtin_va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+    }
 
 /*
     sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
@@ -2780,9 +2845,6 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     BasicBlock* current_block = BasicBlock::Create(TheContext, "entry", llvm_fun);
     llvm_change_block(current_block, &current_block_before, info, FALSE);
 
-    info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-    info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-
     /// ready for params ///
     for(i=0; i<num_params; i++) {
         sParserParam param = params[i];
@@ -2855,7 +2917,7 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
         return FALSE;
     }
 
-    if(type_identify_with_class_name(result_type, "void")) {
+    if(type_identify_with_class_name(result_type, "void") && result_type->mPointerNum == 0) {
         Builder.CreateRet(nullptr);
     }
 
@@ -2879,6 +2941,9 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     }
 
     info->function = function;
+
+    info->andand_result_var = NULL;
+    info->oror_result_var = NULL;
 
     return TRUE;
 }
@@ -4330,6 +4395,10 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
+    if(type_identify_with_class_name(left_type, "__builtin_va_list")) {
+        llvm_var_type = ArrayType::get(llvm_var_type, 1);
+    }
+
     int alignment = get_llvm_alignment_from_node_type(left_type);
 
     BOOL constant = var->mConstant;
@@ -4659,7 +4728,17 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
         LVALUE llvm_value;
 
-        llvm_value.value = Builder.CreateAlignedLoad(var_address, alignment, var_name);
+        if(type_identify_with_class_name(var_type, "__builtin_va_list")) {
+            Value* indices[2];
+
+            indices[0] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+            indices[1] = ConstantInt::get(Type::getInt32Ty(TheContext), 0);
+
+            llvm_value.value = Builder.CreateInBoundsGEP(var_address, ArrayRef<Value*>(indices, 2));
+        }
+        else {
+            llvm_value.value = Builder.CreateAlignedLoad(var_address, alignment, var_name);
+        }
 
         llvm_value.type = var_type;
         llvm_value.address = var_address;
@@ -5109,7 +5188,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
     char fun_name[VAR_NAME_MAX];
 
     xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
-
+    if(strcmp(fun_name, "__builtin_va_start") == 0) {
+        xstrncpy(fun_name, "llvm.va_start", VAR_NAME_MAX);
+    }
+    else if(strcmp(fun_name, "__builtin_va_end") == 0) {
+        xstrncpy(fun_name, "llvm.va_end", VAR_NAME_MAX);
+    }
 
     if(lambda_call) {
         unsigned int lambda_node = gNodes[node].mLeft;
@@ -5217,6 +5301,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             param_types[i] = clone_node_type(info->type);
             param_values[i] = *get_value_from_stack(-1);
         }
+
         sNodeType* param_types2[PARAMS_MAX];
         LVALUE param_values2[PARAMS_MAX];
 
@@ -5416,7 +5501,24 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
 
         /// cast and type checking ///
-        if(!fun.mVarArg) {
+        if(strcmp(fun_name, "llvm.va_start") == 0 || strcmp(fun_name, "llvm.va_end") == 0)
+        {
+            if(fun.mNumParams > num_params) {
+                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                info->err_num++;
+
+                info->type = create_node_type_with_class_name("int"); // dummy
+
+                return TRUE;
+            }
+
+            LVALUE param = param_values[num_params-0-1];
+
+            param.value = Builder.CreateCast(Instruction::BitCast, param.value, PointerType::get(Type::getInt8Ty(TheContext), 0));
+
+            llvm_params.push_back(param.value);
+        }
+        else if(!fun.mVarArg) {
             if(fun.mNumParams != num_params) {
                 compile_err_msg(info, "Calling function parametor number is invalid %s(left %d, right %d)\n", fun_name, fun.mNumParams, num_params);
                 info->err_num++;
@@ -5494,7 +5596,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 llvm_params.push_back(rvalue.value);
             }
         }
-
 
         result_type = create_node_type_with_class_name(fun.mResultTypeName);
 
@@ -6463,6 +6564,10 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             return TRUE;
         }
 
+        if(type_identify_with_class_name(var_type, "__builtin_va_list")) {
+            llvm_var_type = ArrayType::get(llvm_var_type, 1);
+        }
+
         int alignment = get_llvm_alignment_from_node_type(var_type);
 
         if(extern_) {
@@ -6502,6 +6607,10 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             info->type = create_node_type_with_class_name("int"); // dummy
 
             return TRUE;
+        }
+
+        if(type_identify_with_class_name(var_type, "__builtin_va_list")) {
+            llvm_var_type = ArrayType::get(llvm_var_type, 1);
         }
 
         int alignment = get_llvm_alignment_from_node_type(var_type);
@@ -7115,6 +7224,10 @@ static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
 
     Function* llvm_function = fun->mLLVMFunction;
 
+    if(info->andand_result_var == NULL) {
+        info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
+    }
+
     Value* result_var = (Value*)info->andand_result_var;
 
     /// compile expression ///
@@ -7250,6 +7363,9 @@ static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
 
     Function* llvm_function = fun->mLLVMFunction;
 
+    if(info->oror_result_var == NULL) {
+        info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
+    }
     Value* result_var = (Value*)info->oror_result_var;
 
     /// compile expression ///

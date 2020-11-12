@@ -2,6 +2,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+void*% xsprintf(char* msg, ...)
+{
+    va_list args;
+    va_start(args, msg);
+    char* tmp;
+    int len = vasprintf(&tmp, msg, args);
+    va_end(args);
+
+    return tmp;
+}
+
 struct sData;
 typedef struct sData sDataType;
 

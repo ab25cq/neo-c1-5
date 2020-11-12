@@ -2118,6 +2118,9 @@ cstring_array_value2: CSTRING {
 node: source_point_macro exp {
             $$ = $2;
             }
+        | exp source_point_macro {
+            $$ = $1;
+            }
         | INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, yylineno); }
         | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, yylineno); }
         | CSTRING {
@@ -2728,8 +2731,24 @@ params: {
         params = sNodeTree_create_params(gSName, yylineno); 
         $$ = params; 
     }
+    | source_point_macro {
+        params = sNodeTree_create_params(gSName, yylineno); 
+        $$ = params; 
+    }
     | exp { 
         params = sNodeTree_create_params(gSName, yylineno); 
+        append_param_to_params(params, $1); 
+        $$ = params; 
+    }
+    | exp ',' source_point_macro params { 
+        append_param_to_params(params, $1); 
+        $$ = params; 
+    }
+    | exp source_point_macro ',' params { 
+        append_param_to_params(params, $1); 
+        $$ = params; 
+    }
+    | exp source_point_macro ',' source_point_macro params { 
         append_param_to_params(params, $1); 
         $$ = params; 
     }

@@ -3681,6 +3681,8 @@ if test `uname -m` = x86_64
 then
     echo x86_64
 
+    $as_echo "#define __X86_64_CPU__ 1" >>confdefs.h
+
     $as_echo "#define __64BIT_CPU__ 1" >>confdefs.h
 
 elif test `uname -m` = i386 || test `uname -m` = i686
