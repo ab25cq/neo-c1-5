@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AAAAA	code/HelloWorld.c	11;"	d	file:
+AAAAA	code/HelloWorld.c	133;"	d	file:
 ALIGNMENT_H	src/alignment.h	2;"	d
 ALLOC	src/xfunc.h	4;"	d
 ANDAND	parser.tab.c	/^    ANDAND = 286,$/;"	e	enum:yytokentype	file:
@@ -158,7 +158,7 @@ NEW	parser.tab.h	/^    NEW = 279,$/;"	e	enum:yytokentype
 NODE_TYPE_PAGE_SIZE	src/node_type.c	8;"	d	file:
 NOT_EQ	parser.tab.c	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype	file:
 NOT_EQ	parser.tab.h	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype
-NULL	code/HelloWorld.c	210;"	d	file:
+NULL	code/HelloWorld.c	332;"	d	file:
 OBJS	Makefile	/^OBJS=src\/klass.o src\/node_type.o src\/typedef.o src\/vtable.o src\/node.o$/;"	m
 OROR	parser.tab.c	/^    OROR = 287,$/;"	e	enum:yytokentype	file:
 OROR	parser.tab.h	/^    OROR = 287,$/;"	e	enum:yytokentype
@@ -234,45 +234,45 @@ WHILE	parser.tab.h	/^    WHILE = 307,$/;"	e	enum:yytokentype
 XFUNC_H	src/xfunc.h	2;"	d
 XOR_EQ	parser.tab.c	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype	file:
 XOR_EQ	parser.tab.h	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype
-YYABORT	parser.tab.c	2201;"	d	file:
-YYACCEPT	parser.tab.c	2200;"	d	file:
-YYBACKUP	parser.tab.c	2207;"	d	file:
+YYABORT	parser.tab.c	2341;"	d	file:
+YYACCEPT	parser.tab.c	2340;"	d	file:
+YYBACKUP	parser.tab.c	2347;"	d	file:
 YYBISON	parser.tab.c	48;"	d	file:
 YYBISON_VERSION	parser.tab.c	51;"	d	file:
-YYCASE_	parser.tab.c	2551;"	d	file:
-YYCASE_	parser.tab.c	2562;"	d	file:
+YYCASE_	parser.tab.c	2691;"	d	file:
+YYCASE_	parser.tab.c	2702;"	d	file:
 YYCOPY	parser.tab.c	485;"	d	file:
 YYCOPY	parser.tab.c	488;"	d	file:
 YYCOPY_NEEDED	parser.tab.c	460;"	d	file:
 YYDEBUG	parser.tab.c	143;"	d	file:
 YYDEBUG	parser.tab.h	41;"	d
-YYDPRINTF	parser.tab.c	2238;"	d	file:
-YYDPRINTF	parser.tab.c	2353;"	d	file:
-YYEMPTY	parser.tab.c	2197;"	d	file:
-YYEOF	parser.tab.c	2198;"	d	file:
-YYERRCODE	parser.tab.c	2226;"	d	file:
-YYERROR	parser.tab.c	2202;"	d	file:
+YYDPRINTF	parser.tab.c	2378;"	d	file:
+YYDPRINTF	parser.tab.c	2493;"	d	file:
+YYEMPTY	parser.tab.c	2337;"	d	file:
+YYEOF	parser.tab.c	2338;"	d	file:
+YYERRCODE	parser.tab.c	2366;"	d	file:
+YYERROR	parser.tab.c	2342;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	131;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	132;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	134;"	d	file:
 YYFINAL	parser.tab.c	501;"	d	file:
-YYFPRINTF	parser.tab.c	2235;"	d	file:
+YYFPRINTF	parser.tab.c	2375;"	d	file:
 YYFREE	parser.tab.c	431;"	d	file:
-YYINITDEPTH	parser.tab.c	2362;"	d	file:
+YYINITDEPTH	parser.tab.c	2502;"	d	file:
 YYLAST	parser.tab.c	503;"	d	file:
 YYMALLOC	parser.tab.c	425;"	d	file:
-YYMAXDEPTH	parser.tab.c	2373;"	d	file:
+YYMAXDEPTH	parser.tab.c	2513;"	d	file:
 YYMAXUTOK	parser.tab.c	515;"	d	file:
 YYNNTS	parser.tab.c	508;"	d	file:
 YYNRULES	parser.tab.c	510;"	d	file:
 YYNSTATES	parser.tab.c	512;"	d	file:
 YYNTOKENS	parser.tab.c	506;"	d	file:
-YYPACT_NINF	parser.tab.c	666;"	d	file:
-YYPOPSTACK	parser.tab.c	2678;"	d	file:
+YYPACT_NINF	parser.tab.c	668;"	d	file:
+YYPOPSTACK	parser.tab.c	2818;"	d	file:
 YYPULL	parser.tab.c	63;"	d	file:
 YYPURE	parser.tab.c	57;"	d	file:
 YYPUSH	parser.tab.c	60;"	d	file:
-YYRECOVERING	parser.tab.c	2205;"	d	file:
+YYRECOVERING	parser.tab.c	2345;"	d	file:
 YYSIZE_MAXIMUM	parser.tab.c	313;"	d	file:
 YYSIZE_T	parser.tab.c	302;"	d	file:
 YYSIZE_T	parser.tab.c	304;"	d	file:
@@ -299,9 +299,9 @@ YYSTYPE_IS_DECLARED	parser.tab.c	260;"	d	file:
 YYSTYPE_IS_DECLARED	parser.tab.h	158;"	d
 YYSTYPE_IS_TRIVIAL	parser.tab.c	259;"	d	file:
 YYSTYPE_IS_TRIVIAL	parser.tab.h	157;"	d
-YYTABLES_NAME	lex.yy.c	3204;"	d	file:
-YYTABLE_NINF	parser.tab.c	671;"	d	file:
-YYTERROR	parser.tab.c	2225;"	d	file:
+YYTABLES_NAME	lex.yy.c	3195;"	d	file:
+YYTABLE_NINF	parser.tab.c	673;"	d	file:
+YYTERROR	parser.tab.c	2365;"	d	file:
 YYTOKENTYPE	parser.tab.c	151;"	d	file:
 YYTOKENTYPE	parser.tab.h	49;"	d
 YYTRANSLATE	parser.tab.c	519;"	d	file:
@@ -330,7 +330,7 @@ YY_DECL_IS_OURS	lex.yy.c	964;"	d	file:
 YY_DO_BEFORE_ACTION	lex.yy.c	367;"	d	file:
 YY_END_OF_BUFFER	lex.yy.c	374;"	d	file:
 YY_END_OF_BUFFER_CHAR	lex.yy.c	128;"	d	file:
-YY_EXIT_FAILURE	lex.yy.c	2997;"	d	file:
+YY_EXIT_FAILURE	lex.yy.c	2988;"	d	file:
 YY_EXTRA_TYPE	lex.yy.c	817;"	d	file:
 YY_FATAL_ERROR	lex.yy.c	955;"	d	file:
 YY_FLEX_MAJOR_VERSION	lex.yy.c	9;"	d	file:
@@ -347,7 +347,7 @@ YY_INPUT	lex.yy.c	908;"	d	file:
 YY_INT_ALIGNED	lex.yy.c	4;"	d	file:
 YY_LESS_LINENO	lex.yy.c	172;"	d	file:
 YY_LINENO_REWIND_TO	lex.yy.c	179;"	d	file:
-YY_LOCATION_PRINT	parser.tab.c	2246;"	d	file:
+YY_LOCATION_PRINT	parser.tab.c	2386;"	d	file:
 YY_MORE_ADJ	lex.yy.c	752;"	d	file:
 YY_NEW_FILE	lex.yy.c	127;"	d	file:
 YY_NULL	lex.yy.c	106;"	d	file:
@@ -357,20 +357,20 @@ YY_NULLPTR	parser.tab.c	125;"	d	file:
 YY_NUM_RULES	lex.yy.c	373;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	890;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	892;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2343;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2356;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2483;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2496;"	d	file:
 YY_RESTORE_YY_MORE_OFFSET	lex.yy.c	753;"	d	file:
 YY_RULE_SETUP	lex.yy.c	983;"	d	file:
 YY_SC_TO_UI	lex.yy.c	111;"	d	file:
-YY_STACK_PRINT	parser.tab.c	2312;"	d	file:
-YY_STACK_PRINT	parser.tab.c	2355;"	d	file:
+YY_STACK_PRINT	parser.tab.c	2452;"	d	file:
+YY_STACK_PRINT	parser.tab.c	2495;"	d	file:
 YY_START	lex.yy.c	122;"	d	file:
 YY_START_STACK_INCR	lex.yy.c	950;"	d	file:
 YY_STATE_BUF_SIZE	lex.yy.c	145;"	d	file:
 YY_STATE_EOF	lex.yy.c	125;"	d	file:
 YY_STRUCT_YY_BUFFER_STATE	lex.yy.c	203;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	2250;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	2354;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	2390;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	2494;"	d	file:
 YY_TYPEDEF_YY_BUFFER_STATE	lex.yy.c	148;"	d	file:
 YY_TYPEDEF_YY_SIZE_T	lex.yy.c	153;"	d	file:
 YY_USER_ACTION	lex.yy.c	975;"	d	file:
@@ -464,25 +464,17 @@ array_index_num_dimention	parser.tab.c	/^int array_index_num_dimention = 0;$/;"	
 array_type	src/parser.y	/^array_type: '[' exp ']' {$/;"	l
 array_value	src/parser.y	/^array_value: $/;"	l
 array_values	parser.tab.c	/^unsigned int array_values[INIT_ARRAY_MAX];$/;"	v
-as_fn_append	config.status	/^  as_fn_append ()$/;"	f
 as_fn_append	configure	/^  as_fn_append ()$/;"	f
-as_fn_arith	config.status	/^  as_fn_arith ()$/;"	f
 as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
-as_fn_error	config.status	/^as_fn_error ()$/;"	f
 as_fn_error	configure	/^as_fn_error ()$/;"	f
-as_fn_executable_p	config.status	/^as_fn_executable_p ()$/;"	f
 as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
-as_fn_exit	config.status	/^as_fn_exit ()$/;"	f
 as_fn_exit	configure	/^as_fn_exit ()$/;"	f
 as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
-as_fn_mkdir_p	config.status	/^as_fn_mkdir_p ()$/;"	f
 as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
 as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
 as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
-as_fn_set_status	config.status	/^as_fn_set_status ()$/;"	f
 as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
 as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
-as_fn_unset	config.status	/^as_fn_unset ()$/;"	f
 as_fn_unset	configure	/^as_fn_unset ()$/;"	f
 auto_cast_posibility	src/node_type.c	/^BOOL auto_cast_posibility(sNodeType* left_type, sNodeType* right_type)$/;"	f
 b	code/HelloWorld.c	/^    T b;$/;"	m	struct:T	file:
@@ -596,6 +588,7 @@ compiler_final	src/main.c	/^static void compiler_final()$/;"	f	file:
 compiler_init	src/main.c	/^static void compiler_init()$/;"	f	file:
 const_array_type	src/parser.y	/^const_array_type: '[' INTNUM ']' {$/;"	l
 const_test	code/HelloWorld.c	/^bool const_test(const char* str) $/;"	f
+convert_type_to_struct_name	src/compile.cpp	/^void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)$/;"	f
 createDebugFunctionInfo	src/compile.cpp	/^void createDebugFunctionInfo(int sline, const char* fun_name, sFunction* function, Function* llvm_function)$/;"	f
 createDebugFunctionType	src/compile.cpp	/^static DISubroutineType* createDebugFunctionType(sFunction* function, DIFile* unit)$/;"	f	file:
 create_debug_type	src/compile.cpp	/^static DIType* create_debug_type(sNodeType* node_type) $/;"	f	file:
@@ -1045,13 +1038,25 @@ method_generics_types	lex.yy.c	/^char method_generics_types[GENERICS_TYPES_MAX][
 method_generics_types	parser.tab.c	/^char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];$/;"	v
 method_generics_types	src/parser.y	/^method_generics_types: {$/;"	l
 mystrncpy	src/memalloc-stdc.c	/^char* mystrncpy(char* des, char* src, int size)$/;"	f
+nccalloc	code/HelloWorld.c	/^inline void*% nccalloc(long long num, long long nsize)$/;"	f
+nccalloc	neo-c2.h	/^inline void*% nccalloc(long long num, long long nsize)$/;"	f
 nccalloc	src/memalloc-stdc.c	/^void *nccalloc(long long num, long long nsize)$/;"	f
 ncfree	src/memalloc-stdc.c	/^void ncfree(void *block)$/;"	f
+ncmalloc	code/HelloWorld.c	/^inline void*% ncmalloc(long long size)$/;"	f
+ncmalloc	neo-c2.h	/^inline void*% ncmalloc(long long size)$/;"	f
 ncmalloc	src/memalloc-stdc.c	/^void *ncmalloc(long long size)$/;"	f
+ncmalloc_usable_size	code/HelloWorld.c	/^inline long long ncmalloc_usable_size(void* block)$/;"	f
+ncmalloc_usable_size	neo-c2.h	/^inline long long ncmalloc_usable_size(void* block)$/;"	f
 ncmalloc_usable_size	src/memalloc-stdc.c	/^long long ncmalloc_usable_size(void* block)$/;"	f
 ncmemcpy	src/memalloc-stdc.c	/^void* ncmemcpy(void* mem, void* mem2, long long int size)$/;"	f
+ncmemdup	code/HelloWorld.c	/^inline void*% ncmemdup(void*% block)$/;"	f
+ncmemdup	neo-c2.h	/^inline void*% ncmemdup(void*% block)$/;"	f
 ncmemdup	src/memalloc-stdc.c	/^void *ncmemdup(void *block)$/;"	f
+ncrealloc	code/HelloWorld.c	/^inline void*% ncrealloc(void *block, long long int size)$/;"	f
+ncrealloc	neo-c2.h	/^inline void*% ncrealloc(void *block, long long int size)$/;"	f
 ncrealloc	src/memalloc-stdc.c	/^void *ncrealloc(void *block, long long int size)$/;"	f
+ncstrncpy	code/HelloWorld.c	/^inline char* ncstrncpy(char* des, char* src, int size)$/;"	f
+ncstrncpy	neo-c2.h	/^inline char* ncstrncpy(char* des, char* src, int size)$/;"	f
 new_right_value_objects_container	src/compile.cpp	/^void* new_right_value_objects_container(sCompileInfo* info)$/;"	f
 no_output	src/common.h	/^    BOOL no_output;$/;"	m	struct:sCompileInfoStruct
 node	parser.tab.c	/^    unsigned int node;$/;"	m	union:YYSTYPE	file:
@@ -1364,20 +1369,22 @@ var_arg	parser.tab.c	/^BOOL var_arg;$/;"	v
 variable_name	parser.tab.c	/^char variable_name[VAR_NAME_MAX];$/;"	v
 variable_names	parser.tab.c	/^char variable_names[VAR_NAME_MAX][128];$/;"	v
 xasprintf	src/memalloc-stdc.c	/^void *xasprintf(const char* msg, ...)$/;"	f
+xassert	code/HelloWorld.c	/^inline void xassert(char* msg, bool exp) $/;"	f
 xassert	neo-c2.h	/^inline void xassert(char* msg, bool exp) $/;"	f
 xcalloc	src/xfunc.c	/^ALLOC void* xcalloc(size_t count, size_t size)$/;"	f
 xmalloc	src/xfunc.c	/^ALLOC void* xmalloc(size_t size)$/;"	f
 xrealloc	src/xfunc.c	/^ALLOC void* xrealloc(void* ptr, size_t size)$/;"	f
 xsprintf	a.c	/^void* xsprintf(char* msg, ...)$/;"	f
+xsprintf	code/HelloWorld.c	/^inline char*% xsprintf(char* msg, ...)$/;"	f
 xsprintf	neo-c2.h	/^inline char*% xsprintf(char* msg, ...)$/;"	f
 xsprintf	src/memalloc-stdc.c	/^void *xsprintf(char* msg, ...)$/;"	f
 xstrdup	src/xfunc.c	/^ALLOC char* xstrdup(const char* str)$/;"	f
 xstrncat	src/xfunc.c	/^char* xstrncat(char* des, const char* str, int size)$/;"	f
 xstrncpy	src/xfunc.c	/^char* xstrncpy(char* des, const char* src, int size)$/;"	f
 xxxxxxxx	code/aaa.h	/^int xxxxxxxx;$/;"	v
-yy_accept	lex.yy.c	/^static const flex_int16_t yy_accept[453] =$/;"	v	file:
+yy_accept	lex.yy.c	/^static const flex_int16_t yy_accept[452] =$/;"	v	file:
 yy_at_bol	lex.yy.c	/^	int yy_at_bol;$/;"	m	struct:yy_buffer_state	file:
-yy_base	lex.yy.c	/^static const flex_int16_t yy_base[465] =$/;"	v	file:
+yy_base	lex.yy.c	/^static const flex_int16_t yy_base[464] =$/;"	v	file:
 yy_bs_column	lex.yy.c	/^    int yy_bs_column; \/**< The column count. *\/$/;"	m	struct:yy_buffer_state	file:
 yy_bs_lineno	lex.yy.c	/^    int yy_bs_lineno; \/**< The line count. *\/$/;"	m	struct:yy_buffer_state	file:
 yy_buf_pos	lex.yy.c	/^	char *yy_buf_pos;		\/* current position in input buffer *\/$/;"	m	struct:yy_buffer_state	file:
@@ -1389,9 +1396,9 @@ yy_buffer_state	lex.yy.c	/^struct yy_buffer_state$/;"	s	file:
 yy_buffer_status	lex.yy.c	/^	int yy_buffer_status;$/;"	m	struct:yy_buffer_state	file:
 yy_c_buf_p	lex.yy.c	/^static char *yy_c_buf_p = NULL;$/;"	v	file:
 yy_ch_buf	lex.yy.c	/^	char *yy_ch_buf;		\/* input buffer *\/$/;"	m	struct:yy_buffer_state	file:
-yy_chk	lex.yy.c	/^static const flex_int16_t yy_chk[609] =$/;"	v	file:
+yy_chk	lex.yy.c	/^static const flex_int16_t yy_chk[603] =$/;"	v	file:
 yy_create_buffer	lex.yy.c	/^    YY_BUFFER_STATE yy_create_buffer  (FILE * file, int  size )$/;"	f
-yy_def	lex.yy.c	/^static const flex_int16_t yy_def[465] =$/;"	v	file:
+yy_def	lex.yy.c	/^static const flex_int16_t yy_def[464] =$/;"	v	file:
 yy_delete_buffer	lex.yy.c	/^    void yy_delete_buffer (YY_BUFFER_STATE  b )$/;"	f
 yy_did_buffer_switch_on_eof	lex.yy.c	/^static int yy_did_buffer_switch_on_eof;$/;"	v	file:
 yy_ec	lex.yy.c	/^static const YY_CHAR yy_ec[256] =$/;"	v	file:
@@ -1418,9 +1425,9 @@ yy_n_chars	lex.yy.c	/^	int yy_n_chars;$/;"	m	struct:yy_buffer_state	file:
 yy_n_chars	lex.yy.c	/^static int yy_n_chars;		\/* number of characters read into yy_ch_buf *\/$/;"	v	file:
 yy_new_buffer	lex.yy.c	322;"	d	file:
 yy_nxt	lex.yy.c	/^	flex_int32_t yy_nxt;$/;"	m	struct:yy_trans_info	file:
-yy_nxt	lex.yy.c	/^static const flex_int16_t yy_nxt[609] =$/;"	v	file:
+yy_nxt	lex.yy.c	/^static const flex_int16_t yy_nxt[603] =$/;"	v	file:
 yy_reduce_print	parser.tab.c	/^yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)$/;"	f	file:
-yy_rule_can_match_eol	lex.yy.c	/^static const flex_int32_t yy_rule_can_match_eol[133] =$/;"	v	file:
+yy_rule_can_match_eol	lex.yy.c	/^static const flex_int32_t yy_rule_can_match_eol[132] =$/;"	v	file:
 yy_scan_buffer	lex.yy.c	/^YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )$/;"	f
 yy_scan_bytes	lex.yy.c	/^YY_BUFFER_STATE yy_scan_bytes  (const char * yybytes, int  _yybytes_len )$/;"	f
 yy_scan_string	lex.yy.c	/^YY_BUFFER_STATE yy_scan_string (const char * yystr )$/;"	f
@@ -1440,14 +1447,14 @@ yyalloc	lex.yy.c	/^void *yyalloc (yy_size_t  size )$/;"	f
 yyalloc	parser.tab.c	/^union yyalloc$/;"	u	file:
 yychar	parser.tab.c	/^int yychar;$/;"	v
 yycheck	parser.tab.c	/^static const yytype_int16 yycheck[] =$/;"	v	file:
-yyclearin	parser.tab.c	2196;"	d	file:
+yyclearin	parser.tab.c	2336;"	d	file:
 yyconst	lex.yy.c	97;"	d	file:
 yydebug	parser.tab.c	/^int yydebug;$/;"	v
 yydefact	parser.tab.c	/^static const yytype_uint16 yydefact[] =$/;"	v	file:
 yydefgoto	parser.tab.c	/^static const yytype_int16 yydefgoto[] =$/;"	v	file:
 yydestruct	parser.tab.c	/^yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)$/;"	f	file:
 yyensure_buffer_stack	lex.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	file:
-yyerrok	parser.tab.c	2195;"	d	file:
+yyerrok	parser.tab.c	2335;"	d	file:
 yyerror	parser.tab.c	/^int yyerror(char *msg)$/;"	f
 yyfree	lex.yy.c	/^void yyfree (void * ptr )$/;"	f
 yyget_debug	lex.yy.c	/^int yyget_debug  (void)$/;"	f
@@ -1460,8 +1467,8 @@ yyin	lex.yy.c	/^FILE *yyin = NULL, *yyout = NULL;$/;"	v
 yyinput	lex.yy.c	/^    static int yyinput (void)$/;"	f	file:
 yyleng	lex.yy.c	/^int yyleng;$/;"	v
 yyless	lex.yy.c	188;"	d	file:
-yyless	lex.yy.c	3008;"	d	file:
-yyless	lex.yy.c	3009;"	d	file:
+yyless	lex.yy.c	2999;"	d	file:
+yyless	lex.yy.c	3000;"	d	file:
 yylex_destroy	lex.yy.c	/^int yylex_destroy  (void)$/;"	f
 yylineno	lex.yy.c	/^int yylineno = 1;$/;"	v
 yylval	parser.tab.c	/^YYSTYPE yylval;$/;"	v
@@ -1471,7 +1478,7 @@ yynoreturn	lex.yy.c	100;"	d	file:
 yynoreturn	lex.yy.c	102;"	d	file:
 yyout	lex.yy.c	/^FILE *yyin = NULL, *yyout = NULL;$/;"	v
 yypact	parser.tab.c	/^static const yytype_int16 yypact[] =$/;"	v	file:
-yypact_value_is_default	parser.tab.c	668;"	d	file:
+yypact_value_is_default	parser.tab.c	670;"	d	file:
 yyparse	parser.tab.c	/^yyparse (void)$/;"	f
 yypgoto	parser.tab.c	/^static const yytype_int16 yypgoto[] =$/;"	v	file:
 yypop_buffer_state	lex.yy.c	/^void yypop_buffer_state (void)$/;"	f
@@ -1488,12 +1495,12 @@ yyset_out	lex.yy.c	/^void yyset_out (FILE *  _out_str )$/;"	f
 yyss_alloc	parser.tab.c	/^  yytype_int16 yyss_alloc;$/;"	m	union:yyalloc	file:
 yystos	parser.tab.c	/^static const yytype_uint8 yystos[] =$/;"	v	file:
 yystpcpy	parser.tab.c	/^yystpcpy (char *yydest, const char *yysrc)$/;"	f	file:
-yystpcpy	parser.tab.c	2397;"	d	file:
+yystpcpy	parser.tab.c	2537;"	d	file:
 yystrlen	parser.tab.c	/^yystrlen (const char *yystr)$/;"	f	file:
-yystrlen	parser.tab.c	2381;"	d	file:
+yystrlen	parser.tab.c	2521;"	d	file:
 yysyntax_error	parser.tab.c	/^yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,$/;"	f	file:
 yytable	parser.tab.c	/^static const yytype_int16 yytable[] =$/;"	v	file:
-yytable_value_is_error	parser.tab.c	673;"	d	file:
+yytable_value_is_error	parser.tab.c	675;"	d	file:
 yyterminate	lex.yy.c	945;"	d	file:
 yytext	lex.yy.c	/^char *yytext;$/;"	v
 yytext_ptr	lex.yy.c	355;"	d	file:

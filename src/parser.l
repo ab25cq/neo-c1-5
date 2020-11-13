@@ -340,11 +340,6 @@ restrict {
     return(yytext[0]); 
 }
 
--[0-9]+ {
-    long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
 
 0[0-9]+ {
     long value = strtol(yytext, NULL, 8);
@@ -407,27 +402,27 @@ restrict {
 }
 
 [0-9]* { 
-    sscanf(yytext, "%lld", &yylval.ival);
+    sscanf(yytext, "%ld", &yylval.ival);
     return(INTNUM); 
 }
 
 [0-9]*u { 
-    sscanf(yytext, "%llu", &yylval.ival);
+    sscanf(yytext, "%lu", &yylval.ival);
     return(INTNUM); 
 }
 
 [0-9]*l { 
-    sscanf(yytext, "%lld", &yylval.ival);
+    sscanf(yytext, "%ld", &yylval.ival);
     return(INTNUM); 
 }
 
 [0-9]*ll { 
-    sscanf(yytext, "%lld", &yylval.ival);
+    sscanf(yytext, "%ld", &yylval.ival);
     return(INTNUM); 
 }
 
 [0-9]*ull { 
-    sscanf(yytext, "%llu", &yylval.ival);
+    sscanf(yytext, "%lu", &yylval.ival);
     return(INTNUM); 
 }
 

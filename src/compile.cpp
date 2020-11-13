@@ -5170,6 +5170,16 @@ static BOOL pre_compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
+{
+    if(strcmp(node_type->mClass->mName, "char") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
+        xstrncpy(type_name2, "string", VAR_NAME_MAX);
+    }
+    else {
+        xstrncpy(type_name2, node_type->mClass->mName, VAR_NAME_MAX);
+    }
+}
+
 BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 {
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
@@ -5320,8 +5330,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         if(message_passing) {
             info->generics_type = clone_node_type(param_types2[0]);
 
-            sCLClass* klass = param_types2[0]->mClass;
-
             char real_fun_name[VAR_NAME_MAX];
 
             if(inherit_) {
@@ -5393,7 +5401,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 }
             }
             else {
-                xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
+                sNodeType* node_type = param_types2[0];
+
+                char type_name2[VAR_NAME_MAX];
+                convert_type_to_struct_name(node_type, type_name2);
+
+                xstrncpy(real_fun_name, type_name2, VAR_NAME_MAX);
                 xstrncat(real_fun_name, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
@@ -5717,7 +5730,12 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
             else {
-                xstrncpy(real_fun_name, klass->mName, VAR_NAME_MAX);
+                sNodeType* node_type = param_types2[0];
+
+                char type_name2[VAR_NAME_MAX];
+                convert_type_to_struct_name(node_type, type_name2);
+
+                xstrncpy(real_fun_name, type_name2, VAR_NAME_MAX);
                 xstrncat(real_fun_name, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 

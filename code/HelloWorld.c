@@ -1,7 +1,129 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "neo-c2.h"
+#include <string.h>
+#include <malloc.h>
+
+inline void xassert(char* msg, bool exp) 
+{
+    printf("%s...", msg);
+
+    if(exp) {
+        puts("yes");
+    }
+    else {
+        puts("no");
+        exit(2);
+    }
+}
+
+inline char*% xsprintf(char* msg, ...)
+{
+    va_list args;
+    va_start(args, msg);
+    char* tmp;
+    int len = vasprintf(&tmp, msg, args);
+    va_end(args);
+
+    return dummy_heap tmp;
+}
+
+inline char* ncstrncpy(char* des, char* src, int size)
+{
+    char* result;
+
+    result = strncpy(des, src, size-1);
+    des[size-1] = 0;
+
+    return result;
+}
+
+inline void*% ncmalloc(long long size)
+{
+    void* result = malloc(size);
+
+    if(result == NULL) {
+        fprintf(stderr, "can't get heap memory. size %d. ncmalloc\n", size);
+        exit(2);
+    }
+
+    return dummy_heap result;
+}
+
+inline void*% nccalloc(long long num, long long nsize)
+{
+    void* result = calloc(num, nsize);
+
+    if(result == NULL) {
+        fprintf(stderr, "can't get heap memory. nccalloc num %d nsize %d\n", num, nsize);
+
+        exit(2);
+    }
+
+    memset(result, 0, num*nsize);
+
+    return dummy_heap result;
+}
+
+inline void*% ncrealloc(void *block, long long int size)
+{
+#ifdef __DARWIN__
+    void* result = calloc(1, size);
+    memcpy(result, block, size);
+    free(block);
+
+    if(result == NULL) {
+        fprintf(stderr, "can't get heap memory. realloc size %d. realloc memory %p\n", size, block);
+        exit(2);
+    }
+
+    return dummy_heap result;
+#else
+    void* result = realloc(block, size);
+
+    if(result == NULL) {
+        fprintf(stderr, "can't get heap memory. realloc size %d. realloc memory %p\n", size, block);
+        exit(2);
+    }
+
+    return dummy_heap result;
+#endif
+}
+
+inline long long ncmalloc_usable_size(void* block)
+{
+#ifdef __DARWIN__
+    return malloc_size(block);
+#else
+    return malloc_usable_size(block);
+#endif
+}
+
+inline void*% ncmemdup(void*% block)
+{
+#ifdef __DARWIN__
+    long long size = malloc_size(block);
+#else
+    long long size = malloc_usable_size(block);
+#endif
+
+    if (!block) return (void*)0;
+
+    void*% ret = ncmalloc(size);
+
+    if (ret) {
+        char* p = ret;
+        char* p2 = block;
+        while(p - ret < size) {
+            *p = *p2;
+            p++;
+            p2++;
+        }
+    }
+
+    return ret;
+}
+
 
 struct sData;
 typedef struct sData sDataType;
@@ -497,6 +619,15 @@ int main()
     int bsss = 2;
 
     xassert("xsprintf", strcmp(xsprintf("%d %d", asss, bsss), "1 2") == 0);
+
+    char ades[1024];
+    char* des = ades;
+
+    int dessize = 1;
+
+    des[dessize-1] = '\0';
+
+    xassert("char* equals", "AAA".equals("AAA"));
 
     return 0;
 }

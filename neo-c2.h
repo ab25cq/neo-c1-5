@@ -22,7 +22,6 @@ inline char*% xsprintf(char* msg, ...)
     return dummy_heap tmp;
 }
 
-/*
 inline char* ncstrncpy(char* des, char* src, int size)
 {
     char* result;
@@ -94,7 +93,7 @@ inline long long ncmalloc_usable_size(void* block)
 #endif
 }
 
-inline void*% ncmemdup(void *block)
+inline void*% ncmemdup(void*% block)
 {
 #ifdef __DARWIN__
     long long size = malloc_size(block);
@@ -104,7 +103,7 @@ inline void*% ncmemdup(void *block)
 
     if (!block) return (void*)0;
 
-    char*% ret = ncmalloc(size);
+    void*% ret = ncmalloc(size);
 
     if (ret) {
         char* p = ret;
@@ -117,6 +116,7 @@ inline void*% ncmemdup(void *block)
     return ret;
 }
 
+/*
 typedef char*% string;
 typedef wchar_t*% wstring;
 
@@ -226,9 +226,7 @@ inline int char::compare(char left, char right) {
         return 0;
     }
 }
-*/
 
-/*
 /// char* ///
 
 inline bool char*::equals(char* left, char* right)
