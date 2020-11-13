@@ -3,9 +3,6 @@
 #include <unistd.h>
 #include "neo-c2.h"
 
-typedef char*% string;
-typedef wchar_t*% wstring;
-
 struct sData;
 typedef struct sData sDataType;
 

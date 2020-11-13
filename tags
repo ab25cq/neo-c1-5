@@ -4,7 +4,7 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-AAAAA	code/HelloWorld.c	14;"	d	file:
+AAAAA	code/HelloWorld.c	11;"	d	file:
 ALIGNMENT_H	src/alignment.h	2;"	d
 ALLOC	src/xfunc.h	4;"	d
 ANDAND	parser.tab.c	/^    ANDAND = 286,$/;"	e	enum:yytokentype	file:
@@ -24,7 +24,7 @@ BUFFER_H	src/buffer.h	2;"	d
 CASE	parser.tab.c	/^    CASE = 310,$/;"	e	enum:yytokentype	file:
 CASE	parser.tab.h	/^    CASE = 310,$/;"	e	enum:yytokentype
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
 CHARNUM	parser.tab.c	/^    CHARNUM = 259,$/;"	e	enum:yytokentype	file:
 CHARNUM	parser.tab.h	/^    CHARNUM = 259,$/;"	e	enum:yytokentype
 CLASS_FLAGS_ANONYMOUS	src/common.h	65;"	d
@@ -50,7 +50,7 @@ CONTINUE	parser.tab.h	/^    CONTINUE = 312,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 264,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 264,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DBuilder	src/compile.cpp	/^DIBuilder* DBuilder;$/;"	v
 DEFAULT	parser.tab.c	/^    DEFAULT = 313,$/;"	e	enum:yytokentype	file:
 DEFAULT	parser.tab.h	/^    DEFAULT = 313,$/;"	e	enum:yytokentype
@@ -158,7 +158,7 @@ NEW	parser.tab.h	/^    NEW = 279,$/;"	e	enum:yytokentype
 NODE_TYPE_PAGE_SIZE	src/node_type.c	8;"	d	file:
 NOT_EQ	parser.tab.c	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype	file:
 NOT_EQ	parser.tab.h	/^    NOT_EQ = 285,$/;"	e	enum:yytokentype
-NULL	code/HelloWorld.c	213;"	d	file:
+NULL	code/HelloWorld.c	210;"	d	file:
 OBJS	Makefile	/^OBJS=src\/klass.o src\/node_type.o src\/typedef.o src\/vtable.o src\/node.o$/;"	m
 OROR	parser.tab.c	/^    OROR = 287,$/;"	e	enum:yytokentype	file:
 OROR	parser.tab.h	/^    OROR = 287,$/;"	e	enum:yytokentype
@@ -520,7 +520,6 @@ clone_var_table	src/vtable.c	/^sVarTable* clone_var_table(sVarTable* lv_table)$/
 comma_exp	src/parser.y	/^comma_exp: exp {$/;"	l
 comment	lex.yy.c	805;"	d	file:
 comment2	lex.yy.c	806;"	d	file:
-compare	neo-c2.h	/^inline int int::compare(int left, int right) {$/;"	f
 compile	src/compile.cpp	/^BOOL compile(unsigned int node, sCompileInfo* info)$/;"	f
 compile_add	src/compile.cpp	/^static BOOL compile_add(unsigned int node, sCompileInfo* info)$/;"	f	file:
 compile_and	src/compile.cpp	/^static BOOL compile_and(unsigned int node, sCompileInfo* info)$/;"	f	file:
@@ -636,7 +635,6 @@ entry_llvm_function	src/compile.cpp	/^static BOOL entry_llvm_function(sFunction*
 enum_	src/parser.y	/^enum_: ENUM '{' enum_fields '}' ';' {$/;"	l
 enum_fields	src/parser.y	/^enum_fields: {$/;"	l
 enum_number	parser.tab.c	/^int enum_number = 0;$/;"	v
-equals	neo-c2.h	/^inline bool int::equals(int left, int right) $/;"	f
 err_num	src/common.h	/^    int err_num;$/;"	m	struct:sCompileInfoStruct
 exec_prefix	Makefile	/^exec_prefix=${prefix}$/;"	m
 existance	src/compile.cpp	/^    bool existance;$/;"	m	struct:sFunctionStruct	file:
@@ -732,7 +730,6 @@ get_class	src/klass.c	/^sCLClass* get_class(char* class_name_)$/;"	f
 get_const_value_from_node	src/compile.cpp	/^BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sCompileInfo* cinfo)$/;"	f
 get_dummy_value	src/compile.cpp	/^Value* get_dummy_value(sNodeType* node_type, sCompileInfo* info)$/;"	f
 get_field_index	src/klass.c	/^int get_field_index(sCLClass* klass, char* var_name, int* parent_field_index)$/;"	f
-get_hash_key	neo-c2.h	/^inline int int::get_hash_key(int value)$/;"	f
 get_hash_key	src/klass.c	/^unsigned int get_hash_key(const char* name, unsigned int max)$/;"	f
 get_llvm_alignment_from_node_type	src/compile.cpp	/^int get_llvm_alignment_from_node_type(sNodeType* node_type)$/;"	f
 get_lvtable_type	src/compile.cpp	/^static Type* get_lvtable_type()$/;"	f	file:
@@ -1048,19 +1045,13 @@ method_generics_types	lex.yy.c	/^char method_generics_types[GENERICS_TYPES_MAX][
 method_generics_types	parser.tab.c	/^char method_generics_types[GENERICS_TYPES_MAX][VAR_NAME_MAX];$/;"	v
 method_generics_types	src/parser.y	/^method_generics_types: {$/;"	l
 mystrncpy	src/memalloc-stdc.c	/^char* mystrncpy(char* des, char* src, int size)$/;"	f
-nccalloc	neo-c2.h	/^inline void*% nccalloc(long long num, long long nsize)$/;"	f
 nccalloc	src/memalloc-stdc.c	/^void *nccalloc(long long num, long long nsize)$/;"	f
 ncfree	src/memalloc-stdc.c	/^void ncfree(void *block)$/;"	f
-ncmalloc	neo-c2.h	/^inline void*% ncmalloc(long long size)$/;"	f
 ncmalloc	src/memalloc-stdc.c	/^void *ncmalloc(long long size)$/;"	f
-ncmalloc_usable_size	neo-c2.h	/^inline long long ncmalloc_usable_size(void* block)$/;"	f
 ncmalloc_usable_size	src/memalloc-stdc.c	/^long long ncmalloc_usable_size(void* block)$/;"	f
 ncmemcpy	src/memalloc-stdc.c	/^void* ncmemcpy(void* mem, void* mem2, long long int size)$/;"	f
-ncmemdup	neo-c2.h	/^inline void*% ncmemdup(void *block)$/;"	f
 ncmemdup	src/memalloc-stdc.c	/^void *ncmemdup(void *block)$/;"	f
-ncrealloc	neo-c2.h	/^inline void*% ncrealloc(void *block, long long int size)$/;"	f
 ncrealloc	src/memalloc-stdc.c	/^void *ncrealloc(void *block, long long int size)$/;"	f
-ncstrncpy	neo-c2.h	/^inline char* ncstrncpy(char* des, char* src, int size)$/;"	f
 new_right_value_objects_container	src/compile.cpp	/^void* new_right_value_objects_container(sCompileInfo* info)$/;"	f
 no_output	src/common.h	/^    BOOL no_output;$/;"	m	struct:sCompileInfoStruct
 node	parser.tab.c	/^    unsigned int node;$/;"	m	union:YYSTYPE	file:
@@ -1079,7 +1070,6 @@ object	parser.tab.c	/^unsigned int object;$/;"	v
 oror_result_var	src/common.h	/^    void* oror_result_var;$/;"	m	struct:sCompileInfoStruct
 output_native_code	src/compile.cpp	/^static void output_native_code()$/;"	f	file:
 p	lex.yy.c	/^char* p;$/;"	v
-p	neo-c2.h	/^inline void p(char* str)$/;"	f
 params	parser.tab.c	/^unsigned int params;$/;"	v
 params	src/parser.y	/^params: { $/;"	l
 parse_class_name	src/node_type.c	/^static sNodeType* parse_class_name(char** p, char** p2, char* buf)$/;"	f	file:
@@ -1331,9 +1321,6 @@ std_move	src/compile.cpp	/^void std_move(Value* var_address, sNodeType* lvar_typ
 store_address_to_lvtable	src/compile.cpp	/^void store_address_to_lvtable(int index, Value* address, sCompileInfo* info)$/;"	f
 str	lex.yy.c	804;"	d	file:
 string	code/HelloWorld.c	/^inline char*% string(char* str) $/;"	f
-string	code/HelloWorld.c	/^typedef char*% string;$/;"	t	file:
-string	neo-c2.h	/^inline string string(char* str)$/;"	f
-string	neo-c2.h	/^typedef char*% string;$/;"	t
 string2	code/HelloWorld.c	/^char*% string2(char*% str) $/;"	f
 string_test1	code/HelloWorld.c	/^char*% string_test1(char*% var) $/;"	f
 struct_	src/parser.y	/^struct_: $/;"	l
@@ -1350,7 +1337,6 @@ switch_expression	parser.tab.c	/^unsigned int switch_expression[SWITCH_STASTMENT
 switch_expression	src/common.h	/^    void* switch_expression;$/;"	m	struct:sCompileInfoStruct
 switch_expression_type	src/common.h	/^    sNodeType* switch_expression_type;$/;"	m	struct:sCompileInfoStruct
 sysconfdir	Makefile	/^sysconfdir=${prefix}\/etc\/neo-c2$/;"	m
-to_string	neo-c2.h	/^inline string int::to_string(int value) {$/;"	f
 type	src/common.h	/^    sNodeType* type;$/;"	m	struct:sCompileInfoStruct
 type	src/compile.cpp	/^    sNodeType* type;$/;"	m	struct:LVALUEStruct	file:
 type	src/parser.y	/^type:$/;"	l
@@ -1377,15 +1363,11 @@ var	src/compile.cpp	/^    sVar* var;$/;"	m	struct:LVALUEStruct	file:
 var_arg	parser.tab.c	/^BOOL var_arg;$/;"	v
 variable_name	parser.tab.c	/^char variable_name[VAR_NAME_MAX];$/;"	v
 variable_names	parser.tab.c	/^char variable_names[VAR_NAME_MAX][128];$/;"	v
-wstring	code/HelloWorld.c	/^typedef wchar_t*% wstring;$/;"	t	file:
-wstring	neo-c2.h	/^typedef wchar_t*% wstring;$/;"	t
 xasprintf	src/memalloc-stdc.c	/^void *xasprintf(const char* msg, ...)$/;"	f
 xassert	neo-c2.h	/^inline void xassert(char* msg, bool exp) $/;"	f
-xbasename	neo-c2.h	/^inline string xbasename(char* path)$/;"	f
 xcalloc	src/xfunc.c	/^ALLOC void* xcalloc(size_t count, size_t size)$/;"	f
 xmalloc	src/xfunc.c	/^ALLOC void* xmalloc(size_t size)$/;"	f
 xrealloc	src/xfunc.c	/^ALLOC void* xrealloc(void* ptr, size_t size)$/;"	f
-xrealpath	neo-c2.h	/^inline string xrealpath(char* path)$/;"	f
 xsprintf	a.c	/^void* xsprintf(char* msg, ...)$/;"	f
 xsprintf	neo-c2.h	/^inline char*% xsprintf(char* msg, ...)$/;"	f
 xsprintf	src/memalloc-stdc.c	/^void *xsprintf(char* msg, ...)$/;"	f

@@ -1,3 +1,15 @@
+inline void xassert(char* msg, bool exp) 
+{
+    printf("%s...", msg);
+
+    if(exp) {
+        puts("yes");
+    }
+    else {
+        puts("no");
+        exit(2);
+    }
+}
 
 inline char*% xsprintf(char* msg, ...)
 {
@@ -10,6 +22,7 @@ inline char*% xsprintf(char* msg, ...)
     return dummy_heap tmp;
 }
 
+/*
 inline char* ncstrncpy(char* des, char* src, int size)
 {
     char* result;
@@ -150,18 +163,6 @@ inline string xrealpath(char* path)
     return result2;
 }
 
-inline void xassert(char* msg, bool exp) 
-{
-    printf("%s...", msg);
-
-    if(exp) {
-        puts("yes");
-    }
-    else {
-        puts("no");
-        exit(2);
-    }
-}
 
 inline void p(char* str)
 {
@@ -225,6 +226,7 @@ inline int char::compare(char left, char right) {
         return 0;
     }
 }
+*/
 
 /*
 /// char* ///
