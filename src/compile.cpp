@@ -1783,30 +1783,32 @@ void free_right_value_objects(sCompileInfo* info)
         return;
     }
 
-    std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+    if(info->right_value_objects) {
+        std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
 
-    std::map<Value*, std::pair<sNodeType*, int>> old_heap_objects(*right_value_objects);
+        std::map<Value*, std::pair<sNodeType*, int>> old_heap_objects(*right_value_objects);
 
-    right_value_objects->clear();
+        right_value_objects->clear();
 
-    for(std::pair<Value*, std::pair<sNodeType*, int>> it: old_heap_objects) 
-    {
-        Value* address = it.first;
+        for(std::pair<Value*, std::pair<sNodeType*, int>> it: old_heap_objects) 
+        {
+            Value* address = it.first;
 
-        sNodeType* node_type = it.second.first; 
-        int flag = it.second.second;
+            sNodeType* node_type = it.second.first; 
+            int flag = it.second.second;
 
-        if(flag <= 0) {
-            free_right_value_object(node_type, address, FALSE, info);
-        }
-        else {
-            flag--;
+            if(flag <= 0) {
+                free_right_value_object(node_type, address, FALSE, info);
+            }
+            else {
+                flag--;
 
-            std::pair<sNodeType*, int> pair_value;
-            pair_value.first = clone_node_type(node_type);
-            pair_value.second = flag;
+                std::pair<sNodeType*, int> pair_value;
+                pair_value.first = clone_node_type(node_type);
+                pair_value.second = flag;
 
-            (*right_value_objects)[address] = pair_value;
+                (*right_value_objects)[address] = pair_value;
+            }
         }
     }
 }
@@ -5128,9 +5130,11 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
         else {
             free_objects_with_parents(nullptr, info);
         }
+        free_right_value_objects(info);
         Builder.CreateRet(rvalue.value);
     }
     else {
+        free_right_value_objects(info);
         free_objects_with_parents(nullptr, info);
         Builder.CreateRet(nullptr);
     }
@@ -7269,7 +7273,7 @@ static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
 
     BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_jump_end", llvm_function);
 
-    free_right_value_objects(info);
+    //free_right_value_objects(info);
 
     Builder.CreateCondBr(conditional_value.value, cond_then_block, cond_end_block);
 
@@ -7311,7 +7315,7 @@ static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
 
     Builder.CreateAlignedStore(andand_value, result_var, 1);
 
-    free_right_value_objects(info);
+    //free_right_value_objects(info);
     Builder.CreateBr(cond_end_block);
 
     BasicBlock* current_block_before2;
@@ -7407,7 +7411,7 @@ static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
 
     BasicBlock* cond_end_block = BasicBlock::Create(TheContext, "cond_jump_end", llvm_function);;
 
-    free_right_value_objects(info);
+    //free_right_value_objects(info);
 
     Builder.CreateCondBr(conditional_value.value, cond_end_block, cond_then_block);
 
@@ -7449,7 +7453,7 @@ static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
 
     Builder.CreateAlignedStore(oror_value, result_var, 1);
 
-    free_right_value_objects(info);
+    //free_right_value_objects(info);
     Builder.CreateBr(cond_end_block);
 
     BasicBlock* current_block_before2;
@@ -11626,6 +11630,79 @@ BOOL pre_compile_conditional(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_dummy_heap(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(left_node == 0) {
+        compile_err_msg(info, "require dummy heap target object");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    LVALUE llvm_value = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    llvm_value.type->mDummyHeap = TRUE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = clone_node_type(llvm_value.type);
+
+    return TRUE;
+}
+
+static BOOL pre_compile_dummy_heap(unsigned int node, sCompileInfo* info)
+{
+    return TRUE;
+}
+
+
+static BOOL compile_managed(unsigned int node, sCompileInfo* info)
+{
+    char* var_name = gNodes[node].uValue.sManaged.mVarName;
+
+    sVar* var = get_variable_from_table(info->lv_table, var_name);
+
+    if(var == NULL) {
+        compile_err_msg(info, "undeclared variable %s(99)", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    sNodeType* var_type = clone_node_type(var->mType);
+
+    if(var_type == NULL || var_type->mClass == NULL) 
+    {
+        compile_err_msg(info, "null type %s", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    var->mType->mHeap = FALSE;
+
+    info->type = create_node_type_with_class_name("void"); // dummy
+
+    return TRUE;
+}
+
+static BOOL pre_compile_managed(unsigned int node, sCompileInfo* info)
+{
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -12042,6 +12119,20 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeConditional: {
             if(!compile_conditional(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeDummyHeap: {
+            if(!compile_dummy_heap(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeManaged: {
+            if(!compile_managed(node, info)) {
                 return FALSE;
             }
             }
@@ -12475,6 +12566,21 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
             }
             }
             break;
+
+        case kNodeTypeDummyHeap: {
+            if(!pre_compile_dummy_heap(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
+        case kNodeTypeManaged: {
+            if(!pre_compile_managed(node, info)) {
+                return FALSE;
+            }
+            }
+            break;
+
 
         default:
             fprintf(stderr, "invalid node type\n");

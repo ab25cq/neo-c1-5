@@ -49,6 +49,11 @@ int main(int argc, char** argv)
 {
     char sname[PATH_MAX];
     gSName[0] = '\0';
+    sname[0] = '\0';
+
+    char cpp_commandline[1024*2];
+
+    cpp_commandline[0] = '\0';
 
     int i;
     for(i=1; i<argc; i++) {
@@ -57,11 +62,31 @@ int main(int argc, char** argv)
             if(strcmp(argv[i], "-g") == 0) {
                 gNCDebug = TRUE;
             }
+            else if(strcmp(argv[i], "-I") == 0) {
+                xstrncat(cpp_commandline, argv[i], 1024*2);
+                xstrncat(cpp_commandline, " ", 1024*2);
+
+                if(i+1 < argc) {
+                    xstrncat(cpp_commandline, argv[i+1], 1024*2);
+                    xstrncat(cpp_commandline, " ", 1024*2);
+                    i++;
+                }
+            }
+            else {
+                xstrncat(cpp_commandline, argv[i], 1024*2);
+                xstrncat(cpp_commandline, " ", 1024*2);
+            }
         }
         else {
-            xstrncpy(sname, argv[i], PATH_MAX);
-            xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
-            snprintf(gSName, PATH_MAX, "%s.pp", argv[i]);
+            if(sname[0] == '\0') {
+                xstrncpy(sname, argv[i], PATH_MAX);
+                xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
+                snprintf(gSName, PATH_MAX, "%s.pp", argv[i]);
+            }
+            else {
+                xstrncat(cpp_commandline, argv[i], 1024*2);
+                xstrncat(cpp_commandline, " ", 1024*2);
+            }
         }
     }
 
@@ -69,17 +94,17 @@ int main(int argc, char** argv)
     char cmd[1024];
 #ifdef __DARWIN__
     if(cflags) {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ -E %s -I/opt/local/include %s > %s", cflags, sname, gSName);
+        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -E %s -I/opt/local/include %s > %s", cpp_commandline, cflags, sname, gSName);
     }
     else {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ -E %s -I/opt/local/include > %s", sname, gSName);
+        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -I/opt/local/include %s > %s", cpp_commandline sname, gSName);
     }
 #else
     if(cflags) {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s -C %s > %s", cflags, sname, gSName);
+        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s %s -C %s > %s", cpp_commandline, cflags, sname, gSName);
     }
     else {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ -C %s > %s", sname, gSName);
+        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s -C %s > %s", cpp_commandline, sname, gSName);
     }
 #endif
 

@@ -1547,6 +1547,40 @@ unsigned int sNodeTree_create_conditional(unsigned int conditional, unsigned int
     return node;
 }
 
+unsigned int sNodeTree_create_dummy_heap(unsigned int object_node, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeDummyHeap;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = object_node;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_managed(char* var_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeManaged;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sManaged.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

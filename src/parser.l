@@ -697,6 +697,16 @@ __alignof__ {
     return(__ALIGNOF__);
 }
 
+dummy_heap {
+    strncpy(yylval.cval, yytext, 128);
+    return(DUMMY_HEAP);
+}
+
+managed {
+    strncpy(yylval.cval, yytext, 128);
+    return(MANAGED_TOKEN);
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     strncpy(yylval.cval, yytext, 128);
 

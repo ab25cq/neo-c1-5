@@ -277,7 +277,7 @@ extern int yylineno;
 /////////////////////////////// 
 // node.c
 /////////////////////////////// 
-enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeCoroutine, kNodeTypeConditional };
+enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeCoroutine, kNodeTypeConditional, kNodeTypeDummyHeap, kNodeTypeManaged };
 
 struct sNodeTreeStruct 
 {
@@ -434,6 +434,9 @@ struct sNodeTreeStruct
             char mName[VAR_NAME_MAX];
             char mTypeName[VAR_NAME_MAX];
         } sTypeDef;
+        struct {
+            char mVarName[VAR_NAME_MAX];
+        } sManaged;
     } uValue;
 };
 
@@ -565,6 +568,7 @@ extern sCompileInfo cinfo;
 extern sVarTable* gLVTable;
 
 BOOL pre_compile_block(unsigned int node_block, sCompileInfo* info);
+void free_right_value_objects(sCompileInfo* info);
 
 #endif
 

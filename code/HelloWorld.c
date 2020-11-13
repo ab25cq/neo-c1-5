@@ -1,17 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "neo-c2.h"
 
-void*% xsprintf(char* msg, ...)
-{
-    va_list args;
-    va_start(args, msg);
-    char* tmp;
-    int len = vasprintf(&tmp, msg, args);
-    va_end(args);
-
-    return tmp;
-}
+typedef char*% string;
+typedef wchar_t*% wstring;
 
 struct sData;
 typedef struct sData sDataType;
@@ -40,18 +33,6 @@ int b = 1/a;
     return 2;
 }
 
-void xassert(char* msg, bool exp) 
-{
-    printf("%s...", msg);
-
-    if(exp) {
-        puts("yes");
-    }
-    else {
-        puts("no");
-        exit(2);
-    }
-}
 
 int int::fun(int self) {
     puts("called int::fun");
@@ -346,7 +327,7 @@ int main()
 
     xassert("pointer2", **pp_data4 == 123);
 
-    char* str2 = new char[128];
+    char*% str2 = new char[128];
     strcpy(str2, "ABC");
     (*str2) ++;
 
@@ -514,6 +495,11 @@ int main()
 
     int api_level = 1;
     xassert("conditional2", (api_level == 1 ? api_level: -1) == 1);
+
+    int asss = 1;
+    int bsss = 2;
+
+    xassert("xsprintf", strcmp(xsprintf("%d %d", asss, bsss), "1 2") == 0);
 
     return 0;
 }

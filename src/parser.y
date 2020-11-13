@@ -112,6 +112,8 @@ sVarTable* gLVTable;
 %token <cval> DEFAULT
 %token <cval> SIZEOF
 %token <cval> ERROR
+%token <cval> MANAGED_TOKEN
+%token <cval> DUMMY_HEAP
 %token <cval> __ATTRIBUTE__
 %token <cval> __LEAF__
 %token <cval> __NOTHROW__
@@ -145,7 +147,7 @@ sVarTable* gLVTable;
 %type <cval> array_type
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core;
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects;
 
 %left '?' ':'
 %left OROR
@@ -1730,16 +1732,21 @@ block_end: {
         $$ = block;
         };
 
-statment: comma_exp ';'              { $$ = $1; }
+free_right_value_objects: {
+    free_right_value_objects(&cinfo);
+    }
+    ;
+
+statment: comma_exp free_right_value_objects ';'              { $$ = $1; }
     | RETURN ';'               { $$ = sNodeTree_create_return(0, 0, gSName, yylineno); }
     | RETURN '(' comma_exp ')' ';'   { $$ = sNodeTree_create_return($3, 0, gSName, yylineno); }
     | RETURN comma_exp ';'  { $$ = sNodeTree_create_return($2, 0, gSName, yylineno); }
     | RETURN ';' after_return_case_statment { $$ = sNodeTree_create_return(0, $3, gSName, yylineno); }
     | RETURN '(' comma_exp ')' ';' after_return_case_statment   { $$ = sNodeTree_create_return($3, $6, gSName, yylineno); }
     | RETURN comma_exp ';' after_return_case_statment  { $$ = sNodeTree_create_return($2, $4, gSName, yylineno); }
-    | IF '(' comma_exp ')' '{' block '}' block_end {
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end {
         unsigned int if_exp = $3;
-        unsigned int if_block = $6;
+        unsigned int if_block = $7;
         int elif_num = 0;
         unsigned int elif_exps[ELIF_NUM_MAX];
         unsigned int elif_blocks[ELIF_NUM_MAX];
@@ -1747,11 +1754,11 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp ')' statment {
+    | IF '(' comma_exp free_right_value_objects ')' statment {
         BOOL create_lv_table = FALSE;
 
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $5);
+        append_node_to_node_block(block, $6);
 
         unsigned int if_exp = $3;
         unsigned int if_block = block;
@@ -1762,95 +1769,95 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp ')' '{' block '}' block_end ELSE '{' block '}' block_end 
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE '{' block '}' block_end 
     {
         unsigned int if_exp = $3;
-        unsigned int if_block = $6;
+        unsigned int if_block = $7;
         int elif_num = 0;
         unsigned int elif_exps[ELIF_NUM_MAX];
         unsigned int elif_blocks[ELIF_NUM_MAX];
-        unsigned int else_block = $11;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp ')' statment  ELSE '{' block '}' block_end 
-    {
-        BOOL create_lv_table = FALSE;
-
-        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $5);
-
-        unsigned int if_exp = $3;
-        unsigned int if_block = block;
-        int elif_num = 0;
-        unsigned int elif_exps[ELIF_NUM_MAX];
-        unsigned int elif_blocks[ELIF_NUM_MAX];
-        unsigned int else_block = $8;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp ')' '{' block '}' block_end ELSE statment 
-    {
-        BOOL create_lv_table = FALSE;
-
-        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $10);
-
-        unsigned int if_exp = $3;
-        unsigned int if_block = $6;
-        int elif_num = 0;
-        unsigned int elif_exps[ELIF_NUM_MAX];
-        unsigned int elif_blocks[ELIF_NUM_MAX];
-        unsigned int else_block = block;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
-    {
-        unsigned int if_exp = $3;
-        unsigned int if_block = $6;
-        unsigned int else_block = $15;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp ')' statment ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
-    {
-        BOOL create_lv_table = FALSE;
-
-        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $5);
-
-        unsigned int if_exp = $3;
-        unsigned int if_block = block;
         unsigned int else_block = $12;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE statment 
+    | IF '(' comma_exp free_right_value_objects ')' statment  ELSE '{' block '}' block_end 
     {
         BOOL create_lv_table = FALSE;
 
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $14);
+        append_node_to_node_block(block, $6);
 
         unsigned int if_exp = $3;
-        unsigned int if_block = $6;
+        unsigned int if_block = block;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
+        unsigned int else_block = $9;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE statment 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $11);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = $7;
+        int elif_num = 0;
+        unsigned int elif_exps[ELIF_NUM_MAX];
+        unsigned int elif_blocks[ELIF_NUM_MAX];
         unsigned int else_block = block;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
+    {
         unsigned int if_exp = $3;
-        unsigned int if_block = $6;
+        unsigned int if_block = $7;
+        unsigned int else_block = $16;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp free_right_value_objects ')' statment ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $6);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = block;
+        unsigned int else_block = $13;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE statment 
+    {
+        BOOL create_lv_table = FALSE;
+
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $15);
+
+        unsigned int if_exp = $3;
+        unsigned int if_block = $7;
+        unsigned int else_block = block;
+        
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+    }
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
+        unsigned int if_exp = $3;
+        unsigned int if_block = $7;
         unsigned else_block = 0;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp ')' statment ELSE IF prepare_elif_statment elif_statment {
+    | IF '(' comma_exp free_right_value_objects ')' statment ELSE IF prepare_elif_statment elif_statment {
         BOOL create_lv_table = FALSE;
 
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $5);
+        append_node_to_node_block(block, $6);
 
         unsigned int if_exp = $3;
         unsigned int if_block = block;
@@ -1858,23 +1865,23 @@ statment: comma_exp ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | FOR '(' comma_exp ';' comma_exp ';' comma_exp ')' '{' block '}' block_end {
+    | FOR '(' comma_exp free_right_value_objects ';' comma_exp free_right_value_objects ';' comma_exp free_right_value_objects ')' '{' block '}' block_end {
         unsigned int expression_node1 = $3;
-        unsigned int expression_node2 = $5;
-        unsigned int expression_node3 = $7;
+        unsigned int expression_node2 = $6;
+        unsigned int expression_node3 = $9;
 
-        unsigned int for_node_block = $10;
+        unsigned int for_node_block = $13;
 
         $$ = sNodeTree_for_statment(expression_node1, expression_node2, expression_node3, for_node_block, gSName, yylineno);
     }
-    | WHILE '(' comma_exp ')' '{' block '}' block_end {
+    | WHILE '(' comma_exp free_right_value_objects ')' '{' block '}' block_end {
         unsigned int expression_node1 = $3;
 
-        unsigned int while_node_block = $6;
+        unsigned int while_node_block = $7;
 
         $$ = sNodeTree_while_statment(expression_node1, while_node_block, gSName, yylineno);
     }
-    | SWITCH '(' comma_exp ')' '{' switch_block '}' {
+    | SWITCH '(' comma_exp free_right_value_objects ')' '{' switch_block '}' {
         unsigned int expression_node = $3;
 
         $$ = sNodeTree_switch_statment(expression_node, num_switch_expression, switch_expression, gSName, yylineno);
@@ -1897,7 +1904,7 @@ statment: comma_exp ';'              { $$ = $1; }
     | CONTINUE ';' {
         $$ = sNodeTree_create_continue_expression(gSName, yylineno);
     }
-    | DO '{' block '}' block_end WHILE '(' comma_exp ')' ';' {
+    | DO '{' block '}' block_end WHILE '(' comma_exp free_right_value_objects ')' ';' {
         unsigned int expression_node1 = $8;
 
         unsigned int while_node_block = $3;
@@ -2118,6 +2125,14 @@ cstring_array_value2: CSTRING {
 node: source_point_macro exp {
             $$ = $2;
             }
+        | DUMMY_HEAP exp {
+            unsigned int object_node = $2;
+            $$ = sNodeTree_create_dummy_heap(object_node, gSName, yylineno);
+        }
+        | MANAGED_TOKEN IDENTIFIER {
+            char* var_name = $2;
+            $$ = sNodeTree_create_managed(var_name, gSName, yylineno);
+        }
         | exp source_point_macro {
             $$ = $1;
             }
