@@ -101,7 +101,6 @@ sVarTable* gLVTable;
 %token <cval> OR_EQ
 %token <cval> LSHIFT_EQ
 %token <cval> RSHIFT_EQ
-%token <cval> FUNCTION_POINTER
 %token <cval> FOR
 %token <cval> WHILE
 %token <cval> DO
@@ -148,6 +147,7 @@ sVarTable* gLVTable;
 %type <cval> array_type
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
+%type <cval> name
 %type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects;
 
 %left '[' ']' '='
@@ -847,24 +847,24 @@ typedef_:
         char* type_name = $2;
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF type FUNCTION_POINTER IDENTIFIER ')' '(' typedef_type_params_ ')' ';' {
-        char* name = $4;
+    | TYPEDEF type '(' '*' IDENTIFIER ')' '(' typedef_type_params_ ')' ';' {
+        char* name = $5;
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $2, VAR_NAME_MAX);
         xstrncat(type_name, " lambda(", VAR_NAME_MAX);
-        xstrncat(type_name, $7, VAR_NAME_MAX);
+        xstrncat(type_name, $8, VAR_NAME_MAX);
         xstrncat(type_name, ")", VAR_NAME_MAX);
 
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
-    | TYPEDEF type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' ';' {
-        char* name = $4;
+    | TYPEDEF type '(' '*' IDENTIFIER ')' '(' type_params ')' ';' {
+        char* name = $5;
         char type_name[VAR_NAME_MAX];
 
         xstrncpy(type_name, $2, VAR_NAME_MAX);
         xstrncat(type_name, " lambda(", VAR_NAME_MAX);
-        xstrncat(type_name, $7, VAR_NAME_MAX);
+        xstrncat(type_name, $8, VAR_NAME_MAX);
         xstrncat(type_name, ")", VAR_NAME_MAX);
 
         $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
@@ -1042,27 +1042,7 @@ type_and_variable_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
     }
-    | type FUNCTION_POINTER IDENTIFIER ')' '(' type_params ')' type_attribute2 {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, " lambda(", VAR_NAME_MAX);
-        xstrncat($$, $6, VAR_NAME_MAX);
-        xstrncat($$, ")", VAR_NAME_MAX);
-
-        xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
-
-        xstrncpy(type_params, "", VAR_NAME_MAX);
-    }
-    | type FUNCTION_POINTER IDENTIFIER ')' '(' function_pointer_type_params ')' type_attribute2 {
-        xstrncpy($$, $1, VAR_NAME_MAX);
-        xstrncat($$, " lambda(", VAR_NAME_MAX);
-        xstrncat($$, $6, VAR_NAME_MAX);
-        xstrncat($$, ")", VAR_NAME_MAX);
-
-        xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
-
-        xstrncpy(type_params, "", VAR_NAME_MAX);
-    }
-    | type FUNCTION_POINTER VOLATILE IDENTIFIER ')' '(' type_params ')' type_attribute2 {
+    | type '(' '*' IDENTIFIER ')' '(' type_params ')' type_attribute2 {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
         xstrncat($$, $7, VAR_NAME_MAX);
@@ -1072,13 +1052,33 @@ type_and_variable_name:
 
         xstrncpy(type_params, "", VAR_NAME_MAX);
     }
-    | type FUNCTION_POINTER VOLATILE IDENTIFIER ')' '(' function_pointer_type_params ')' type_attribute2 {
+    | type '(' '*' IDENTIFIER ')' '(' function_pointer_type_params ')' type_attribute2 {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
         xstrncat($$, $7, VAR_NAME_MAX);
         xstrncat($$, ")", VAR_NAME_MAX);
 
         xstrncpy(variable_names[num_variable_names++], $4, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+    }
+    | type '(' '*' VOLATILE IDENTIFIER ')' '(' type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $8, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $5, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+    }
+    | type '(' '*' VOLATILE IDENTIFIER ')' '(' function_pointer_type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $8, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $5, VAR_NAME_MAX);
 
         xstrncpy(type_params, "", VAR_NAME_MAX);
     }
@@ -1403,8 +1403,16 @@ array_value:
     }
     ;
 
+name:
+    IDENTIFIER {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+    }
+    | TYPE_NAME {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+    }
+
 function: 
-        type IDENTIFIER '(' function_params ')' function_attribute ';' {
+        type name '(' function_params ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -1416,7 +1424,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | EXTERN type IDENTIFIER '(' function_params ')' function_attribute ';' {
+        | EXTERN type name '(' function_params ')' function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $3;
             unsigned int function_params = $5;
@@ -1428,7 +1436,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type IDENTIFIER '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
+        | type name '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $9;
             unsigned int function_params = $4;
@@ -1440,7 +1448,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | EXTERN type IDENTIFIER '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+        | EXTERN type name '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $10;
             unsigned int function_params = $5;
@@ -1452,7 +1460,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type IDENTIFIER '(' function_params2 ')' function_attribute ';' {
+        | type name '(' function_params2 ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -1464,7 +1472,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | EXTERN type IDENTIFIER '(' function_params2 ')' function_attribute ';' {
+        | EXTERN type name '(' function_params2 ')' function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $3;
             unsigned int function_params = $5;
@@ -1476,7 +1484,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type IDENTIFIER '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
+        | type name '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $9;
             unsigned int function_params = $4;
@@ -1488,7 +1496,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | EXTERN type IDENTIFIER '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+        | EXTERN type name '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $10;
             unsigned int function_params = $5;
@@ -1500,7 +1508,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type IDENTIFIER '(' function_params ')' function_params_end '{' function_block '}' block_end {
+        | type name '(' function_params ')' function_params_end '{' function_block '}' block_end {
             char* result_type = $1;
             char* fun_name = $2;
             unsigned int function_params = $4;
@@ -1516,7 +1524,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' function_params_end '{' function_block '}' block_end 
+        | type function_struct_type_name METHOD_MARK name '(' function_params ')' function_params_end '{' function_block '}' block_end 
         {
             char* result_type = $1;
 
@@ -1558,7 +1566,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | TEMPLATE '!' '<' method_generics_types '>' type IDENTIFIER '(' function_params ')' function_params_end '{' function_block '}' block_end {
+        | TEMPLATE '!' '<' method_generics_types '>' type name '(' function_params ')' function_params_end '{' function_block '}' block_end {
             char* result_type = $6;
             char* fun_name = $7;
             unsigned int function_params = $9;
@@ -1574,7 +1582,7 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
-        | TEMPLATE '!' '<' method_generics_types '>' type function_struct_type_name METHOD_MARK IDENTIFIER '(' function_params ')' function_params_end '{' function_block '}' block_end 
+        | TEMPLATE '!' '<' method_generics_types '>' type function_struct_type_name METHOD_MARK name '(' function_params ')' function_params_end '{' function_block '}' block_end 
         {
             char* result_type = $6;
 
@@ -2469,6 +2477,31 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
         }
+        | pointer IDENTIFIER '=' comma_exp { 
+            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
+
+            int i;
+            for(i=0; i<strlen($1)-1; i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+            }
+
+            unsigned int right_node = $4;
+
+            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
+        }
+
+        | pointer '(' exp ')' '=' comma_exp  { 
+            $$ = $3;
+
+            int i;
+            for(i=0; i<strlen($1)-1; i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+            }
+
+            unsigned int right_node = $6;
+
+            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
+        }
 
         | IDENTIFIER '(' ')' {
             BOOL existance = function_existance($1);
@@ -2492,13 +2525,36 @@ node: source_point_macro exp {
                 $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
             }
         }
-        | exp '.' IDENTIFIER '(' ')' {
+
+        | TYPE_NAME '(' ')' {
+            BOOL existance = function_existance($1);
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call($1, 0, FALSE, FALSE, gSName, yylineno);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, yylineno);
+                $$ = sNodeTree_create_lambda_call(node, 0, gSName, yylineno);
+            }
+        }
+        | TYPE_NAME '(' params ')' {
+            BOOL existance = function_existance($1);
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call($1, $3, FALSE, FALSE, gSName, yylineno);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable($1, gSName, yylineno);
+                $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
+            }
+        }
+        | exp '.' name '(' ')' {
             params = sNodeTree_create_params(gSName, yylineno); 
             append_param_to_params(params, $1);
 
             $$ = sNodeTree_create_function_call($3, params, TRUE, FALSE, gSName, yylineno);
         }
-        | exp '.' IDENTIFIER '(' params ')' {
+        | exp '.' name '(' params ')' {
             append_param_to_params($5, $1);
             $$ = sNodeTree_create_function_call($3, $5, TRUE, FALSE, gSName, yylineno);
         }
@@ -2518,16 +2574,16 @@ node: source_point_macro exp {
             append_param_to_params($5, $1);
             $$ = sNodeTree_create_function_call("inherit", $5, TRUE, TRUE, gSName, yylineno);
         }
-        | exp '.' IDENTIFIER {
+        | exp '.' name {
             $$ = sNodeTree_create_load_field($3, $1, gSName, yylineno);
         }
-        | exp '-' '>' IDENTIFIER {
+        | exp '-' '>' name {
             $$ = sNodeTree_create_load_field($4, $1, gSName, yylineno);
         }
-        | exp '.' IDENTIFIER '=' comma_exp  { 
+        | exp '.' name '=' comma_exp  { 
             $$ = sNodeTree_create_store_field($3, $1, $5, gSName, yylineno); 
         }
-        | exp '-' '>' IDENTIFIER '=' comma_exp  { 
+        | exp '-' '>' name '=' comma_exp  { 
             $$ = sNodeTree_create_store_field($4, $1, $6, gSName, yylineno); 
         }
         | NEW type {
@@ -2605,14 +2661,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, yylineno); 
         }
-        | FUNCTION_POINTER IDENTIFIER ')' PLUS_PLUS {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
-
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
-        }
         | IDENTIFIER MINUS_MINUS { 
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2638,14 +2686,6 @@ node: source_point_macro exp {
             BOOL global = FALSE;
 
             $$ = sNodeTree_create_store_variable($2, "", $$, alloc, global, gSName, yylineno); 
-        }
-        | FUNCTION_POINTER IDENTIFIER ')' MINUS_MINUS {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-
-            unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
-
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
         }
         | '(' comma_exp ')' MINUS_MINUS { 
             unsigned int left = $2;
@@ -2673,13 +2713,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' PLUS_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_plus_eq(left, right, gSName, yylineno);
-        }
         | IDENTIFIER MINUS_EQ comma_exp { 
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2696,13 +2729,6 @@ node: source_point_macro exp {
         }
         | '(' comma_exp ')' MINUS_EQ exp { 
             unsigned int left = $2;
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
-        }
-        | FUNCTION_POINTER IDENTIFIER ')' MINUS_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
             unsigned int right = $5;
 
             $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
@@ -2725,13 +2751,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_mult_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' MULT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_mult_eq(left, right, gSName, yylineno);
-        }
         | IDENTIFIER DIV_EQ comma_exp {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2746,13 +2765,6 @@ node: source_point_macro exp {
         }
         | '(' comma_exp ')' DIV_EQ exp { 
             unsigned int left = $2;
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_div_eq(left, right, gSName, yylineno);
-        }
-        | FUNCTION_POINTER IDENTIFIER ')' DIV_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
             unsigned int right = $5;
 
             $$ = sNodeTree_create_div_eq(left, right, gSName, yylineno);
@@ -2775,14 +2787,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_mod_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' MOD_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_mod_eq(left, right, gSName, yylineno);
-        }
-
         | IDENTIFIER AND_EQ comma_exp {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2801,14 +2805,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_and_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' AND_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_and_eq(left, right, gSName, yylineno);
-        }
-
         | IDENTIFIER XOR_EQ comma_exp {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2827,14 +2823,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_xor_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' XOR_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_xor_eq(left, right, gSName, yylineno);
-        }
-
         | IDENTIFIER OR_EQ comma_exp {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2853,14 +2841,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_or_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' OR_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_or_eq(left, right, gSName, yylineno);
-        }
-
         | IDENTIFIER LSHIFT_EQ comma_exp {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -2875,13 +2855,6 @@ node: source_point_macro exp {
         }
         | '(' comma_exp ')' LSHIFT_EQ exp { 
             unsigned int left = $2;
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_lshift_eq(left, right, gSName, yylineno);
-        }
-        | FUNCTION_POINTER IDENTIFIER ')' LSHIFT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
             unsigned int right = $5;
 
             $$ = sNodeTree_create_lshift_eq(left, right, gSName, yylineno);
@@ -2905,14 +2878,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_rshift_eq(left, right, gSName, yylineno);
         }
-        | FUNCTION_POINTER IDENTIFIER ')' RSHIFT_EQ comma_exp {
-            unsigned int left = sNodeTree_create_load_variable($2, gSName, yylineno);
-            left = sNodeTree_create_derefference(left, gSName, yylineno); 
-            unsigned int right = $5;
-
-            $$ = sNodeTree_create_rshift_eq(left, right, gSName, yylineno);
-        }
-
         | '(' type ')' exp {
             char type_name[VAR_NAME_MAX];
 

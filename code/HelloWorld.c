@@ -3,127 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
-
-inline void xassert(char* msg, bool exp) 
-{
-    printf("%s...", msg);
-
-    if(exp) {
-        puts("yes");
-    }
-    else {
-        puts("no");
-        exit(2);
-    }
-}
-
-inline char*% xsprintf(char* msg, ...)
-{
-    va_list args;
-    va_start(args, msg);
-    char* tmp;
-    int len = vasprintf(&tmp, msg, args);
-    va_end(args);
-
-    return dummy_heap tmp;
-}
-
-inline char* ncstrncpy(char* des, char* src, int size)
-{
-    char* result;
-
-    result = strncpy(des, src, size-1);
-    des[size-1] = 0;
-
-    return result;
-}
-
-inline void*% ncmalloc(long long size)
-{
-    void* result = malloc(size);
-
-    if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. size %d. ncmalloc\n", size);
-        exit(2);
-    }
-
-    return dummy_heap result;
-}
-
-inline void*% nccalloc(long long num, long long nsize)
-{
-    void* result = calloc(num, nsize);
-
-    if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. nccalloc num %d nsize %d\n", num, nsize);
-
-        exit(2);
-    }
-
-    memset(result, 0, num*nsize);
-
-    return dummy_heap result;
-}
-
-inline void*% ncrealloc(void *block, long long int size)
-{
-#ifdef __DARWIN__
-    void* result = calloc(1, size);
-    memcpy(result, block, size);
-    free(block);
-
-    if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. realloc size %d. realloc memory %p\n", size, block);
-        exit(2);
-    }
-
-    return dummy_heap result;
-#else
-    void* result = realloc(block, size);
-
-    if(result == NULL) {
-        fprintf(stderr, "can't get heap memory. realloc size %d. realloc memory %p\n", size, block);
-        exit(2);
-    }
-
-    return dummy_heap result;
-#endif
-}
-
-inline long long ncmalloc_usable_size(void* block)
-{
-#ifdef __DARWIN__
-    return malloc_size(block);
-#else
-    return malloc_usable_size(block);
-#endif
-}
-
-inline void*% ncmemdup(void*% block)
-{
-#ifdef __DARWIN__
-    long long size = malloc_size(block);
-#else
-    long long size = malloc_usable_size(block);
-#endif
-
-    if (!block) return (void*)0;
-
-    void*% ret = ncmalloc(size);
-
-    if (ret) {
-        char* p = ret;
-        char* p2 = block;
-        while(p - ret < size) {
-            *p = *p2;
-            p++;
-            p2++;
-        }
-    }
-
-    return ret;
-}
-
+#include "neo-c2.h"
 
 struct sData;
 typedef struct sData sDataType;
@@ -170,15 +50,6 @@ extern char* strcpy(char* str, char* str2);
 extern int strlen(char* str);
 extern char* strcat(char* str, char* str2);
 
-inline char*% string(char* str) 
-{
-    char*% result = new char[strlen(str) + 1];
-
-    strcpy(result, str);
-
-    return result;
-}
-
 char*% string2(char*% str) 
 {
     char*% result = new char[strlen(str) + 6];
@@ -215,6 +86,8 @@ struct GenericsData!<T> {
     T b;
 };
 
+typedef int(*fXXX)(int);
+
 int GenericsData!<T>::show(GenericsData!<T> self)
 {
     T a;
@@ -226,7 +99,7 @@ int GenericsData!<T>::show(GenericsData!<T> self)
 
     printf("%d %d\n", self.a, self.b);
 
-    int (*xxx)(int) = int lambda(int c) { return 555 + c; };
+    fXXX xxx = int lambda(int c) { return 555 + c; };
 
     xassert("generics lambda test", xxx(1) == self.a + 1);
 
@@ -332,6 +205,8 @@ int gArray4[3][3][3] = {
 #define NULL ((void*)0)
 #endif
 
+typedef int (*fAAA)(int);
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -354,7 +229,7 @@ int main()
 
     xassert("eqeq test", xxx == 123);
 
-    int (*aaa)(int) = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
+    fAAA aaa = int lambda(int c) { puts("FUN"); printf("xxx %d\n", xxx); return xxx + c; };
 
     xassert("function pointer test", aaa(1) == 124);
 
@@ -627,7 +502,12 @@ int main()
 
     des[dessize-1] = '\0';
 
-    xassert("char* equals", "AAA".equals("AAA"));
+//    xassert("char* equals", "AAA".equals("AAA"));
+
+    char ccc = 'A';
+    char* p = &ccc;
+
+    xassert("pointer test", *p == 'A');
 
     return 0;
 }

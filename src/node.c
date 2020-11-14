@@ -1581,6 +1581,22 @@ unsigned int sNodeTree_create_managed(char* var_name, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_store_value_to_address(unsigned int address_node, unsigned int right_node, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeStoreAddress;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = address_node;
+    gNodes[node].mRight = right_node;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 void show_node(unsigned int node)
 {
     switch(gNodes[node].mNodeType) {

@@ -11784,6 +11784,67 @@ static BOOL pre_compile_managed(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_store_address(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = clone_node_type(info->type);
+
+    if(left_type->mPointerNum == 0) {
+        compile_err_msg(info, "This is not pointer type2(%s)", left_type->mClass->mName);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    LVALUE lvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    LVALUE rvalue = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    left_type->mPointerNum--;
+
+    if(auto_cast_posibility(left_type, right_type)) {
+        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+        {
+            compile_err_msg(info, "Cast failed");
+            info->err_num++;
+
+            info->type = create_node_type_with_class_name("int"); // dummy
+
+            return TRUE;
+        }
+    }
+
+    Value* address = lvalue.value;
+    Value* value = rvalue.value;
+
+    int alignment = get_llvm_alignment_from_node_type(right_type);
+
+    Builder.CreateAlignedStore(value, address, alignment);
+
+    return TRUE;
+}
+
+static BOOL pre_compile_store_address(unsigned int node, sCompileInfo* info)
+{
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
 //show_node(node);
@@ -12216,6 +12277,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             if(!compile_managed(node, info)) {
                 return FALSE;
             }
+            }
+            break;
+
+        case kNodeTypeStoreAddress:
+            if(!compile_store_address(node, info)) {
+                return FALSE;
             }
             break;
 
@@ -12662,6 +12729,11 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
+        case kNodeTypeStoreAddress:
+            if(!pre_compile_store_address(node, info)) {
+                return FALSE;
+            }
+            break;
 
         default:
             fprintf(stderr, "invalid node type\n");

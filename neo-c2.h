@@ -109,14 +109,15 @@ inline void*% ncmemdup(void*% block)
         char* p = ret;
         char* p2 = block;
         while(p - ret < size) {
-            *p++ = *p2++;
+            *p = *p2;
+            p++;
+            p2++;
         }
     }
 
     return ret;
 }
 
-/*
 typedef char*% string;
 typedef wchar_t*% wstring;
 
@@ -128,9 +129,10 @@ inline string string(char* str)
 
     strcpy(result, str);
 
-    result
+    return result;
 }
 
+/*
 inline string xbasename(char* path)
 {
     char* p = path + strlen(path);
@@ -227,7 +229,9 @@ inline int char::compare(char left, char right) {
     }
 }
 
-/// char* ///
+//////////////////////////////
+/// char* 
+//////////////////////////////
 
 inline bool char*::equals(char* left, char* right)
 {
@@ -264,6 +268,8 @@ inine wstring char*::to_wstring(char* value)
 {
     return wstring(value);
 }
+
+/*
 /// int ///
 impl int
 {

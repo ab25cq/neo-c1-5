@@ -240,11 +240,6 @@ restrict {
     return(__RESTRICT); 
 }
 
-\([ \t]*\*  {
-    strncpy(yylval.cval, yytext, 128);
-    return(FUNCTION_POINTER); 
-}
-
 ">=" {
     strncpy(yylval.cval, yytext, 128);
     return(GTEQ); 
