@@ -672,6 +672,11 @@ __inline {
     return(INLINE);
 }
 
+__inline__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(INLINE);
+}
+
 inline {
     strncpy(yylval.cval, yytext, 128);
     return(INLINE);
@@ -690,6 +695,16 @@ __aligned__ {
 __alignof__ {
     strncpy(yylval.cval, yytext, 128);
     return(__ALIGNOF__);
+}
+
+__signed__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(SIGNED); 
+}
+
+__always_inline__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ALWAYS_INLINE__); 
 }
 
 dummy_heap {

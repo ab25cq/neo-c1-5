@@ -2285,6 +2285,69 @@ void declare_builtin_functions()
         add_function("__builtin_va_end", "__builtin_va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
     }
 
+    {
+        char* param_types[PARAMS_MAX];
+        char* param_names[PARAMS_MAX];
+
+#ifdef __32BIT_CPU__
+        char* result_type_name = "int";
+#else
+        char* result_type_name = "long";
+#endif
+
+        int num_params = 3;
+        param_names[0] = "b1";
+        param_types[0] = "void*";
+
+        param_names[1] = "b2";
+        param_types[1] = "void*";
+
+        param_names[2] = "len";
+#ifdef __32BIT_CPU__
+        param_types[2] = "int";
+#else
+        param_types[2] = "long";
+#endif
+
+        BOOL var_arg = FALSE;
+        BOOL inline_ = FALSE;
+        BOOL inherit_ = FALSE;
+        BOOL static_ = FALSE;
+        BOOL generics = FALSE;
+        BOOL coroutine = FALSE;
+        BOOL method_generics = FALSE;
+        add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+    }
+    {
+        char* param_types[PARAMS_MAX];
+        char* param_names[PARAMS_MAX];
+
+        char* result_type_name = "void*";
+
+        int num_params = 3;
+        param_names[0] = "buf";
+        param_types[0] = "void*";
+
+        param_names[1] = "ch";
+        param_types[1] = "int";
+
+        param_names[2] = "n";
+#ifdef __32BIT_CPU__
+        param_types[2] = "int";
+#else
+        param_types[2] = "long";
+#endif
+
+        BOOL var_arg = FALSE;
+        BOOL inline_ = FALSE;
+        BOOL inherit_ = FALSE;
+        BOOL static_ = FALSE;
+        BOOL generics = FALSE;
+        BOOL coroutine = FALSE;
+        BOOL method_generics = FALSE;
+        add_function("__builtin_memset", "__builtin_memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+    }
+
 /*
     sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
 
