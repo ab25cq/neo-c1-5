@@ -113,10 +113,14 @@ sVarTable* gLVTable;
 %token <cval> ERROR
 %token <cval> MANAGED_TOKEN
 %token <cval> DUMMY_HEAP
+%token <cval> DEPRECATED
+%token <cval> __WARN_UNUSED_RESULT__
+%token <cval> __CONST__
+%token <cval> __ALLOC_SIZE__
+%token <cval> __MALLOC__
 %token <cval> __ATTRIBUTE__
 %token <cval> __LEAF__
 %token <cval> __NOTHROW__
-%token <cval> __MALLOC__
 %token <cval> __FORMAT__
 %token <cval> __PRINTF__
 %token <cval> __SCANF__
@@ -133,6 +137,7 @@ sVarTable* gLVTable;
 %token <cval> __ALIGNED__
 %token <cval> __ALIGNOF__
 %token <cval> __ALWAYS_INLINE__
+%token <cval> __NORETURN__
 %token <cval> ANNOTATE
 %type <cval> type 
 %type <cval> type_name
@@ -148,7 +153,7 @@ sVarTable* gLVTable;
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
 %type <cval> name
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects;
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects;
 
 %left '[' ']' '='
 %left '?' ':'
@@ -193,9 +198,11 @@ program:
             fprintf(stderr, "%s\n", $1);
             exit(2);
         }
-        |
-        function {
+        | function {
             $$ = compile($1, &cinfo);
+        }
+        | pre_function_attribute function {
+            $$ = compile($2, &cinfo);
         }
         | global_variable {
             $$ = compile($1, &cinfo);
@@ -219,6 +226,9 @@ program:
         }
         | program function {
             $$ = compile($2, &cinfo);
+        }
+        | program pre_function_attribute function {
+            $$ = compile($3, &cinfo);
         }
         | program global_variable {
             $$ = compile($2, &cinfo);
@@ -354,6 +364,9 @@ type:
         }
         else if(strcmp($1, "long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static long ") == 0) {
+            xstrncpy($$, "static long", VAR_NAME_MAX);
         }
         else if(strcmp($1, "signed long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
@@ -818,6 +831,8 @@ typedef_attribute: {
 
 type_attribute2_core: 
     __ALIGNED__ '(' __ALIGNOF__ '(' type ')' ')' { } 
+    | __ALIGNED__ '(' INTNUM ')'
+    | ANNOTATE '(' CSTRING CSTRING ')' { }
     ;
 
 type_attribute2: {
@@ -942,6 +957,58 @@ typedef_:
             $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
     | TYPEDEF STRUCT TYPE_NAME TYPE_NAME  typedef_attribute ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $4, VAR_NAME_MAX);
+
+            char* name = buf;
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF UNION IDENTIFIER '{' fields '}' IDENTIFIER  typedef_attribute ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $3, VAR_NAME_MAX);
+
+            char* struct_name = buf;
+            unsigned int fields = $5;
+            BOOL anonymous = FALSE;
+
+            unsigned int node = sNodeTree_create_union(struct_name, fields, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* name = $7;
+            char* type_name = buf;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF UNION IDENTIFIER '{' fields '}' TYPE_NAME  typedef_attribute ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $3, VAR_NAME_MAX);
+
+            char* struct_name = buf;
+            unsigned int fields = $5;
+            BOOL anonymous = FALSE;
+
+            unsigned int node = sNodeTree_create_union(struct_name, fields, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* name = $7;
+            char* type_name = buf;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF UNION TYPE_NAME IDENTIFIER  typedef_attribute ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $4, VAR_NAME_MAX);
+
+            char* name = buf;
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF UNION TYPE_NAME TYPE_NAME  typedef_attribute ';' {
             char buf[VAR_NAME_MAX];
             xstrncpy(buf, $4, VAR_NAME_MAX);
 
@@ -1410,6 +1477,13 @@ name:
     | TYPE_NAME {
         xstrncpy($$, $1, VAR_NAME_MAX);
     }
+    | __PRINTF__ {
+        xstrncpy($$, "printf", VAR_NAME_MAX);
+    }
+    | __SCANF__ {
+        xstrncpy($$, "scanf", VAR_NAME_MAX);
+    }
+    ;
 
 function: 
         type name '(' function_params ')' function_attribute ';' {
@@ -1460,6 +1534,30 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
+        | type name '(' function_params ')' __ASM__ '(' CSTRING ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $8;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type name '(' function_params ')' __ASM__ '(' CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $9;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
         | type name '(' function_params2 ')' function_attribute ';' {
             char* result_type = $1;
             char* fun_name = $2;
@@ -1497,6 +1595,126 @@ function:
             inherit_ = FALSE;
         }
         | EXTERN type name '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $10;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type TYPE_NAME '(' function_params ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $2;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type TYPE_NAME '(' function_params ')' function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $3;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type TYPE_NAME '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $9;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type TYPE_NAME '(' function_params ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $10;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type TYPE_NAME '(' function_params ')' __ASM__ '(' CSTRING ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $8;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type TYPE_NAME '(' function_params ')' __ASM__ '(' CSTRING ')'  function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $9;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type TYPE_NAME '(' function_params2 ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $2;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type TYPE_NAME '(' function_params2 ')' function_attribute ';' {
+            char* result_type = $2;
+            char* fun_name = $3;
+            unsigned int function_params = $5;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | type TYPE_NAME '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')' function_attribute ';' {
+            char* result_type = $1;
+            char* fun_name = $9;
+            unsigned int function_params = $4;
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type TYPE_NAME '(' function_params2 ')' __ASM__ '(' CSTRING CSTRING ')'  function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $10;
             unsigned int function_params = $5;
@@ -1749,6 +1967,14 @@ function_attribute_core:
     | __NONNULL__ '(' INTNUM ')' { }
     | __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
     | ANNOTATE '(' CSTRING CSTRING')' { }
+    | ANNOTATE '(' CSTRING ')' { }
+    | DEPRECATED '(' CSTRING ')'
+    | __WARN_UNUSED_RESULT__ {}
+    | __ALLOC_SIZE__ '(' INTNUM ')'
+    | __ALLOC_SIZE__ '(' INTNUM ',' INTNUM ')'
+    | __MALLOC__
+    | __NORETURN__
+    | __CONST__
     | function_attribute_core ',' __NOTHROW__ { }
     | function_attribute_core ',' __LEAF__ { }
     | function_attribute_core ',' __MALLOC__ { }
@@ -1758,6 +1984,14 @@ function_attribute_core:
     | function_attribute_core __NONNULL__ '(' INTNUM ')' { }
     | function_attribute_core __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
     | function_attribute_core ANNOTATE '(' CSTRING CSTRING')' { }
+    | function_attribute_core ANNOTATE '(' CSTRING ')' { }
+    | function_attribute_core DEPRECATED '(' CSTRING ')'
+    | function_attribute_core __WARN_UNUSED_RESULT__
+    | function_attribute_core __ALLOC_SIZE__ '(' INTNUM ')'
+    | function_attribute_core __ALLOC_SIZE__ '(' INTNUM ',' INTNUM ')'
+    | function_attribute_core __MALLOC__
+    | function_attribute_core __NORETURN__
+    | function_attribute_core __CONST__
     ;
 
 function_attribute: {
@@ -1765,6 +1999,15 @@ function_attribute: {
     | __ATTRIBUTE__ '(' '(' function_attribute_core ')' ')' { }
 
     | function_attribute __ATTRIBUTE__ '(' '(' function_attribute_core ')' ')' { }
+    ;
+
+pre_function_attribute: {
+    }
+    | __ATTRIBUTE__ '(' '(' __NORETURN__ ')' ')' { }
+    | __ATTRIBUTE__ '(' '(' __WARN_UNUSED_RESULT__ ')' ')' { }
+
+    | function_attribute __ATTRIBUTE__ '(' '(' __NORETURN__ ')' ')' { }
+    | function_attribute __ATTRIBUTE__ '(' '(' __WARN_UNUSED_RESULT__ ')' ')' { }
     ;
     
 
@@ -2522,6 +2765,28 @@ node: source_point_macro exp {
             }
             else {
                 unsigned int node = sNodeTree_create_load_variable($1, gSName, yylineno);
+                $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
+            }
+        }
+        | __PRINTF__ '(' params ')' {
+            BOOL existance = function_existance("printf");
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call("printf", $3, FALSE, FALSE, gSName, yylineno);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable("printf", gSName, yylineno);
+                $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
+            }
+        }
+        | __SCANF__ '(' params ')' {
+            BOOL existance = function_existance("scanf");
+
+            if(existance) {
+                $$ = sNodeTree_create_function_call("scanf", $3, FALSE, FALSE, gSName, yylineno);
+            }
+            else {
+                unsigned int node = sNodeTree_create_load_variable("scanf", gSName, yylineno);
                 $$ = sNodeTree_create_lambda_call(node, $3, gSName, yylineno);
             }
         }

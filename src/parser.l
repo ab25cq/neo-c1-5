@@ -214,6 +214,11 @@ __printf__ {
     return(__PRINTF__); 
 }
 
+printf {
+    strncpy(yylval.cval, yytext, 128);
+    return(__PRINTF__); 
+}
+
 __asm__ {
     strncpy(yylval.cval, yytext, 128);
     return(__ASM__); 
@@ -224,10 +229,20 @@ __scanf__ {
     return(__SCANF__); 
 }
 
+scanf {
+    strncpy(yylval.cval, yytext, 128);
+    return(__SCANF__); 
+}
+
 
 __format__ {
     strncpy(yylval.cval, yytext, 128);
     return(__FORMAT__); 
+}
+
+deprecated {
+    strncpy(yylval.cval, yytext, 128);
+    return(DEPRECATED); 
 }
 
 __restrict {
@@ -238,6 +253,16 @@ __restrict {
 restrict {
     strncpy(yylval.cval, yytext, 128);
     return(__RESTRICT); 
+}
+
+__noreturn__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__NORETURN__); 
+}
+
+__const__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__CONST__); 
 }
 
 ">=" {
@@ -710,6 +735,21 @@ dummy_heap {
 managed {
     strncpy(yylval.cval, yytext, 128);
     return(MANAGED_TOKEN);
+}
+
+__warn_unused_result__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__WARN_UNUSED_RESULT__);
+}
+
+__alloc_size__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ALLOC_SIZE__);
+}
+
+__malloc__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__MALLOC__);
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {

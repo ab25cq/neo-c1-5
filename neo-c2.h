@@ -132,7 +132,6 @@ inline string string(char* str)
     return result;
 }
 
-/*
 inline string xbasename(char* path)
 {
     char* p = path + strlen(path);
@@ -171,6 +170,7 @@ inline void p(char* str)
     puts(str);
 }
 
+/*
 //////////////////////////////
 /// int
 //////////////////////////////
@@ -269,7 +269,6 @@ inine wstring char*::to_wstring(char* value)
     return wstring(value);
 }
 
-/*
 /// int ///
 impl int
 {
@@ -300,7 +299,6 @@ impl int
     }
 }
 
-/*
 /// wchar_t ///
 extern wstring operator+(wchar_t* left, wchar_t* right);
 extern wstring operator*(wchar_t* left, int num);

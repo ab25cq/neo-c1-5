@@ -227,8 +227,25 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             char* pp = *p2;
 
             *pp = '\0';
+            if(long_) {
+                node_type->mResultType = create_node_type_with_class_name("long");
 
-            if(buf[0] != '\0') {
+                if(node_type->mResultType == NULL) {
+                    return NULL;
+                }
+
+                node_type->mClass = get_class("lambda");
+            }
+            else if(short_) {
+                node_type->mResultType = create_node_type_with_class_name("short");
+
+                if(node_type->mResultType == NULL) {
+                    return NULL;
+                }
+
+                node_type->mClass = get_class("lambda");
+            }
+            else if(buf[0] != '\0') {
                 node_type->mResultType = create_node_type_with_class_name(buf);
 
                 if(node_type->mResultType == NULL) {
