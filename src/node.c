@@ -1531,6 +1531,42 @@ unsigned int sNodeTree_create_sizeof2(char* var_name, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_alignof1(char* type_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeAlignOf1;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sAlignOf.mTypeName, type_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_alignof2(char* var_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeAlignOf2;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sAlignOf.mVarName, var_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_conditional(unsigned int conditional, unsigned int value1, unsigned int value2, char* sname, int sline)
 {
     unsigned int node = alloc_node();

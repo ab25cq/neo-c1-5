@@ -1,13 +1,10 @@
-/*
- * #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
 #include "neo-c2.h"
-*/
 
-char _dummy_bnd[(__alignof__(void *) < sizeof(short) ? sizeof(short) : __alignof__(void *))];
 
 struct sData;
 typedef struct sData sDataType;

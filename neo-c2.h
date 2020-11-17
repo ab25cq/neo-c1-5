@@ -155,7 +155,7 @@ inline string xbasename(char* path)
 
 inline string xrealpath(char* path)
 {
-    char* result = realpath(path, null);
+    char* result = realpath(path, NULL);
 
     string result2 = string(result);
 

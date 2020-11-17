@@ -265,6 +265,32 @@ __const__ {
     return(__CONST__); 
 }
 
+__alignof__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__ALIGNOF__); 
+}
+
+overloadable {
+    strncpy(yylval.cval, yytext, 128);
+    return(OVERLOADABLE); 
+}
+
+enable_if {
+    strncpy(yylval.cval, yytext, 128);
+    return(ENABLE_IF); 
+    
+}
+
+__returns_twice__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__RETURNS_TWICE__); 
+}
+
+__sentinel__ {
+    strncpy(yylval.cval, yytext, 128);
+    return(__SENTINEL__); 
+}
+
 ">=" {
     strncpy(yylval.cval, yytext, 128);
     return(GTEQ); 
@@ -710,11 +736,6 @@ annotate {
 __aligned__ {
     strncpy(yylval.cval, yytext, 128);
     return(__ALIGNED__);
-}
-
-__alignof__ {
-    strncpy(yylval.cval, yytext, 128);
-    return(__ALIGNOF__);
 }
 
 __signed__ {
