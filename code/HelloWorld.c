@@ -1,7 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 #include <malloc.h>
 #include "neo-c2.h" 
 
@@ -507,6 +507,21 @@ int main()
     int lenX = 1, lenX2 = 2;
 
     xassert("varible test", lenX == 1 && lenX2 == 2);
+
+    puts(1.to_string());
+
+    if(false) {
+        puts("AAA");
+    }
+    else if(true) {
+        puts("BBB");
+    }
+    else {
+        puts("CCC");
+    }
+
+    xassert("int compare", 1.compare(1) == 0);
+    xassert("char compare", "AAA".compare("AAA") == 0);
 
     return 0;
 }

@@ -22,7 +22,7 @@ inline char*% xsprintf(char* msg, ...)
     return dummy_heap tmp;
 }
 
-inline char* ncstrncpy(char* des, char* src, int size)
+inline char* xstrncpy(char* des, char* src, int size)
 {
     char* result;
 
@@ -164,13 +164,11 @@ inline string xrealpath(char* path)
     return result2;
 }
 
-
 inline void p(char* str)
 {
     puts(str);
 }
 
-/*
 //////////////////////////////
 /// int
 //////////////////////////////
@@ -184,11 +182,13 @@ inline int int::get_hash_key(int value)
     return value;
 }
 
-inline string int::to_string(int value) {
-    return xsprintf("%c", value);
+inline string int::to_string(int value) 
+{
+    return xsprintf("%d", value);
 }
 
-inline int int::compare(int left, int right) {
+inline int int::compare(int left, int right) 
+{
     if(left < right) {
         return -1;
     }
@@ -213,11 +213,13 @@ inline int char::get_hash_key(char value)
     return value;
 }
 
-inline string char::to_string(char value) {
+inline string char::to_string(char value) 
+{
     return xsprintf("%c", value);
 }
 
-inline int char::compare(char left, char right) {
+inline int char::compare(char left, char right) 
+{
     if(left < right) {
         return -1;
     }
@@ -232,12 +234,12 @@ inline int char::compare(char left, char right) {
 //////////////////////////////
 /// char* 
 //////////////////////////////
-
 inline bool char*::equals(char* left, char* right)
 {
     return strcmp(left, right) == 0;
 }
 
+/*
 inline int char*::length(char* str)
 {
     return strlen(str);
@@ -269,105 +271,69 @@ inine wstring char*::to_wstring(char* value)
     return wstring(value);
 }
 
-/// int ///
-impl int
-{
-    inline bool equals(int left, int right) 
-    {
-        return left == right;
-    }
-
-    inline int get_hash_key(int value)
-    {
-        return value;
-    }
-
-    inline string to_string(int value) {
-        return xasprintf("%c", value);
-    }
-
-    inline int compare(int left, int right) {
-        if(left < right) {
-            return -1;
-        }
-        else if(left > right) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
-}
-
 /// wchar_t ///
-extern wstring operator+(wchar_t* left, wchar_t* right);
-extern wstring operator*(wchar_t* left, int num);
-
-impl wchar_t
+inline bool wchar_t::equals(wchar_t left, wchar_t right)
 {
-    inline bool equals(wchar_t left, wchar_t right)
-    {
-        return left == right;
-    }
+    return left == right;
+}
 
-    inline int get_hash_key(wchar_t value)
-    {
-        return value;
-    }
+inline int wchar_t::get_hash_key(wchar_t value)
+{
+    return value;
+}
 
-    inline string to_string(wchar_t value) {
-        return xasprintf("%lc", value);
-    }
+inline string wchar_t::to_string(wchar_t value) {
+    return xasprintf("%lc", value);
+}
 
-    inline int compare(wchar_t left, wchar_t right) {
-        if(left < right) {
-            return -1;
-        }
-        else if(left > right) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
+inline int wchar_t::compare(wchar_t left, wchar_t right) 
+{
+    if(left < right) {
+        return -1;
+    }
+    else if(left > right) {
+        return 1;
+    }
+    else {
+        return 0;
     }
 }
 
-impl wchar_t*
+inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
 {
-    inline bool equals(wchar_t* left, wchar_t* right)
-    {
-        return wcscmp(left, right) == 0;
-    }
-
-    inline int length(wchar_t* str)
-    {
-        return wcslen(str);
-    }
-
-    inline int get_hash_key(wchar_t* value)
-    {
-        int result = 0;
-        wchar_t* p = value;
-        while(*p) {
-            result += (*p);
-            p++;
-        }
-        return result;
-    }
-
-    inline string to_string(wchar_t* str, char* default_value) {
-        return string_from_wchar_t(str, default_value);
-    }
-
-    inline wstring to_wstring(wchar_t* str) {
-        return wstring_from_wchar_t(str);
-    }
-
-    inline int compare(wstring& left, wstring& right) {
-        return wcscmp(left, right);
-    }
+    return wcscmp(left, right) == 0;
 }
 
+inline int wchar_t*::length(wchar_t* str)
+{
+    return wcslen(str);
+}
+
+inline int wchar_t*::get_hash_key(wchar_t* value)
+{
+    int result = 0;
+    wchar_t* p = value;
+    while(*p) {
+        result += (*p);
+        p++;
+    }
+    return result;
+}
+
+inline string wchar_t*::to_string(wchar_t* str) 
+{
+    return xprintf("%ls", str);
+}
+
+inline wstring wchar_t*::to_wstring(wchar_t* str) {
+    return wstring(xprintf("%ls", str));
+}
+
+inline int wchar_t*::compare(wstring& left, wstring& right) {
+    return wcscmp(left, right);
+}
+
+/*
 /// buffer ///
 struct buffer {
     char* buf;

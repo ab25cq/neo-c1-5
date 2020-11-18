@@ -49,6 +49,7 @@ sVarTable* gLVTable;
 unsigned int multiple_nodes[128];
 int num_multiple_node = 0;
 char recent_type_name[VAR_NAME_MAX];
+unsigned int else_block;
 %}
 
 %union {
@@ -2383,12 +2384,11 @@ function:
 
             char fun_name[VAR_NAME_MAX];
 
-
             char* struct_name = $2;
 
-            char* p = strstr(struct_name, "<");
-
             char struct_name2[VAR_NAME_MAX];
+
+            char* p = strstr(struct_name, "<");
 
             if(p) {
                 memcpy(struct_name2, struct_name, p - struct_name);
@@ -2758,14 +2758,41 @@ method_generics_types: {
     }
     ;
 
-function_struct_type_name: TYPE_NAME {
+function_struct_type_name: 
+    TYPE_NAME {
         char type_name[VAR_NAME_MAX];
 
         if(strcmp($1, "string") == 0) {
             xstrncpy(type_name, "string", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "wstring") == 0) {
+            xstrncpy(type_name, "wstring", VAR_NAME_MAX);
+        }
         else {
             get_typedef($1, type_name);
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
+    | TYPE_NAME pointer {
+        char type_name[VAR_NAME_MAX];
+
+        if(strcmp($1, "string") == 0) {
+            xstrncpy(type_name, "string", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "wstring") == 0) {
+            xstrncpy(type_name, "wstring", VAR_NAME_MAX);
+        }
+        else {
+            get_typedef($1, type_name);
+        }
+
+        char* pointer = $2;
+
+        int i;
+        for(i=0; i<strlen(pointer); i++) {
+            xstrncat(type_name, "p", VAR_NAME_MAX);
         }
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
@@ -2968,44 +2995,10 @@ statment: comma_exp free_right_value_objects ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment
     {
         unsigned int if_exp = $3;
         unsigned int if_block = $7;
-        unsigned int else_block = $16;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp free_right_value_objects ')' statment ELSE IF prepare_elif_statment elif_statment ELSE '{' block '}' block_end 
-    {
-        BOOL create_lv_table = FALSE;
-
-        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $6);
-
-        unsigned int if_exp = $3;
-        unsigned int if_block = block;
-        unsigned int else_block = $13;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment ELSE statment 
-    {
-        BOOL create_lv_table = FALSE;
-
-        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-        append_node_to_node_block(block, $15);
-
-        unsigned int if_exp = $3;
-        unsigned int if_block = $7;
-        unsigned int else_block = block;
-        
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
-    }
-    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment {
-        unsigned int if_exp = $3;
-        unsigned int if_block = $7;
-        unsigned else_block = 0;
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
@@ -3174,6 +3167,7 @@ prepare_elif_statment: '(' comma_exp ')' '{' block '}' block_end {
     elif_exps[elif_num] = $2;
     elif_blocks[elif_num] = $5;
     elif_num++;
+    else_block = 0;
 
     if(elif_num >= ELIF_NUM_MAX) {
         fprintf(stderr, "overflow else if number\n");
@@ -3210,6 +3204,16 @@ elif_statment:
             exit(2);
         }
     }
+    | ELSE '{' block '}' block_end {
+        else_block = $3;
+    }
+    | ELSE statment {
+        BOOL create_lv_table = FALSE;
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $2);
+
+        else_block = block;
+    }
     | elif_statment ELSE IF '(' comma_exp ')' '{' block '}' block_end {
         elif_exps[elif_num] = $5;
         elif_blocks[elif_num] = $8;
@@ -3234,6 +3238,16 @@ elif_statment:
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
+    }
+    | elif_statment ELSE '{' block '}' block_end {
+        else_block = $4;
+    }
+    | elif_statment ELSE statment {
+        BOOL create_lv_table = FALSE;
+        unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+        append_node_to_node_block(block, $3);
+
+        else_block = block;
     }
     ;
 
