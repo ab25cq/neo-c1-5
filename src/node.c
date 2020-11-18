@@ -831,7 +831,7 @@ unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL
     return node;
 }
 
-unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline)
+unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, unsigned int init_value, char* sname, int sline)
 {
     unsigned int node = alloc_node();
 
@@ -844,6 +844,7 @@ unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, B
     xstrncpy(gNodes[node].uValue.sDefineVariable.mTypeName, type_name, VAR_NAME_MAX);
     gNodes[node].uValue.sDefineVariable.mGlobal = global;
     gNodes[node].uValue.sDefineVariable.mExtern = extern_;
+    gNodes[node].uValue.sDefineVariable.mInitValue = init_value;
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;

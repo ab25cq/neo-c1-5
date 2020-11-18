@@ -1,11 +1,20 @@
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
-#include "neo-c2.h"
+#include "neo-c2.h" 
 
+int main() 
+{
+    int i;
+    for(i=0; i<3; i++) {
+        printf("HELLO FROM THE ABYSS\n");
+    }
+    return 0;
+}
 
+/*
 struct sData;
 typedef struct sData sDataType;
 
@@ -510,8 +519,13 @@ int main()
 
     xassert("pointer test", *p == 'A');
 
+    int lenX = 1, lenX2 = 2;
+
+    xassert("varible test", lenX == 1 && lenX2 == 2);
+
     return 0;
 }
+*/
 
 
 /*

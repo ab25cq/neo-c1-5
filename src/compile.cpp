@@ -2289,25 +2289,63 @@ void declare_builtin_functions()
         char* param_types[PARAMS_MAX];
         char* param_names[PARAMS_MAX];
 
-#ifdef __32BIT_CPU__
-        char* result_type_name = "int";
-#else
-        char* result_type_name = "long";
-#endif
+        char* result_type_name = "void";
 
-        int num_params = 3;
+        int num_params = 4;
+
         param_names[0] = "b1";
-        param_types[0] = "void*";
+        param_types[0] = "char*";
 
         param_names[1] = "b2";
-        param_types[1] = "void*";
+        param_types[1] = "char*";
 
         param_names[2] = "len";
+/*
 #ifdef __32BIT_CPU__
         param_types[2] = "int";
 #else
+*/
         param_types[2] = "long";
-#endif
+//#endif
+
+        param_names[3] = "v";
+        param_types[3] = "bool";
+
+        BOOL var_arg = FALSE;
+        BOOL inline_ = FALSE;
+        BOOL inherit_ = FALSE;
+        BOOL static_ = FALSE;
+        BOOL generics = FALSE;
+        BOOL coroutine = FALSE;
+        BOOL method_generics = FALSE;
+        add_function("__builtin_memmove", "__builtin_memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+    }
+    {
+        char* param_types[PARAMS_MAX];
+        char* param_names[PARAMS_MAX];
+
+        char* result_type_name = "void";
+
+        int num_params = 4;
+
+        param_names[0] = "b1";
+        param_types[0] = "char*";
+
+        param_names[1] = "b2";
+        param_types[1] = "char*";
+
+        param_names[2] = "len";
+/*
+#ifdef __32BIT_CPU__
+        param_types[2] = "int";
+#else
+*/
+        param_types[2] = "long";
+//#endif
+
+        param_names[3] = "v";
+        param_types[3] = "bool";
 
         BOOL var_arg = FALSE;
         BOOL inline_ = FALSE;
@@ -2317,26 +2355,32 @@ void declare_builtin_functions()
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
         add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
     }
     {
         char* param_types[PARAMS_MAX];
         char* param_names[PARAMS_MAX];
 
-        char* result_type_name = "void*";
+        char* result_type_name = "void";
 
-        int num_params = 3;
+        int num_params = 4;
         param_names[0] = "buf";
-        param_types[0] = "void*";
+        param_types[0] = "char*";
 
         param_names[1] = "ch";
-        param_types[1] = "int";
+        param_types[1] = "char";
 
         param_names[2] = "n";
+/*
 #ifdef __32BIT_CPU__
         param_types[2] = "int";
 #else
+*/
         param_types[2] = "long";
-#endif
+//#endif
+
+        param_names[3] = "v";
+        param_types[3] = "bool";
 
         BOOL var_arg = FALSE;
         BOOL inline_ = FALSE;
@@ -2346,6 +2390,7 @@ void declare_builtin_functions()
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
         add_function("__builtin_memset", "__builtin_memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("llvm.memset.p0i8.i64", "llvm.memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
     }
 
 /*
@@ -4629,6 +4674,7 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
     else {
         Value* var_address;
 
+/*
         if(constant) {
             compile_err_msg(info, "Variable(%s) is constant variable", var->mName);
             info->err_num++;
@@ -4637,7 +4683,8 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
 
             return TRUE;
         }
-        else if(global) {
+*/
+        if(global) {
             var_address = (Value*)var->mLLVMValue;
         }
         else if(static_) {
@@ -5270,12 +5317,24 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
     char fun_name[VAR_NAME_MAX];
 
+    char* sname = gSName;
+    int sline = gNodes[node].mLine;
+
     xstrncpy(fun_name, gNodes[node].uValue.sFunctionCall.mFunName, VAR_NAME_MAX);
     if(strcmp(fun_name, "__builtin_va_start") == 0) {
         xstrncpy(fun_name, "llvm.va_start", VAR_NAME_MAX);
     }
     else if(strcmp(fun_name, "__builtin_va_end") == 0) {
         xstrncpy(fun_name, "llvm.va_end", VAR_NAME_MAX);
+    }
+    else if(strcmp(fun_name, "__builtin_memmove") == 0) {
+        xstrncpy(fun_name, "llvm.memmove.p0i8.p0i8.i64", VAR_NAME_MAX);
+    }
+    else if(strcmp(fun_name, "__builtin_memcpy") == 0) {
+        xstrncpy(fun_name, "llvm.memcpy.p0i8.p0i8.i64", VAR_NAME_MAX);
+    }
+    else if(strcmp(fun_name, "__builtin_memset") == 0) {
+        xstrncpy(fun_name, "llvm.memset.p0i8.i64", VAR_NAME_MAX);
     }
 
     if(lambda_call) {
@@ -5587,7 +5646,65 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
 
         /// cast and type checking ///
-        if(strcmp(fun_name, "llvm.va_start") == 0 || strcmp(fun_name, "llvm.va_end") == 0)
+        if(strcmp(fun_name, "llvm.memmove.p0i8.p0i8.i64") == 0 || strcmp(fun_name, "llvm.memcpy.p0i8.p0i8.i64") == 0 || strcmp(fun_name, "llvm.memset.p0i8.i64") == 0)
+        {
+            for(i=0; i<num_params; i++) {
+                sNodeType* left_type = create_node_type_with_class_name(fun.mParamTypes[i]);
+                sNodeType* right_type = param_types[num_params-i-1];
+
+                BOOL success_solve;
+                (void)solve_generics(&left_type, info->generics_type, &success_solve);
+
+                LVALUE rvalue = param_values[num_params-i-1];
+
+                if(auto_cast_posibility(left_type, right_type)) {
+                    if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+                    {
+                        compile_err_msg(info, "Cast failed");
+                        info->err_num++;
+
+                        info->type = create_node_type_with_class_name("int"); // dummy
+
+                        return TRUE;
+                    }
+                }
+
+                if(!substitution_posibility(left_type, right_type, FALSE)) 
+                {
+                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
+                    show_node_type(left_type);
+                    show_node_type(right_type);
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+
+                if(!info->no_output) {
+                    if(left_type->mHeap && right_type->mHeap)
+                    {
+                        if(rvalue.binded_value && rvalue.var)
+                        {
+                            std_move(NULL, left_type, &rvalue, FALSE, info);
+                        }
+                        else {
+                            remove_from_right_value_object(rvalue.value, info);
+                        }
+                    }
+                    else if(right_type->mHeap && !rvalue.binded_value)
+                    {
+                        append_heap_object_to_right_value(&rvalue, info);
+                    }
+                }
+
+                llvm_params.push_back(rvalue.value);
+            }
+
+            Value* value = ConstantInt::get(TheContext, llvm::APInt(1, 0, true)); 
+            llvm_params.push_back(value);
+        }
+        else if(strcmp(fun_name, "llvm.va_start") == 0 || strcmp(fun_name, "llvm.va_end") == 0)
         {
             if(fun.mNumParams > num_params) {
                 compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
@@ -6498,6 +6615,9 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
     xstrncpy(type_name, gNodes[node].uValue.sDefineVariable.mTypeName, VAR_NAME_MAX);
     BOOL extern_ = gNodes[node].uValue.sDefineVariable.mExtern;
     BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
+
+    unsigned int init_value = gNodes[node].uValue.sDefineVariable.mInitValue;
+
     sVar* var;
 
     sNodeType* var_type = create_node_type_with_class_name(type_name);
@@ -6516,15 +6636,6 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             return FALSE;
         }
     }
-/*
-    else {
-        if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
-        {
-            fprintf(stderr, "overflow variable table");
-            return FALSE;
-        }
-    }
-*/
 
     if(global) {
         var = get_variable_from_table(info->gv_table, var_name);
@@ -6741,12 +6852,37 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             GlobalVariable* address = new GlobalVariable(*TheModule, llvm_var_type, false, GlobalValue::ExternalLinkage, 0, var_name, nullptr, GlobalValue::NotThreadLocal, 0, false);
 
             address->setAlignment(alignment);
+            if(init_value != 0) {
+                if(!compile(init_value, info)) {
+                    return FALSE;
+                }
 
-            ConstantAggregateZero* initializer = ConstantAggregateZero::get(llvm_var_type);
+                LVALUE rvalue = *get_value_from_stack(-1);
 
-            address->setInitializer(initializer);
+                if(dyn_cast<Constant>(rvalue.value)) 
+                {
+                    Constant* initializer = dyn_cast<Constant>(rvalue.value);
 
-            var->mLLVMValue = address;
+                    address->setInitializer(initializer);
+
+                    var->mLLVMValue = address;
+                }
+                else {
+                    compile_err_msg(info, "global variable initializer should be constant value");
+                    info->err_num++;
+
+                    info->type = create_node_type_with_class_name("int"); // dummy
+
+                    return TRUE;
+                }
+            }
+            else {
+                ConstantAggregateZero* initializer = ConstantAggregateZero::get(llvm_var_type);
+
+                address->setInitializer(initializer);
+
+                var->mLLVMValue = address;
+            }
         }
     }
     else {
@@ -6791,6 +6927,7 @@ static BOOL pre_compile_define_variable(unsigned int node, sCompileInfo* info)
     xstrncpy(type_name, gNodes[node].uValue.sDefineVariable.mTypeName, VAR_NAME_MAX);
     BOOL extern_ = gNodes[node].uValue.sDefineVariable.mExtern;
     BOOL global = gNodes[node].uValue.sDefineVariable.mGlobal;
+    unsigned int init_value = gNodes[node].uValue.sDefineVariable.mInitValue;
     sVar* var;
 
     sNodeType* var_type = create_node_type_with_class_name(type_name);

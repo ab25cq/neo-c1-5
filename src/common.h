@@ -384,6 +384,7 @@ struct sNodeTreeStruct
             char mTypeName[VAR_NAME_MAX];
             BOOL mGlobal;
             BOOL mExtern;
+            unsigned int mInitValue;
         } sDefineVariable;
         struct {
             unsigned int mIndex[ARRAY_DIMENTION_MAX];
@@ -491,7 +492,7 @@ unsigned int sNodeTree_create_struct_fields(char* sname, int sline);
 unsigned int sNodeTree_create_struct(char* struct_name, unsigned int fields, BOOL generics, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_generics_struct(char* struct_name, int num_generics, char** generics_types, unsigned int fields, BOOL anonymous, char* sname, int sline);
 unsigned int sNodeTree_create_union(char* struct_name, unsigned int fields, BOOL anonymous, char* sname, int sline);
-unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, char* sname, int sline);
+unsigned int sNodeTree_create_define_variable(char* type_name, char* var_name, BOOL global, BOOL extern_, unsigned int init_value, char* sname, int sline);
 unsigned int sNodeTree_create_equals(unsigned int left, unsigned int right,  char* sname, int sline);
 unsigned int sNodeTree_create_not_equals(unsigned int left, unsigned int right, char* sname, int sline);
 unsigned int sNodeTree_create_lambda_call(unsigned int lambda_node, unsigned int params, char* sname, int sline);
