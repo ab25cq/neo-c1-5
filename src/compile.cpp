@@ -2318,8 +2318,8 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("__builtin_memmove", "__builtin_memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
     }
     {
         char* param_types[PARAMS_MAX];
@@ -2354,8 +2354,8 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("__builtin_memcpy", "__builtin_memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        add_function("llvm.memcpy.p0i8.p0i8.i64", "llvm.memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
     }
     {
         char* param_types[PARAMS_MAX];
