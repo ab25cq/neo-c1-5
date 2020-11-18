@@ -5,16 +5,6 @@
 #include <malloc.h>
 #include "neo-c2.h" 
 
-int main() 
-{
-    int i;
-    for(i=0; i<3; i++) {
-        printf("HELLO FROM THE ABYSS\n");
-    }
-    return 0;
-}
-
-/*
 struct sData;
 typedef struct sData sDataType;
 
@@ -210,7 +200,6 @@ int gArray4[3][3][3] = {
 
 
 
-
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
@@ -344,10 +333,6 @@ int main()
     (*str2) += 2;
 
     xassert("inc test3", strcmp(str2, "CBC") == 0);
-
-    int comma = 1, 2;
-
-    xassert("comma test", comma == 2);
 
     int plus_plus = 1;
 
@@ -525,7 +510,6 @@ int main()
 
     return 0;
 }
-*/
 
 
 /*

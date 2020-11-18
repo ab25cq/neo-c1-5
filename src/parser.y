@@ -1293,7 +1293,7 @@ global_some_variable_names:
 
         multiple_init_values[num_multiple_variable_names-1] = $3;
     }
-    | IDENTIFIER const_array_type '=' '{' array_value '}' ';' { 
+    | IDENTIFIER const_array_type '=' '{' array_value '}' { 
         num_multiple_variable_names  = 0;
 
         char type_name[VAR_NAME_MAX];
@@ -1311,7 +1311,7 @@ global_some_variable_names:
 
         compile($$, &cinfo);
     }
-    | IDENTIFIER '[' ']' '=' '{' array_value '}' ';' { 
+    | IDENTIFIER '[' ']' '=' '{' array_value '}' { 
         num_multiple_variable_names  = 0;
 
         char type_name[VAR_NAME_MAX];
@@ -1332,7 +1332,7 @@ global_some_variable_names:
 
         compile($$, &cinfo);
     }
-    | IDENTIFIER const_array_type '=' CSTRING ';' { 
+    | IDENTIFIER const_array_type '=' CSTRING  { 
         num_multiple_variable_names  = 0;
 
         char type_name[VAR_NAME_MAX];
