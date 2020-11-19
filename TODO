@@ -1,13 +1,8 @@
+finalize
+
 clone
 
 output to the debug code when creating generics functions.
-
-finalize
-
-#include <stdio.h>
-preprocesser
-
-__ASM_NAME__ など
 
 check automatically free especially right value heap free and break and return
 
@@ -16,9 +11,6 @@ global variable
 char* aaa[3] = { "ABC", "A", "C" };
 char* aaa[2][2] = { "AA", "BB", "CC", "DD" };
 
-
-
-include stdio.h
 -----
 a++
 +=
@@ -82,3 +74,8 @@ sizeof
 debug info
 precompile すべての演算子のcompileをprecompileで通さないといけない。すべてのコンパイルでprecompile時もCoroutineとStoreの検出。
 それかblockはパース時にvar_tableを作りパース時に変数を作成する。そしてパース時にコルーチンのコンパイルを行うか。
+include stdio.h
+#include <stdio.h>
+preprocesser
+
+__ASM_NAME__ など

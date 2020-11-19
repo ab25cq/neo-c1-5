@@ -1540,9 +1540,65 @@ void restore_right_value_objects_container(void* right_value_objects, sCompileIn
     info->right_value_objects = right_value_objects;
 }
 
+static void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
+{
+    if(strcmp(node_type->mClass->mName, "char") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
+        xstrncpy(type_name2, "string", VAR_NAME_MAX);
+    }
+    else if(strcmp(node_type->mClass->mName, "wchar_t") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
+        xstrncpy(type_name2, "wstring", VAR_NAME_MAX);
+    }
+    else {
+        xstrncpy(type_name2, node_type->mClass->mName, VAR_NAME_MAX);
+
+        if(node_type->mClass->mFlags & CLASS_FLAGS_NUMBER) {
+            int i;
+            for(i=0; i<node_type->mPointerNum; i++) {
+                xstrncat(type_name2, "p", VAR_NAME_MAX);
+            }
+        }
+    }
+}
+
 
 static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info)
 {
+    //LVALUE* llvm_stack = gLLVMStack;
+    //int stack_num_before = info->stack_num;
+    //sNodeType* info_type_before = info->type;
+
+/*
+    if(node_type->mNumGenericsTypes > 0) 
+    {
+    }
+    else {
+*/
+        char finalize_method_name[VAR_NAME_MAX];
+
+        char struct_name[VAR_NAME_MAX];
+
+        convert_type_to_struct_name(node_type, struct_name);
+
+        snprintf(finalize_method_name, VAR_NAME_MAX, "%s_finalize", struct_name);
+
+        Function* llvm_fun = TheModule->getFunction(finalize_method_name);
+
+        if(llvm_fun == nullptr) {
+            return FALSE;
+        }
+
+        std::vector<Value*> llvm_params;
+        Value* param = obj;
+
+        llvm_params.push_back(param);
+
+        Builder.CreateCall(llvm_fun, llvm_params);
+//    }
+
+    //info->stack_num = stack_num_before;
+    //gLLVMStack = llvm_stack;
+    //info->type = info_type_before;
+
     return FALSE;
 }
 
@@ -1593,7 +1649,6 @@ static void call_field_destructor(Value* obj, sNodeType* node_type, sCompileInfo
         if(field_type->mHeap && field_type->mPointerNum > 0)
         {
             if(type_identify(node_type, field_type)) {
-/*
 #if LLVM_VERSION_MAJOR >= 7
                 Value* field_address = Builder.CreateStructGEP(obj, i);
 #else
@@ -1605,7 +1660,6 @@ static void call_field_destructor(Value* obj, sNodeType* node_type, sCompileInfo
                     fprintf(stderr, "%s %d: can't make finalize of recursive field(3)(%s)\n", info->sname, info->sline, field_type->mClass->mName);
                     exit(2);
                 }
-*/
             }
             else {
                 Type* llvm_field_type;
@@ -5286,15 +5340,6 @@ static BOOL pre_compile_return(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
-void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
-{
-    if(strcmp(node_type->mClass->mName, "char") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
-        xstrncpy(type_name2, "string", VAR_NAME_MAX);
-    }
-    else {
-        xstrncpy(type_name2, node_type->mClass->mName, VAR_NAME_MAX);
-    }
-}
 
 BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 {

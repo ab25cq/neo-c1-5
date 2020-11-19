@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <wchar.h>
 #include "neo-c2.h" 
 
 struct sData;
@@ -205,6 +206,35 @@ int gArray4[3][3][3] = {
 #endif
 
 typedef int (*fAAA)(int);
+
+struct sArrayTest {
+    int a[128];
+};
+
+struct sFinalizeTest {
+    int a;
+    int b;
+};
+
+sFinalizeTest*% sFinalizeTest::initialize(sFinalizeTest*% self)
+{
+printf("initialize %p\n", self);
+    self.a = 123;
+    self.b = 234;
+
+    return self;
+}
+
+void sFinalizeTest::show(sFinalizeTest* self)
+{
+    printf("sFinalizeTest::finalize %d %d\n" , self.a, self.b);
+}
+
+void sFinalizeTest::finalize(sFinalizeTest* self)
+{
+    printf("finalize %p\n", self);
+    printf("sFinalizeTest::finalize %d %d\n" , self.a, self.b);
+}
 
 int main() 
 {
@@ -522,6 +552,26 @@ int main()
 
     xassert("int compare", 1.compare(1) == 0);
     xassert("char compare", "AAA".compare("AAA") == 0);
+
+    sArrayTest array_test;
+
+    array_test.a[0] = 123;
+    array_test.a[1] = 234;
+
+    xassert("field array test", array_test.a[0] == 123 && array_test.a[1] == 234);
+
+    sFinalizeTest*% finalize_test1 = new sFinalizeTest.initialize();
+
+    finalize_test1.show();
+
+/*
+    buffer*% buf = new buffer.initialize();
+
+    buf.append_str(buf, "ABC");
+    buf.append_str(buf, "DEF");
+
+    xassert("buffer test", buf.to_string().equals("ABCDEF"));
+*/
 
     return 0;
 }

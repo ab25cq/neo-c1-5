@@ -396,6 +396,12 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
 
             node_type->mHeap = TRUE;
         }
+        else if(**p == '&') {
+            (*p)++;
+            skip_spaces_for_parse_class_name(p);
+
+            node_type->mHeap = FALSE;
+        }
         else if(**p == '*') {
             (*p)++;
             skip_spaces_for_parse_class_name(p);

@@ -131,6 +131,25 @@ inline string string(char* str)
 
     return result;
 }
+/// wstring ///
+inline wstring wstring(char* str)
+{
+    int len = strlen(str);
+
+wstring a = new wchar_t[1];
+// I can't understand. this requires for s309x apline linux,... hmm is it my mistake?
+
+    wstring wstr = new wchar_t[len+1];
+
+    int ret = mbstowcs(wstr, str, len+1);
+    wstr[ret] = '\0';
+
+    if(ret < 0) {
+        wstr[0] = 0;
+    }
+
+    return wstr;
+}
 
 inline string xbasename(char* path)
 {
@@ -239,7 +258,6 @@ inline bool char*::equals(char* left, char* right)
     return strcmp(left, right) == 0;
 }
 
-/*
 inline int char*::length(char* str)
 {
     return strlen(str);
@@ -266,11 +284,12 @@ inline int char*::compare(char* left, char* right)
     return strcmp(left, right);
 }
 
-inine wstring char*::to_wstring(char* value) 
+inline wstring char*::to_wstring(char* value) 
 {
     return wstring(value);
 }
 
+/*
 /// wchar_t ///
 inline bool wchar_t::equals(wchar_t left, wchar_t right)
 {
@@ -298,7 +317,11 @@ inline int wchar_t::compare(wchar_t left, wchar_t right)
         return 0;
     }
 }
+*/
 
+//////////////////////////////
+/// wchar_t*
+//////////////////////////////
 inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
 {
     return wcscmp(left, right) == 0;
@@ -322,11 +345,11 @@ inline int wchar_t*::get_hash_key(wchar_t* value)
 
 inline string wchar_t*::to_string(wchar_t* str) 
 {
-    return xprintf("%ls", str);
+    return xsprintf("%ls", str);
 }
 
 inline wstring wchar_t*::to_wstring(wchar_t* str) {
-    return wstring(xprintf("%ls", str));
+    return wstring(xsprintf("%ls", str));
 }
 
 inline int wchar_t*::compare(wstring& left, wstring& right) {
@@ -334,49 +357,82 @@ inline int wchar_t*::compare(wstring& left, wstring& right) {
 }
 
 /*
-/// buffer ///
+//////////////////////////////
+/// buffer
+//////////////////////////////
 struct buffer {
     char* buf;
     int len;
     int size;
 };
 
-impl buffer 
+buffer*% buffer::initialize(buffer*% self)
 {
-    initialize();
-    finalize();
+    self.size = 128;
+    self.buf = malloc(self.size);
+    self.buf[0] = '\0';
+    self.len = 0;
 
-    void append(buffer* self, char* mem, size_t size);
-    void append_char(buffer* self, char c);
-    void append_str(buffer* self, char* str);
-    void append_nullterminated_str(buffer* self, char* str);
-    inline void append_int(buffer* self, int value) {
-        self.append((char*)&value, sizeof(int));
-    }
-    inline void append_long(buffer* self, long long int value) {
-        self.append((char*)&value, sizeof(long long int));
-    }
-    inline void append_short(buffer* self, short value) {
-        self.append((char*)&value, sizeof(short));
-    }
-    inline void alignment(buffer* self) {
-        int len = self.len;
-        len = (len + 3) & ~3;
-
-        for(int i=self.len; i<len; i++) {
-            self.append_char('\0');
-        }
-    }
-
-    string to_string(buffer* self);
-
-    int length(buffer* self);
-
-    inline int compare(buffer* left, buffer* right) {
-        return strcmp(left.buf, right.buf);
-    }
+    return self;
 }
 
+void buffer::finalize(buffer* self) 
+{
+    free(self.buf);
+}
+
+int buffer::length(buffer* self) 
+{
+    return self.len;
+}
+
+void buffer::append(buffer* self, char* mem, size_t size)
+{
+    if(self.len + size + 1 + 1 >= self.size) {
+        int new_size = (self.size + size + 1) * 2;
+        self.buf = realloc(self.buf, new_size);
+        self.size = new_size;
+    }
+
+    ncmemcpy(self.buf + self.len, mem, size);
+    self.len += size;
+
+    self.buf[self.len] = '\0';
+}
+
+void buffer::append_char(buffer* self, char c)
+{
+    if(self.len + 1 + 1 + 1 >= self.size) {
+        int new_size = (self.size + 10 + 1) * 2;
+        self.buf = realloc(self.buf, new_size);
+        self.size = new_size;
+    }
+
+    self.buf[self.len] = c;
+    self.len++;
+
+    self.buf[self.len] = '\0';
+}
+
+void buffer::append_str(buffer* self, char* str)
+{
+    self.append(str, strlen(str));
+}
+
+void buffer::append_nullterminated_str(buffer* self, char* str)
+{
+    self.append(str, strlen(str));
+    self.append_char('\0');
+}
+
+string buffer::to_string(buffer* self)
+{
+    return (string(self.buf));
+}
+*/
+
+
+/*
 /// regex ///
 struct regex_struct {
     string str;

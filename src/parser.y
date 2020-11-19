@@ -483,9 +483,54 @@ type:
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
+    | type_attribute restrict pointer restrict '&' {
+        if(strcmp($1, "long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "long long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "short ") == 0) {
+            xstrncpy($$, "short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned ") == 0) {
+            xstrncpy($$, "unsigned int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "singed ") == 0) {
+            xstrncpy($$, "singed int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "&", VAR_NAME_MAX);
+        }
+        else {
+            fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
+            exit(1);
+        }
+
+        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+    }
     | type_attribute restrict type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
+
+        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+    }
+    | type_attribute restrict type_name '&' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, "&", VAR_NAME_MAX);
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
@@ -504,8 +549,22 @@ type:
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
+    | type_attribute restrict type_name restrict pointer restrict '&' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, $5, VAR_NAME_MAX);
+        xstrncat($$, "&", VAR_NAME_MAX);
+
+        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+    }
     | type_name restrict {
         xstrncpy($$, $1, VAR_NAME_MAX);
+
+        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+    } 
+    | type_name restrict '&' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, "&", VAR_NAME_MAX);
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     } 
@@ -519,6 +578,13 @@ type:
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
         xstrncat($$, "%", VAR_NAME_MAX);
+
+        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+    }
+    | type_name restrict pointer restrict '&' {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, $3, VAR_NAME_MAX);
+        xstrncat($$, "&", VAR_NAME_MAX);
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
@@ -3501,6 +3567,28 @@ node: source_point_macro exp {
         | exp '-' '>' name '=' comma_exp  { 
             $$ = sNodeTree_create_store_field($4, $1, $6, gSName, yylineno); 
         }
+
+        | exp '.' name array_index {
+            unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
+
+            unsigned int* index_node = array_index_index_node;
+            int num_dimention = array_index_num_dimention;
+
+            $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, yylineno);
+        }
+        | exp '.' name array_index '=' comma_exp {
+            unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
+
+            unsigned int* index_node = array_index_index_node;
+            int num_dimention = array_index_num_dimention;
+
+            unsigned int right_node = $6;
+
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
+        }
+
+
+
         | NEW type {
             char* type_name = $2;
             unsigned int object_num = 0;
