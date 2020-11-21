@@ -658,6 +658,22 @@ unsigned int sNodeTree_create_false(char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_null(char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeNull;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_object(char* type_name, unsigned int object_num, char* sname, int sline)
 {
     unsigned node = alloc_node();
@@ -710,6 +726,23 @@ unsigned int sNodeTree_create_clone(unsigned int left, char* sname, int sline)
 
     return node;
 }
+
+unsigned int sNodeTree_create_delete(unsigned int left, char* sname, int sline)
+{
+    unsigned int node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeDelete;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = left;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 
 unsigned int sNodeTree_create_coroutine(unsigned int function_params, char* result_type_name, unsigned int node_block, BOOL var_arg, char* sname, int sline)
 {
@@ -1506,6 +1539,24 @@ unsigned int sNodeTree_create_sizeof1(char* type_name, char* sname, int sline)
     gNodes[node].mLine = sline;
 
     xstrncpy(gNodes[node].uValue.sSizeOf.mTypeName, type_name, VAR_NAME_MAX);
+
+    gNodes[node].mLeft = 0;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
+unsigned int sNodeTree_create_isheap(char* type_name, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeIsHeap;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    xstrncpy(gNodes[node].uValue.sIsHeap.mTypeName, type_name, VAR_NAME_MAX);
 
     gNodes[node].mLeft = 0;
     gNodes[node].mRight = 0;

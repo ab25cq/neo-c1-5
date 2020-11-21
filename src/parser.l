@@ -671,6 +671,21 @@ sizeof {
     return(SIZEOF);
 }
 
+isheap {
+    strncpy(yylval.cval, yytext, 128);
+    return(ISHEAP);
+}
+
+null {
+    strncpy(yylval.cval, yytext, 128);
+    return(NULLPTR);
+}
+
+delete {
+    strncpy(yylval.cval, yytext, 128);
+    return(TOKEN_DELETE);
+}
+
 __extension__ {
 }
 

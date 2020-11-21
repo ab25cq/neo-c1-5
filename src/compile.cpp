@@ -1587,7 +1587,6 @@ static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info
             return TRUE;
         }
 
-puts(real_fun_name);
         sFunction fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
 
         char real_fun_name2[VAR_NAME_MAX];
@@ -3403,6 +3402,33 @@ static BOOL compile_false(unsigned int node, sCompileInfo* info)
 }
 
 static BOOL pre_compile_false(unsigned int node, sCompileInfo* info)
+{
+    return TRUE;
+}
+
+static BOOL compile_null(unsigned int node, sCompileInfo* info)
+{
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void*");
+        return TRUE;
+    }
+
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(64, 0, true)); 
+    llvm_value.type = create_node_type_with_class_name("void*");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("void*");
+
+    return TRUE;
+}
+
+static BOOL pre_compile_null(unsigned int node, sCompileInfo* info)
 {
     return TRUE;
 }
@@ -6582,6 +6608,51 @@ static BOOL pre_compile_clone(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_delete(unsigned int node, sCompileInfo* info)
+{
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("void");
+        return TRUE;
+    }
+
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(left_node == 0) {
+        compile_err_msg(info, "require delete target object");
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    if(!compile(left_node, info)) {
+        return FALSE;
+    }
+
+    LVALUE llvm_value = *get_value_from_stack(-1);
+    dec_stack_ptr(1, info);
+
+    sNodeType* node_type = clone_node_type(info->type);
+
+    free_object(node_type, llvm_value.address, TRUE, info);
+
+    info->type = create_node_type_with_class_name("void");
+
+    return TRUE;
+}
+
+static BOOL pre_compile_delete(unsigned int node, sCompileInfo* info)
+{
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!pre_compile(left_node, info)) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 BOOL compile_struct(unsigned int node, sCompileInfo* info)
 {
     if(info->no_output) {
@@ -6621,6 +6692,7 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
 
         for(i=0; i<num_fields; i++) {
             fields[i] = create_node_type_with_class_name(type_fields[i]);
+
             add_field_to_struct(klass, name_fields[i], fields[i]);
         }
 
@@ -12275,6 +12347,55 @@ static BOOL pre_compile_store_address(unsigned int node, sCompileInfo* info)
     return TRUE;
 }
 
+static BOOL compile_isheap(unsigned int node, sCompileInfo* info)
+{
+    if(info->no_output) {
+        info->type = create_node_type_with_class_name("bool");
+        return TRUE;
+    }
+
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sIsHeap.mTypeName, VAR_NAME_MAX);
+    sNodeType* node_type2 = create_node_type_with_class_name(type_name);
+
+    if(node_type2 == NULL || node_type2->mClass == NULL) {
+        compile_err_msg(info, "Invalid type name(%s)1", type_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+
+        return TRUE;
+    }
+
+    sNodeType* node_type3 = NULL;
+
+    BOOL success_solve;
+    (void)solve_generics(&node_type3, node_type2, &success_solve);
+
+    BOOL is_heap = node_type3->mHeap;
+
+    /// result ///
+    LVALUE llvm_value;
+    llvm_value.value = ConstantInt::get(TheContext, llvm::APInt(1, is_heap, false)); 
+    llvm_value.type = create_node_type_with_class_name("bool");
+    llvm_value.address = nullptr;
+    llvm_value.var = nullptr;
+    llvm_value.binded_value = FALSE;
+    llvm_value.load_field = FALSE;
+
+    push_value_to_stack_ptr(&llvm_value, info);
+
+    info->type = create_node_type_with_class_name("bool");
+
+    return TRUE;
+}
+
+static BOOL pre_compile_isheap(unsigned int node, sCompileInfo* info)
+{
+
+    return TRUE;
+}
+
 BOOL compile(unsigned int node, sCompileInfo* info)
 {
     if(node == 0) {
@@ -12391,6 +12512,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
+        case kNodeTypeNull:
+            if(!compile_null(node, info)) {
+                return FALSE;
+            }
+            break;
+
         case kNodeTypeCreateObject:
             if(!compile_create_object(node, info)) {
                 return FALSE;
@@ -12399,6 +12526,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeClone:
             if(!compile_clone(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeDelete:
+            if(!compile_delete(node, info)) {
                 return FALSE;
             }
             break;
@@ -12733,6 +12866,12 @@ BOOL compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
+        case kNodeTypeIsHeap:
+            if(!compile_isheap(node, info)) {
+                return FALSE;
+            }
+            break;
+
         default:
             fprintf(stderr, "invalid node type\n");
             exit(2);
@@ -12857,6 +12996,12 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
             }
             break;
 
+        case kNodeTypeNull:
+            if(!pre_compile_null(node, info)) {
+                return FALSE;
+            }
+            break;
+
         case kNodeTypeCreateObject:
             if(!pre_compile_create_object(node, info)) {
                 return FALSE;
@@ -12865,6 +13010,12 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeClone:
             if(!pre_compile_clone(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeDelete:
+            if(!pre_compile_delete(node, info)) {
                 return FALSE;
             }
             break;
@@ -13195,6 +13346,12 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
 
         case kNodeTypeStoreAddress:
             if(!pre_compile_store_address(node, info)) {
+                return FALSE;
+            }
+            break;
+
+        case kNodeTypeIsHeap:
+            if(!pre_compile_isheap(node, info)) {
                 return FALSE;
             }
             break;

@@ -49,6 +49,7 @@ sVarTable* gLVTable;
 unsigned int multiple_nodes[128];
 int num_multiple_node = 0;
 char recent_type_name[VAR_NAME_MAX];
+char struct_name_now[VAR_NAME_MAX];
 unsigned int else_block;
 %}
 
@@ -76,6 +77,7 @@ unsigned int else_block;
 %token <cval> TYPEDEF
 %token <cval> TOKEN_TRUE
 %token <cval> TOKEN_FALSE
+%token <cval> TOKEN_DELETE
 %token <cval> CONST
 %token <cval> UNSIGNED
 %token <cval> SIGNED
@@ -117,6 +119,8 @@ unsigned int else_block;
 %token <cval> CONTINUE
 %token <cval> DEFAULT
 %token <cval> SIZEOF
+%token <cval> ISHEAP
+%token <cval> NULLPTR
 %token <cval> __ALIGNOF__
 %token <cval> ERROR
 %token <cval> MANAGED_TOKEN
@@ -167,7 +171,9 @@ unsigned int else_block;
 %type <cval> const_array_type
 %type <cval> typedef_type_params_
 %type <cval> name
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names;
+%type <cval> struct_name
+%type <cval> struct_name2
+%type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields;
 
 %left '[' ']' '='
 %left '?' ':'
@@ -1647,6 +1653,33 @@ union_: UNION IDENTIFIER '{' fields '}' ';' {
         }
         ;
 
+struct_name:
+    IDENTIFIER {
+        char* struct_name = $1;
+        unsigned int fields = 0;
+        BOOL anonymous = FALSE;
+        BOOL generics = FALSE;
+
+        unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+
+        compile(node, &cinfo);
+
+        xstrncpy($$, struct_name, VAR_NAME_MAX);
+    }
+    | TYPE_NAME {
+        char* struct_name = $1;
+        unsigned int fields = 0;
+        BOOL anonymous = FALSE;
+        BOOL generics = FALSE;
+
+        unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+
+        compile(node, &cinfo);
+
+        xstrncpy($$, struct_name, VAR_NAME_MAX);
+    }
+    ;
+
 struct_: 
         STRUCT IDENTIFIER '!' '<' struct_generics_types '>' '{' fields '}' ';' {
             char* struct_name = $2;
@@ -1729,10 +1762,6 @@ fields:  {
             $$ = fields[num_fields-1]; 
             append_field_to_fields(fields[num_fields-1], var_name, type_name); 
         }
-
-
-
-
 
         | STRUCT '{' fields '}' IDENTIFIER ';' {
             static int anonyomous_struct_num = 0;
@@ -1839,7 +1868,7 @@ fields:  {
             compile(node, &cinfo);
 
             char* var_name = $4;
-            char* type_name[VAR_NAME_MAX];
+            char type_name[VAR_NAME_MAX];
 
             xstrncpy(type_name,  struct_name, VAR_NAME_MAX);
             xstrncat(type_name, $3, VAR_NAME_MAX);
@@ -2013,6 +2042,153 @@ fields:  {
 
                 $$ = fields[num_fields-1]; 
                 append_field_to_fields(fields[num_fields-1], var_name, struct_name); 
+        }
+
+
+
+
+
+
+
+        | STRUCT IDENTIFIER '!' '<' struct_generics_types '>' pointer IDENTIFIER ';' {
+            char* struct_name = $2;
+            unsigned int fields2 = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields2, generics, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* var_name = $8;
+
+            char* type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, struct_name, VAR_NAME_MAX);
+            xstrncat(type_name, "<", VAR_NAME_MAX);
+
+            int i;
+            for(i=0; i<num_struct_generics_types; i++) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+
+                xstrncat(type_name, buf, VAR_NAME_MAX);
+
+                if(i != num_struct_generics_types-1) {
+                    xstrncat(type_name, ",", VAR_NAME_MAX);
+                }
+            }
+
+            xstrncat(type_name, ">", VAR_NAME_MAX);
+            xstrncat(type_name, $7, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | fields STRUCT IDENTIFIER '!' '<' struct_generics_types '>' pointer IDENTIFIER ';' {
+            char* struct_name = $3;
+            unsigned int fields2 = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields2, generics, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* var_name = $9;
+
+            char* type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, struct_name, VAR_NAME_MAX);
+            xstrncat(type_name, "<", VAR_NAME_MAX);
+
+            int i;
+            for(i=0; i<num_struct_generics_types; i++) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+
+                xstrncat(type_name, buf, VAR_NAME_MAX);
+
+                if(i != num_struct_generics_types-1) {
+                    xstrncat(type_name, ",", VAR_NAME_MAX);
+                }
+            }
+
+            xstrncat(type_name, ">", VAR_NAME_MAX);
+            xstrncat(type_name, $8, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | STRUCT TYPE_NAME '!' '<' struct_generics_types '>' pointer IDENTIFIER ';' {
+            char* struct_name = $2;
+            unsigned int fields2 = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields2, generics, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* var_name = $8;
+
+            char* type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, struct_name, VAR_NAME_MAX);
+            xstrncat(type_name, "<", VAR_NAME_MAX);
+
+            int i;
+            for(i=0; i<num_struct_generics_types; i++) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+
+                xstrncat(type_name, buf, VAR_NAME_MAX);
+
+                if(i != num_struct_generics_types-1) {
+                    xstrncat(type_name, ",", VAR_NAME_MAX);
+                }
+            }
+
+            xstrncat(type_name, ">", VAR_NAME_MAX);
+            xstrncat(type_name, $7, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | fields STRUCT TYPE_NAME '!' '<' struct_generics_types '>' pointer IDENTIFIER ';' {
+            char* struct_name = $3;
+            unsigned int fields2 = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = num_struct_generics_types > 0;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields2, generics, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* var_name = $9;
+
+            char* type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, struct_name, VAR_NAME_MAX);
+            xstrncat(type_name, "<", VAR_NAME_MAX);
+
+            int i;
+            for(i=0; i<num_struct_generics_types; i++) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+
+                xstrncat(type_name, buf, VAR_NAME_MAX);
+
+                if(i != num_struct_generics_types-1) {
+                    xstrncat(type_name, ",", VAR_NAME_MAX);
+                }
+            }
+
+            xstrncat(type_name, ">", VAR_NAME_MAX);
+            xstrncat(type_name, $8, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
         }
         ;
 
@@ -3372,6 +3548,7 @@ exp: node {
     | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, yylineno); }
     | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, yylineno); }
     | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
+    | exp NOT_EQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
     | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, yylineno); }
     | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, yylineno); }
     | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, yylineno); }
@@ -3442,6 +3619,9 @@ node: source_point_macro exp {
         }
         | TOKEN_FALSE {
             $$ = sNodeTree_create_false(gSName, yylineno);
+        }
+        | NULLPTR {
+            $$ = sNodeTree_create_null(gSName, yylineno);
         }
         | IDENTIFIER {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
@@ -3651,6 +3831,11 @@ node: source_point_macro exp {
             unsigned int exp = $2;
 
             $$ = sNodeTree_create_clone(exp, gSName, yylineno);
+        }
+        | TOKEN_DELETE exp {
+            unsigned int exp = $2;
+
+            $$ = sNodeTree_create_delete(exp, gSName, yylineno);
         }
         | type LAMBDA '(' function_params ')' '{' function_block '}' block_end 
         {
@@ -4101,6 +4286,11 @@ node: source_point_macro exp {
             char* type_name = $3;
 
             $$ = sNodeTree_create_sizeof1(type_name, gSName, yylineno);
+        }
+        | ISHEAP '(' type ')' {
+            char* type_name = $3;
+
+            $$ = sNodeTree_create_isheap(type_name, gSName, yylineno);
         }
         | __ALIGNOF__ '(' IDENTIFIER ')' {
             char* var_name = $3;

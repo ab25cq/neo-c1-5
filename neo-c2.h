@@ -464,475 +464,45 @@ string buffer::to_string(buffer* self)
 }
 
 
-/*
-/// regex ///
-struct regex_struct {
-    string str;
-    pcre* regex;
-
-    bool ignore_case;
-    bool multiline;
-    bool global;
-    bool extended;
-    bool dotall;
-    bool anchored;
-    bool dollar_endonly;
-    bool ungreedy;
-
-    int options;
-};
-
-typedef regex_struct*% nregex;
-
-extern nregex regex(char* str, bool ignore_case, bool multiline, bool global, bool extended, bool dotall, bool anchored, bool dollar_endonly, bool ungreedy);
-
-ruby_macro regex {
-    param_line = ENV['PARAMS'];
-
-    n = 0;
-
-    
-    if param_line[n] == "/"
-      n = n + 1
-    elsif param_line[n] == "\""
-      n = n + 1
-    end
-
-    str = ""
-
-    ignore_case = false;
-    multiline = false;
-    global = false;
-    extended = false;
-    dotall = false;
-    anchored = false;
-    dollar_endonly = false;
-    ungreedy = false;
-
-    while(n < param_line.length()) do
-      c = param_line[n];
-      c2 = param_line[n+1]
-
-      if c == "\\" && c2 == "/"
-          str = str + c + c2
-
-          n = n + 2
-      elsif c == "\\" && c2 == "\""
-          str = str + c + c2
-
-          n = n + 2
-      elsif c == "/" || c == "\""
-          n = n + 1;
-
-          while(n < param_line.length()) do
-              c = param_line[n];
-
-              if c == "i"
-                  ignore_case = true;
-              elsif c == "m"
-                  multiline = true;
-              elsif c == "g"
-                  global = true;
-              elsif c == "s"
-                  dotall = true;
-              elsif c == "A"
-                  anchoared = true;
-              elsif c == "D"
-                  dollar_endonly = true;
-              elsif c == "U"
-                  ungreedy = true;
-              elsif c == "x"
-                  extended = true;
-              end
-
-              n = n + 1;
-          end
-      else
-          str = str + c
-      end
-
-      n = n + 1;
-    end
-
-    puts("regex(\"#{str}\", #{ignore_case}, #{multiline}, #{global}, #{extended}, #{dotall}, #{anchored}, #{dollar_endonly}, #{ungreedy})");
-}
-
 /// list ///
-struct list_item<T>
+struct list_item!<T>
 {
     T& item;
-    struct list_item<T>*? prev;
-    struct list_item<T>*? next;
-}
-
-struct list<T>
-{
-    list_item<T>*? head;
-    list_item<T>*? tail;
-    int len;
-}
-
-/// string ///
-extern string operator+(string& left, string& right);
-extern string operator*(string& left, int num);
-
-impl string
-{
-    extern bool equals(string& left, string& right);
-    extern int length(string& str);
-    extern int get_hash_key(string& value);
-    extern string substring(string& str, int head, int tail);
-    extern int index(string& str, char* search_str, int default_value);
-    extern int rindex(string& str, char* search_str, int default_value);
-    extern int index_regex(string& str, nregex reg, int default_value);
-    extern int rindex_regex(string& str, nregex reg, int default_value);
-    extern string&delete(string& str, int position);
-    extern string& delete_range(string& str, int head, int tail);
-    extern string printable(string& str);
-    extern string sub(string& self, nregex reg, char* replace, list<string>?* group_strings);
-    extern bool match(string& self, nregex reg, list<string>?* group_strings);
-    list<string>*% scan(string& self, nregex reg);
-    extern wstring to_wstring(string& self);
-    string reverse(string& str);
-    list<string>*% split_char(string& self, char c);
-    list<string>*% split(string& self, nregex reg);
-
-    inline int compare(string& left, string& right) {
-        return strcmp(left, right);
-    }
-    
-    extern void replace(string& self, int index, char c);
-    extern char item(string& self, int index, char default_value);
-    extern string reverse(string& self);
-    
-    extern nregex to_regex(string& self);
-    buffer*% to_buffer(string& self);
-}
-
-/// wstring ///
-extern wstring operator+(wstring& left, wstring& right);
-extern wstring operator*(wstring& left, int num);
-
-impl wstring
-{
-    extern bool equals(wstring& left, wstring& right);
-    extern int length(wstring& str);
-    extern int get_hash_key(wstring& value);
-    wstring reverse(wstring& str);
-    extern wstring substring(wstring& str, int head, int tail);
-    extern int index(wstring& str, wchar_t* search_str, int default_value);
-    extern int rindex(wstring& str, wchar_t* search_str, int default_value);
-    extern wstring& delete(wstring& str, int position);
-    extern wstring& delete_range(wstring& str, int head, int tail);
-
-    extern string to_string(wstring& self, char* default_value);
-    extern wstring printable(wstring& str);
-
-    inline int compare(wstring& left, wstring& right) {
-        return wcscmp(left, right);
-    }
-    
-    extern void replace(wstring& self, int index, wchar_t c);
-    extern wchar_t item(wstring& self, int index, wchar_t default_value);
-}
-
-/// vector ///
-struct vector<T> 
-{
-    T&* items;
-    int len;
-    int size;
+    struct list_item!<T>* prev;
+    struct list_item!<T>* next;
 };
 
-impl vector<T> 
+struct list!<T>
 {
-    initialize() 
-    {
-        self.size = 16;
-        self.len = 0;
-        self.items = borrow new T[self.size];
-    }
-    vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
-    {
-        self.size = len;
-        self.len = len;
-        self.items = borrow new T[self.size];
-
-        for(int i=0; i<len; i++) {
-            if(isheap(T)) {
-                self.items[i] = borrow clone value;
-            }
-            else {
-                self.items[i] = value;
-            }
-        }
-
-        return self;
-    }
-
-    vector<T>%* clone(vector<T>* self) {
-        var result = new vector<T>.initialize();
-
-        for(int i=0; i<self.len; i++) {
-            T& it = self.items[i];
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
-        }
-
-        return result;
-    }
-
-    finalize()
-    {
-        if(isheap(T)) {
-            for(int i=0; i<self.len; i++) 
-            {
-                delete self.items[i];
-
-            }
-        }
-        delete self.items;
-    }
-    
-    void push_back(vector<T>* self, T item) {
-        managed item;
-
-        if(self.len == self.size) {
-            var new_size = self.size * 2;
-            var items = self.items;
-
-            self.items = borrow new T[new_size];
-
-            int i;
-            for(i=0; i<self.size; i++) {
-                self.items[i] = items[i];
-            }
-
-            self.size = new_size;
-
-            delete items;
-        }
-
-        self.items[self.len] = item;
-        self.len++;
-    }
-
-    T pop_back(vector<T>* self, T& default_value)
-    {
-        if(self.len == 0) {
-            return dummy_heap default_value;
-        }
-
-        T result = (T)self.items[self.len-1];
-
-        self.len--;
-
-        return result;
-    }
-
-    T& item(vector<T>* self, int index, T& default_value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            return self.items[index];
-        }
-
-        return default_value;
-    }
-    T clone_item(vector<T>* self, int index, T& default_value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            if(isheap(T)) {
-                return clone self.items[index];
-            }
-            else {
-                return dummy_heap self.items[index];
-            }
-        }
-
-        return dummy_heap default_value;
-    }
-    void each(vector<T>* self, void (*block_)(T&,int,bool*)) {
-        for(int i_=0; i_<self.len; i_++) {
-            bool end_flag_ = false;
-            block_(self.items[i_], i_, &end_flag_);
-            if(end_flag_ == true) {
-                break;
-            }
-        };
-    }
-
-    int find(vector<T>* self, T& item, int default_value) {
-        int result = default_value;
-        self.each {
-            if(it.equals(item)) {
-                result = it2;
-                *it3 = true;
-                return;
-            }
-        }
-
-        return result;
-    }
-
-    template <R> vector<R>*% map(vector<T>* self, R (*block_)(T&))
-    {
-        var result_ = new vector<R>.initialize();
-
-        for(int i_=0; i_<self.len; i_++) {
-            result_.push_back(block_(self.items[i_]));
-        }
-
-        result_
-    }
-
-    bool equals(vector<T>* left, vector<T>* right)
-    {
-        if(left.len != right.len) {
-            return false;
-        }
-
-        for(int i=0; i<left.len; i++) {
-            if(!(left.items[i].equals(right.items[i])))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool replace(vector<T>* self, int index, T value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            if(isheap(T)) {
-                delete self.items[index];
-            }
-
-            self.items[index] = value;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    int length(vector<T>* self)
-    {
-        return self.len;
-    }
-
-    void reset(vector<T>* self) {
-        self.len = 0;
-    }
-    
-    list<T>*% to_list(vector<T>* self) {
-        var result = new vector<T>.initialize();
-        
-        self.each {
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
-        }
-        
-        return result;
-    }
-}
-
-ruby_macro vec {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() > 0
-        puts("{");
-        puts("var result = new vector<typeof(#{params[0]})>.initialize();");
-
-        params.each do |param|
-            puts("result.push_back(#{param});");
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
+    list_item!<T>* head;
+    list_item!<T>* tail;
+    int len;
+};
 
 /// list ///
-impl list <T>
+list!<T>*% list!<T>::initialize(list!<T>*% self) 
 {
-    initialize() {
-        self.head = null;
-        self.tail = null;
-        self.len = 0;
-    }
+    self.head = null;
+    self.tail = null;
+    self.len = 0;
 
-    finalize() {
-        list_item<T>* it = self.head;
-        while(it != null) {
-            if(isheap(T)) {
-                delete it.item;
-            }
-            var prev_it = it;
-            it = it.next;
-            delete prev_it;
+    return self;
+}
+
+void list!<T>::finalize(list!<T>* self) 
+{
+    list_item!<T>* it = self.head;
+    while(it != null) {
+        if(isheap(T)) {
+            delete it.item;
         }
+        list_item!<T>* prev_it = it;
+        it = it.next;
+        delete prev_it;
     }
+}
 
+/*
     list<T>*% clone(list<T>* self) {
         var result = new list<T>.initialize();
 
@@ -1943,6 +1513,284 @@ impl list <T>
         return result;
     }
 }
+
+/*
+/// vector ///
+struct vector<T> 
+{
+    T&* items;
+    int len;
+    int size;
+};
+
+impl vector<T> 
+{
+    initialize() 
+    {
+        self.size = 16;
+        self.len = 0;
+        self.items = borrow new T[self.size];
+    }
+    vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
+    {
+        self.size = len;
+        self.len = len;
+        self.items = borrow new T[self.size];
+
+        for(int i=0; i<len; i++) {
+            if(isheap(T)) {
+                self.items[i] = borrow clone value;
+            }
+            else {
+                self.items[i] = value;
+            }
+        }
+
+        return self;
+    }
+
+    vector<T>%* clone(vector<T>* self) {
+        var result = new vector<T>.initialize();
+
+        for(int i=0; i<self.len; i++) {
+            T& it = self.items[i];
+            if(isheap(T)) {
+                result.push_back(clone it);
+            }
+            else {
+                result.push_back(dummy_heap it);
+            }
+        }
+
+        return result;
+    }
+
+    finalize()
+    {
+        if(isheap(T)) {
+            for(int i=0; i<self.len; i++) 
+            {
+                delete self.items[i];
+
+            }
+        }
+        delete self.items;
+    }
+    
+    void push_back(vector<T>* self, T item) {
+        managed item;
+
+        if(self.len == self.size) {
+            var new_size = self.size * 2;
+            var items = self.items;
+
+            self.items = borrow new T[new_size];
+
+            int i;
+            for(i=0; i<self.size; i++) {
+                self.items[i] = items[i];
+            }
+
+            self.size = new_size;
+
+            delete items;
+        }
+
+        self.items[self.len] = item;
+        self.len++;
+    }
+
+    T pop_back(vector<T>* self, T& default_value)
+    {
+        if(self.len == 0) {
+            return dummy_heap default_value;
+        }
+
+        T result = (T)self.items[self.len-1];
+
+        self.len--;
+
+        return result;
+    }
+
+    T& item(vector<T>* self, int index, T& default_value) 
+    {
+        if(index < 0) {
+            index += self.len;
+        }
+
+        if(index >= 0 && index < self.len)
+        {
+            return self.items[index];
+        }
+
+        return default_value;
+    }
+    T clone_item(vector<T>* self, int index, T& default_value) 
+    {
+        if(index < 0) {
+            index += self.len;
+        }
+
+        if(index >= 0 && index < self.len)
+        {
+            if(isheap(T)) {
+                return clone self.items[index];
+            }
+            else {
+                return dummy_heap self.items[index];
+            }
+        }
+
+        return dummy_heap default_value;
+    }
+    void each(vector<T>* self, void (*block_)(T&,int,bool*)) {
+        for(int i_=0; i_<self.len; i_++) {
+            bool end_flag_ = false;
+            block_(self.items[i_], i_, &end_flag_);
+            if(end_flag_ == true) {
+                break;
+            }
+        };
+    }
+
+    int find(vector<T>* self, T& item, int default_value) {
+        int result = default_value;
+        self.each {
+            if(it.equals(item)) {
+                result = it2;
+                *it3 = true;
+                return;
+            }
+        }
+
+        return result;
+    }
+
+    template <R> vector<R>*% map(vector<T>* self, R (*block_)(T&))
+    {
+        var result_ = new vector<R>.initialize();
+
+        for(int i_=0; i_<self.len; i_++) {
+            result_.push_back(block_(self.items[i_]));
+        }
+
+        result_
+    }
+
+    bool equals(vector<T>* left, vector<T>* right)
+    {
+        if(left.len != right.len) {
+            return false;
+        }
+
+        for(int i=0; i<left.len; i++) {
+            if(!(left.items[i].equals(right.items[i])))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool replace(vector<T>* self, int index, T value) 
+    {
+        if(index < 0) {
+            index += self.len;
+        }
+
+        if(index >= 0 && index < self.len)
+        {
+            if(isheap(T)) {
+                delete self.items[index];
+            }
+
+            self.items[index] = value;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    int length(vector<T>* self)
+    {
+        return self.len;
+    }
+
+    void reset(vector<T>* self) {
+        self.len = 0;
+    }
+    
+    list<T>*% to_list(vector<T>* self) {
+        var result = new vector<T>.initialize();
+        
+        self.each {
+            if(isheap(T)) {
+                result.push_back(clone it);
+            }
+            else {
+                result.push_back(dummy_heap it);
+            }
+        }
+        
+        return result;
+    }
+}
+
+ruby_macro vec {
+    params = [];
+    param = "";
+    dquort = false;
+    squort = false;
+    param_line = ENV['PARAMS'];
+    n = 0;
+    while(n < param_line.length()) do
+        c = param_line[n];
+        n = n + 1;
+
+        if (dquort || squort) && c == "\\"
+            param.concat(c);
+            
+            c = param_line[n];
+            n = n + 1;
+
+            param.concat(c);
+        elsif c == "\""
+            param.concat(c);
+            dquort = !dquort
+        elsif c == "'"
+            param.concat(c);
+            squort = !squort
+        elsif dquort || squort
+            param.concat(c);
+        elsif c == ","
+            if param.length() > 0
+                params.push(param); param = ""
+            end
+        else
+            param.concat(c);
+        end
+    end
+
+    if param.length() != 0
+        params.push(param);
+    end
+
+    if params.length() > 0
+        puts("{");
+        puts("var result = new vector<typeof(#{params[0]})>.initialize();");
+
+        params.each do |param|
+            puts("result.push_back(#{param});");
+        end
+
+        puts("result");
+        puts("}");
+    end
+}
+
 
 ruby_macro list {
     params = [];
