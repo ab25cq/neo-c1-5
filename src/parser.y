@@ -2841,6 +2841,22 @@ function_struct_type_name:
         xstrncpy($$, type_name, VAR_NAME_MAX);
         num_function_generics_types = 0;
     }
+    | LONG {
+        char type_name[VAR_NAME_MAX];
+
+        get_typedef($1, type_name);
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
+    | SHORT {
+        char type_name[VAR_NAME_MAX];
+
+        get_typedef($1, type_name);
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
     | TYPE_NAME pointer {
         char type_name[VAR_NAME_MAX];
 
@@ -2853,6 +2869,36 @@ function_struct_type_name:
         else {
             get_typedef($1, type_name);
         }
+
+        char* pointer = $2;
+
+        int i;
+        for(i=0; i<strlen(pointer); i++) {
+            xstrncat(type_name, "p", VAR_NAME_MAX);
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
+    | LONG pointer {
+        char type_name[VAR_NAME_MAX];
+
+        get_typedef($1, type_name);
+
+        char* pointer = $2;
+
+        int i;
+        for(i=0; i<strlen(pointer); i++) {
+            xstrncat(type_name, "p", VAR_NAME_MAX);
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        num_function_generics_types = 0;
+    }
+    | SHORT pointer {
+        char type_name[VAR_NAME_MAX];
+
+        get_typedef($1, type_name);
 
         char* pointer = $2;
 
@@ -3646,6 +3692,19 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
         }
+        | exp '.' name PLUS_PLUS {
+            char* var_name = $3;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno);
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' PLUS_PLUS { 
             unsigned int left = $2;
             unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
@@ -3695,6 +3754,19 @@ node: source_point_macro exp {
             unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
 
             $$ = sNodeTree_create_minus_eq(left, right, gSName, yylineno);
+        }
+        | exp '.' name MINUS_MINUS {
+            char* var_name = $3;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno); 
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
         | IDENTIFIER PLUS_EQ comma_exp { 
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);

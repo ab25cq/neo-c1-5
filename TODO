@@ -1,5 +1,7 @@
 finalize
 
+convert struct name wchat_, wchar_t*
+
 clone
 
 output to the debug code when creating generics functions.

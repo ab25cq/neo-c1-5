@@ -206,6 +206,7 @@ SWITCH_STASTMENT_NODE_MAX	src/common.h	45;"	d
 T	code/HelloWorld.c	/^struct GenericsData!<T> {$/;"	s	file:
 T	code/HelloWorld.c	/^struct GenericsData2!<T> {$/;"	s	file:
 T	code/HelloWorld.c	/^struct GenericsData3!<T> {$/;"	s	file:
+T	code/HelloWorld.c	/^struct sFinalizeTest2!<T> {$/;"	s	file:
 TEMPLATE	parser.tab.c	/^    TEMPLATE = 289,$/;"	e	enum:yytokentype	file:
 TEMPLATE	parser.tab.h	/^    TEMPLATE = 289,$/;"	e	enum:yytokentype
 TOKEN_FALSE	parser.tab.c	/^    TOKEN_FALSE = 272,$/;"	e	enum:yytokentype	file:
@@ -238,45 +239,45 @@ WHILE	parser.tab.h	/^    WHILE = 306,$/;"	e	enum:yytokentype
 XFUNC_H	src/xfunc.h	2;"	d
 XOR_EQ	parser.tab.c	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype	file:
 XOR_EQ	parser.tab.h	/^    XOR_EQ = 301,$/;"	e	enum:yytokentype
-YYABORT	parser.tab.c	2731;"	d	file:
-YYACCEPT	parser.tab.c	2730;"	d	file:
-YYBACKUP	parser.tab.c	2737;"	d	file:
+YYABORT	parser.tab.c	2753;"	d	file:
+YYACCEPT	parser.tab.c	2752;"	d	file:
+YYBACKUP	parser.tab.c	2759;"	d	file:
 YYBISON	parser.tab.c	48;"	d	file:
 YYBISON_VERSION	parser.tab.c	51;"	d	file:
-YYCASE_	parser.tab.c	3081;"	d	file:
-YYCASE_	parser.tab.c	3092;"	d	file:
+YYCASE_	parser.tab.c	3103;"	d	file:
+YYCASE_	parser.tab.c	3114;"	d	file:
 YYCOPY	parser.tab.c	501;"	d	file:
 YYCOPY	parser.tab.c	504;"	d	file:
 YYCOPY_NEEDED	parser.tab.c	476;"	d	file:
 YYDEBUG	parser.tab.c	150;"	d	file:
 YYDEBUG	parser.tab.h	41;"	d
-YYDPRINTF	parser.tab.c	2768;"	d	file:
-YYDPRINTF	parser.tab.c	2883;"	d	file:
-YYEMPTY	parser.tab.c	2727;"	d	file:
-YYEOF	parser.tab.c	2728;"	d	file:
-YYERRCODE	parser.tab.c	2756;"	d	file:
-YYERROR	parser.tab.c	2732;"	d	file:
+YYDPRINTF	parser.tab.c	2790;"	d	file:
+YYDPRINTF	parser.tab.c	2905;"	d	file:
+YYEMPTY	parser.tab.c	2749;"	d	file:
+YYEOF	parser.tab.c	2750;"	d	file:
+YYERRCODE	parser.tab.c	2778;"	d	file:
+YYERROR	parser.tab.c	2754;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	138;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	139;"	d	file:
 YYERROR_VERBOSE	parser.tab.c	141;"	d	file:
 YYFINAL	parser.tab.c	517;"	d	file:
-YYFPRINTF	parser.tab.c	2765;"	d	file:
+YYFPRINTF	parser.tab.c	2787;"	d	file:
 YYFREE	parser.tab.c	447;"	d	file:
-YYINITDEPTH	parser.tab.c	2892;"	d	file:
+YYINITDEPTH	parser.tab.c	2914;"	d	file:
 YYLAST	parser.tab.c	519;"	d	file:
 YYMALLOC	parser.tab.c	441;"	d	file:
-YYMAXDEPTH	parser.tab.c	2903;"	d	file:
+YYMAXDEPTH	parser.tab.c	2925;"	d	file:
 YYMAXUTOK	parser.tab.c	531;"	d	file:
 YYNNTS	parser.tab.c	524;"	d	file:
 YYNRULES	parser.tab.c	526;"	d	file:
 YYNSTATES	parser.tab.c	528;"	d	file:
 YYNTOKENS	parser.tab.c	522;"	d	file:
 YYPACT_NINF	parser.tab.c	702;"	d	file:
-YYPOPSTACK	parser.tab.c	3208;"	d	file:
+YYPOPSTACK	parser.tab.c	3230;"	d	file:
 YYPULL	parser.tab.c	63;"	d	file:
 YYPURE	parser.tab.c	57;"	d	file:
 YYPUSH	parser.tab.c	60;"	d	file:
-YYRECOVERING	parser.tab.c	2735;"	d	file:
+YYRECOVERING	parser.tab.c	2757;"	d	file:
 YYSIZE_MAXIMUM	parser.tab.c	329;"	d	file:
 YYSIZE_T	parser.tab.c	318;"	d	file:
 YYSIZE_T	parser.tab.c	320;"	d	file:
@@ -305,7 +306,7 @@ YYSTYPE_IS_TRIVIAL	parser.tab.c	275;"	d	file:
 YYSTYPE_IS_TRIVIAL	parser.tab.h	166;"	d
 YYTABLES_NAME	lex.yy.c	3372;"	d	file:
 YYTABLE_NINF	parser.tab.c	707;"	d	file:
-YYTERROR	parser.tab.c	2755;"	d	file:
+YYTERROR	parser.tab.c	2777;"	d	file:
 YYTOKENTYPE	parser.tab.c	158;"	d	file:
 YYTOKENTYPE	parser.tab.h	49;"	d
 YYTRANSLATE	parser.tab.c	535;"	d	file:
@@ -351,7 +352,7 @@ YY_INPUT	lex.yy.c	972;"	d	file:
 YY_INT_ALIGNED	lex.yy.c	4;"	d	file:
 YY_LESS_LINENO	lex.yy.c	172;"	d	file:
 YY_LINENO_REWIND_TO	lex.yy.c	179;"	d	file:
-YY_LOCATION_PRINT	parser.tab.c	2776;"	d	file:
+YY_LOCATION_PRINT	parser.tab.c	2798;"	d	file:
 YY_MORE_ADJ	lex.yy.c	816;"	d	file:
 YY_NEW_FILE	lex.yy.c	127;"	d	file:
 YY_NULL	lex.yy.c	106;"	d	file:
@@ -361,20 +362,20 @@ YY_NULLPTR	parser.tab.c	132;"	d	file:
 YY_NUM_RULES	lex.yy.c	373;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	954;"	d	file:
 YY_READ_BUF_SIZE	lex.yy.c	956;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2873;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	2886;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2895;"	d	file:
+YY_REDUCE_PRINT	parser.tab.c	2908;"	d	file:
 YY_RESTORE_YY_MORE_OFFSET	lex.yy.c	817;"	d	file:
 YY_RULE_SETUP	lex.yy.c	1047;"	d	file:
 YY_SC_TO_UI	lex.yy.c	111;"	d	file:
-YY_STACK_PRINT	parser.tab.c	2842;"	d	file:
-YY_STACK_PRINT	parser.tab.c	2885;"	d	file:
+YY_STACK_PRINT	parser.tab.c	2864;"	d	file:
+YY_STACK_PRINT	parser.tab.c	2907;"	d	file:
 YY_START	lex.yy.c	122;"	d	file:
 YY_START_STACK_INCR	lex.yy.c	1014;"	d	file:
 YY_STATE_BUF_SIZE	lex.yy.c	145;"	d	file:
 YY_STATE_EOF	lex.yy.c	125;"	d	file:
 YY_STRUCT_YY_BUFFER_STATE	lex.yy.c	203;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	2780;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	2884;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	2802;"	d	file:
+YY_SYMBOL_PRINT	parser.tab.c	2906;"	d	file:
 YY_TYPEDEF_YY_BUFFER_STATE	lex.yy.c	148;"	d	file:
 YY_TYPEDEF_YY_SIZE_T	lex.yy.c	153;"	d	file:
 YY_USER_ACTION	lex.yy.c	1039;"	d	file:
@@ -469,13 +470,17 @@ alloc_struct	src/klass.c	/^sCLClass* alloc_struct(const char* class_name_, BOOL 
 alloc_union	src/klass.c	/^sCLClass* alloc_union(char* class_name_, BOOL anonymous, BOOL anonymous_var_name)$/;"	f
 alloca	parser.tab.c	402;"	d	file:
 andand_result_var	src/common.h	/^    void* andand_result_var;$/;"	m	struct:sCompileInfoStruct
+append	neo-c2.h	/^void buffer::append(buffer* self, char* mem, size_t size)$/;"	f	class:buffer
+append_char	neo-c2.h	/^void buffer::append_char(buffer* self, char c)$/;"	f	class:buffer
 append_debug_heap_memory	src/memalloc-stdc.c	/^static void append_debug_heap_memory(void* mem, char* type_name, char* sname, int sline, int calloc_num, long long calloc_size, char* fun_name, char* real_fun_name)$/;"	f	file:
 append_field_to_fields	src/node.c	/^void append_field_to_fields(unsigned int fields, char* name, char* type_name)$/;"	f
 append_heap_object_to_right_value	src/compile.cpp	/^void append_heap_object_to_right_value(LVALUE* llvm_value, sCompileInfo* info)$/;"	f
 append_node_to_node_block	src/node.c	/^void append_node_to_node_block(unsigned int node_block, unsigned int node)$/;"	f
+append_nullterminated_str	neo-c2.h	/^void buffer::append_nullterminated_str(buffer* self, char* str)$/;"	f	class:buffer
 append_param_to_function_params	src/node.c	/^void append_param_to_function_params(unsigned int function_params, char* type_name, char* name)$/;"	f
 append_param_to_params	src/node.c	/^void append_param_to_params(unsigned int params, unsigned int param)$/;"	f
 append_param_to_params_at_head	src/node.c	/^void append_param_to_params_at_head(unsigned int params, unsigned int param)$/;"	f
+append_str	neo-c2.h	/^void buffer::append_str(buffer* self, char* str)$/;"	f	class:buffer
 arrange_stack	src/compile.cpp	/^void arrange_stack(sCompileInfo* info, int top)$/;"	f
 array_index	src/parser.y	/^array_index: '[' exp ']' {$/;"	l
 array_index_index_node	parser.tab.c	/^unsigned int array_index_index_node[ARRAY_DIMENTION_MAX];$/;"	v
@@ -508,6 +513,8 @@ block	parser.tab.c	/^unsigned int block;$/;"	v
 block	src/parser.y	/^block:  statment                  { $/;"	l
 block_end	src/parser.y	/^block_end: {$/;"	l
 buf	lex.yy.c	/^char buf[512];$/;"	v
+buf	neo-c2.h	/^    char* buf;$/;"	m	struct:buffer
+buffer	neo-c2.h	/^struct buffer {$/;"	s
 call_destructor	src/compile.cpp	/^static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info)$/;"	f	file:
 call_field_destructor	src/compile.cpp	/^static void call_field_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info)$/;"	f	file:
 call_function	src/compile.cpp	/^BOOL call_function(const char* fun_name, Value** params, int num_params, const char* struct_name, BOOL no_err_output, sNodeType* generics_type, sCompileInfo* info)$/;"	f
@@ -535,7 +542,9 @@ comment2	lex.yy.c	870;"	d	file:
 compare	neo-c2.h	/^inline int char*::compare(char* left, char* right) $/;"	f
 compare	neo-c2.h	/^inline int char::compare(char left, char right) $/;"	f
 compare	neo-c2.h	/^inline int int::compare(int left, int right) $/;"	f
-compare	neo-c2.h	/^inline int wchar_t*::compare(wstring& left, wstring& right) {$/;"	f
+compare	neo-c2.h	/^inline int long::compare(long left, long right) $/;"	f
+compare	neo-c2.h	/^inline int short::compare(short left, short right) $/;"	f
+compare	neo-c2.h	/^inline int string::compare(string& left, string& right) $/;"	f	class:string
 compile	src/compile.cpp	/^BOOL compile(unsigned int node, sCompileInfo* info)$/;"	f
 compile_add	src/compile.cpp	/^static BOOL compile_add(unsigned int node, sCompileInfo* info)$/;"	f	file:
 compile_alignof1	src/compile.cpp	/^static BOOL compile_alignof1(unsigned int node, sCompileInfo* info)$/;"	f	file:
@@ -659,7 +668,9 @@ enum_number	parser.tab.c	/^int enum_number = 0;$/;"	v
 equals	neo-c2.h	/^inline bool char*::equals(char* left, char* right)$/;"	f
 equals	neo-c2.h	/^inline bool char::equals(char left, char right)$/;"	f
 equals	neo-c2.h	/^inline bool int::equals(int left, int right) $/;"	f
-equals	neo-c2.h	/^inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)$/;"	f
+equals	neo-c2.h	/^inline bool long::equals(long left, long right) $/;"	f
+equals	neo-c2.h	/^inline bool short::equals(short left, short right)$/;"	f
+equals	neo-c2.h	/^inline bool string::equals(string& left, string& right)$/;"	f	class:string
 err_num	src/common.h	/^    int err_num;$/;"	m	struct:sCompileInfoStruct
 exec_prefix	Makefile	/^exec_prefix=${prefix}$/;"	m
 existance	src/compile.cpp	/^    bool existance;$/;"	m	struct:sFunctionStruct	file:
@@ -671,6 +682,7 @@ fields	src/parser.y	/^fields:  { $/;"	l
 fields_type_and_variable_names	src/parser.y	/^fields_type_and_variable_names: $/;"	l
 final_vtable	src/vtable.c	/^void final_vtable()$/;"	f
 finalize	code/HelloWorld.c	/^void sFinalizeTest::finalize(sFinalizeTest* self)$/;"	f	class:sFinalizeTest
+finalize	neo-c2.h	/^void buffer::finalize(buffer* self) $/;"	f	class:buffer
 finishDebugFunctionInfo	src/compile.cpp	/^void finishDebugFunctionInfo()$/;"	f
 flex_int16_t	lex.yy.c	/^typedef int16_t flex_int16_t;$/;"	t	file:
 flex_int16_t	lex.yy.c	/^typedef short int flex_int16_t;$/;"	t	file:
@@ -762,7 +774,9 @@ get_field_index	src/klass.c	/^int get_field_index(sCLClass* klass, char* var_nam
 get_hash_key	neo-c2.h	/^inline int char*::get_hash_key(char* value)$/;"	f
 get_hash_key	neo-c2.h	/^inline int char::get_hash_key(char value)$/;"	f
 get_hash_key	neo-c2.h	/^inline int int::get_hash_key(int value)$/;"	f
-get_hash_key	neo-c2.h	/^inline int wchar_t*::get_hash_key(wchar_t* value)$/;"	f
+get_hash_key	neo-c2.h	/^inline int long::get_hash_key(long value)$/;"	f
+get_hash_key	neo-c2.h	/^inline int short::get_hash_key(short value)$/;"	f
+get_hash_key	neo-c2.h	/^inline int string::get_hash_key(string& value)$/;"	f	class:string
 get_hash_key	src/klass.c	/^unsigned int get_hash_key(const char* name, unsigned int max)$/;"	f
 get_llvm_alignment_from_node_type	src/compile.cpp	/^int get_llvm_alignment_from_node_type(sNodeType* node_type)$/;"	f
 get_lvtable_type	src/compile.cpp	/^static Type* get_lvtable_type()$/;"	f	file:
@@ -884,8 +898,10 @@ kNodeTypeUnion	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kN
 kNodeTypeWhile	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeAlignOf1, kNodeTypeAlignOf2, kNodeTypeCoroutine, kNodeTypeConditional, kNodeTypeDummyHeap, kNodeTypeManaged, kNodeTypeStoreAddress };$/;"	e	enum:eNodeType
 kNodeTypeXor	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeAlignOf1, kNodeTypeAlignOf2, kNodeTypeCoroutine, kNodeTypeConditional, kNodeTypeDummyHeap, kNodeTypeManaged, kNodeTypeStoreAddress };$/;"	e	enum:eNodeType
 kNodeTypeXorEq	src/common.h	/^enum eNodeType { kNodeTypeTrue, kNodeTypeFalse, kNodeTypeIntValue, kNodeTypeCharValue, kNodeTypeAdd, kNodeTypeSub, kNodeTypeMult, kNodeTypeDiv, kNodeTYpeMod, kNodeTypeBlock, kNodeTypeFunction, kNodeTypeParams, kNodeTypeFunctionParams , kNodeTypeReturn, kNodeTypeStoreVariable, kNodeTypeFunctionCall, kNodeTypeExternalFunction, kNodeTypeLoadVariable, kNodeTypeCStringValue, kNodeTypeIf, kNodeTypeCreateObject, kNodeTypeTypeDef, kNodeTypeClone, kNodeTypeFields, kNodeTypeStruct, kNodeTypeUnion, kNodeTypeDefineVariable, kNodeTypeEquals, kNodeTypeNotEquals, kNodeTypeLoadField, kNodeTypeStoreField, kNodeTypeAndAnd, kNodeTypeOrOr, kNodeTypeGT, kNodeTypeLT, kNodeTypeGE, kNodeTypeLE, kNodeTypeMod, kNodeTypeLShift, kNodeTypeRShift, kNodeTypeOr, kNodeTypeXor, kNodeTypeAnd, kNodeTypeLogicalDenial, kNodeTypeComplement, kNodeTypeRefference, kNodeTypeDerefference, kNodeTypePlusEq, kNodeTypeMinusEq, kNodeTypeMultEq, kNodeTypeDivEq, kNodeTypeModEq, kNodeTypeAndEq, kNodeTypeXorEq, kNodeTypeOrEq, kNodeTypeLShiftEq, kNodeTypeRShiftEq, kNodeTypeLoadElement, kNodeTypeStoreElement, kNodeTypeArrayInitializer, kNodeTypeFor, kNodeTypeWhile, kNodeTypeDoWhile, kNodeTypeSwitch, kNodeTypeCase, kNodeTypeBreak, kNodeTypeContinue, kNodeTypeCast, kNodeTypeSizeOf1, kNodeTypeSizeOf2, kNodeTypeAlignOf1, kNodeTypeAlignOf2, kNodeTypeCoroutine, kNodeTypeConditional, kNodeTypeDummyHeap, kNodeTypeManaged, kNodeTypeStoreAddress };$/;"	e	enum:eNodeType
+len	neo-c2.h	/^    int len;$/;"	m	struct:buffer
 length	neo-c2.h	/^inline int char*::length(char* str)$/;"	f
-length	neo-c2.h	/^inline int wchar_t*::length(wchar_t* str)$/;"	f
+length	neo-c2.h	/^inline int string::length(string& str)$/;"	f	class:string
+length	neo-c2.h	/^int buffer::length(buffer* self) $/;"	f	class:buffer
 libdir	Makefile	/^libdir=${exec_prefix}\/lib$/;"	m
 llvm_change_block	src/compile.cpp	/^void llvm_change_block(BasicBlock* current_block, BasicBlock** current_block_before, sCompileInfo* info, BOOL no_free_right_objects)$/;"	f
 llvm_create_string	src/compile.cpp	/^Value* llvm_create_string(char* str)$/;"	f
@@ -1370,6 +1386,7 @@ show_node_type	src/node_type.c	/^void show_node_type(sNodeType* type)$/;"	f
 show_type_core	src/node_type.c	/^void show_type_core(sNodeType* type) $/;"	f
 show_vtable	src/vtable.c	/^void show_vtable(sVarTable* table)$/;"	f
 show_vtable_current_only	src/vtable.c	/^void show_vtable_current_only(sVarTable* table)$/;"	f
+size	neo-c2.h	/^    int size;$/;"	m	struct:buffer
 size_t	code/HelloWorld.c	/^typedef long unsigned int size_t;$/;"	t	file:
 skip_spaces_for_parse_class_name	src/node_type.c	/^static void skip_spaces_for_parse_class_name(char** p) $/;"	f	file:
 sline	src/common.h	/^    int sline;$/;"	m	struct:sCompileInfoStruct
@@ -1411,9 +1428,12 @@ sysconfdir	Makefile	/^sysconfdir=${prefix}\/etc\/neo-c2$/;"	m
 to_string	neo-c2.h	/^inline string char*::to_string(char* value) $/;"	f
 to_string	neo-c2.h	/^inline string char::to_string(char value) $/;"	f
 to_string	neo-c2.h	/^inline string int::to_string(int value) $/;"	f
-to_string	neo-c2.h	/^inline string wchar_t*::to_string(wchar_t* str) $/;"	f
+to_string	neo-c2.h	/^inline string long::to_string(long value) $/;"	f
+to_string	neo-c2.h	/^inline string short::to_string(short value) $/;"	f
+to_string	neo-c2.h	/^inline string string::to_string(string& value) $/;"	f	class:string
+to_string	neo-c2.h	/^string buffer::to_string(buffer* self)$/;"	f	class:buffer
 to_wstring	neo-c2.h	/^inline wstring char*::to_wstring(char* value) $/;"	f
-to_wstring	neo-c2.h	/^inline wstring wchar_t*::to_wstring(wchar_t* str) {$/;"	f
+to_wstring	neo-c2.h	/^inline wstring string::to_wstring(string& value) $/;"	f	class:string
 type	src/common.h	/^    sNodeType* type;$/;"	m	struct:sCompileInfoStruct
 type	src/compile.cpp	/^    sNodeType* type;$/;"	m	struct:LVALUEStruct	file:
 type	src/parser.y	/^type:$/;"	l
@@ -1521,14 +1541,14 @@ yyalloc	lex.yy.c	/^void *yyalloc (yy_size_t  size )$/;"	f
 yyalloc	parser.tab.c	/^union yyalloc$/;"	u	file:
 yychar	parser.tab.c	/^int yychar;$/;"	v
 yycheck	parser.tab.c	/^static const yytype_int16 yycheck[] =$/;"	v	file:
-yyclearin	parser.tab.c	2726;"	d	file:
+yyclearin	parser.tab.c	2748;"	d	file:
 yyconst	lex.yy.c	97;"	d	file:
 yydebug	parser.tab.c	/^int yydebug;$/;"	v
 yydefact	parser.tab.c	/^static const yytype_uint16 yydefact[] =$/;"	v	file:
 yydefgoto	parser.tab.c	/^static const yytype_int16 yydefgoto[] =$/;"	v	file:
 yydestruct	parser.tab.c	/^yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)$/;"	f	file:
 yyensure_buffer_stack	lex.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	file:
-yyerrok	parser.tab.c	2725;"	d	file:
+yyerrok	parser.tab.c	2747;"	d	file:
 yyerror	parser.tab.c	/^int yyerror(char *msg)$/;"	f
 yyfree	lex.yy.c	/^void yyfree (void * ptr )$/;"	f
 yyget_debug	lex.yy.c	/^int yyget_debug  (void)$/;"	f
@@ -1569,9 +1589,9 @@ yyset_out	lex.yy.c	/^void yyset_out (FILE *  _out_str )$/;"	f
 yyss_alloc	parser.tab.c	/^  yytype_int16 yyss_alloc;$/;"	m	union:yyalloc	file:
 yystos	parser.tab.c	/^static const yytype_uint8 yystos[] =$/;"	v	file:
 yystpcpy	parser.tab.c	/^yystpcpy (char *yydest, const char *yysrc)$/;"	f	file:
-yystpcpy	parser.tab.c	2927;"	d	file:
+yystpcpy	parser.tab.c	2949;"	d	file:
 yystrlen	parser.tab.c	/^yystrlen (const char *yystr)$/;"	f	file:
-yystrlen	parser.tab.c	2911;"	d	file:
+yystrlen	parser.tab.c	2933;"	d	file:
 yysyntax_error	parser.tab.c	/^yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,$/;"	f	file:
 yytable	parser.tab.c	/^static const yytype_int16 yytable[] =$/;"	v	file:
 yytable_value_is_error	parser.tab.c	709;"	d	file:

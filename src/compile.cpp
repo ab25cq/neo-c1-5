@@ -1545,7 +1545,7 @@ static void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
     if(strcmp(node_type->mClass->mName, "char") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
         xstrncpy(type_name2, "string", VAR_NAME_MAX);
     }
-    else if(strcmp(node_type->mClass->mName, "wchar_t") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
+    else if(strcmp(node_type->mClass->mName, "int") == 0 && node_type->mPointerNum == 1 && node_type->mHeap) {
         xstrncpy(type_name2, "wstring", VAR_NAME_MAX);
     }
     else {
@@ -1560,6 +1560,7 @@ static void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
     }
 }
 
+static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline) ;
 
 static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info)
 {
@@ -1567,12 +1568,51 @@ static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info
     //int stack_num_before = info->stack_num;
     //sNodeType* info_type_before = info->type;
 
-/*
     if(node_type->mNumGenericsTypes > 0) 
     {
+        sCLClass* klass = node_type->mClass;
+        char* id = "finalize";
+        char* fun_name = "finalize";
+
+        char real_fun_name[VAR_NAME_MAX];
+
+        char type_name2[VAR_NAME_MAX];
+        convert_type_to_struct_name(node_type, type_name2);
+
+        xstrncpy(real_fun_name, type_name2, VAR_NAME_MAX);
+        xstrncat(real_fun_name, "_", VAR_NAME_MAX);
+        xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
+
+        if(gFuncs[real_fun_name].size() == 0) {
+            return TRUE;
+        }
+
+puts(real_fun_name);
+        sFunction fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+
+        char real_fun_name2[VAR_NAME_MAX];
+
+        int sline = yylineno;
+
+        if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline))
+        {
+            return FALSE;
+        }
+
+        Function* llvm_fun = TheModule->getFunction(real_fun_name2);
+
+        if(llvm_fun == nullptr) {
+            return TRUE;
+        }
+
+        std::vector<Value*> llvm_params;
+        Value* param = obj;
+
+        llvm_params.push_back(param);
+
+        Builder.CreateCall(llvm_fun, llvm_params);
     }
     else {
-*/
         char finalize_method_name[VAR_NAME_MAX];
 
         char struct_name[VAR_NAME_MAX];
@@ -1593,7 +1633,7 @@ static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info
         llvm_params.push_back(param);
 
         Builder.CreateCall(llvm_fun, llvm_params);
-//    }
+    }
 
     //info->stack_num = stack_num_before;
     //gLLVMStack = llvm_stack;
@@ -3122,7 +3162,7 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 {
     sFunction generics_fun = *fun;
 
-    if(klass) {
+    if(klass && info->generics_type) {
         xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
 
         create_real_struct_name(real_fun_name2, VAR_NAME_MAX, info->generics_type->mNumGenericsTypes, info->generics_type->mGenericsTypes);

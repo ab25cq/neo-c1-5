@@ -218,7 +218,6 @@ struct sFinalizeTest {
 
 sFinalizeTest*% sFinalizeTest::initialize(sFinalizeTest*% self)
 {
-printf("initialize %p\n", self);
     self.a = 123;
     self.b = 234;
 
@@ -227,13 +226,36 @@ printf("initialize %p\n", self);
 
 void sFinalizeTest::show(sFinalizeTest* self)
 {
-    printf("sFinalizeTest::finalize %d %d\n" , self.a, self.b);
+    printf("sFinalizeTest::show %d %d\n" , self.a, self.b);
 }
 
 void sFinalizeTest::finalize(sFinalizeTest* self)
 {
     printf("finalize %p\n", self);
     printf("sFinalizeTest::finalize %d %d\n" , self.a, self.b);
+}
+
+struct sFinalizeTest2!<T> {
+    T a;
+    T b;
+};
+
+sFinalizeTest2!<T>*% sFinalizeTest2!<T>::initialize(sFinalizeTest2!<T>*% self)
+{
+    self.a = 123;
+    self.b = 234;
+
+    return self;
+}
+
+void sFinalizeTest2!<T>::show(sFinalizeTest2!<T>* self)
+{
+    printf("sFinalizeTest2<T>::show %d %d\n" , self.a, self.b);
+}
+
+void sFinalizeTest2!<T>::finalize(sFinalizeTest2!<T>* self)
+{
+    printf("sFinalizeTest2<T>::finalize %d %d\n" , self.a, self.b);
 }
 
 int main() 
@@ -564,14 +586,16 @@ int main()
 
     finalize_test1.show();
 
-/*
+    sFinalizeTest2!<int>*% finalize_test2 = new sFinalizeTest2!<int>.initialize();
+
+    finalize_test2.show();
+
     buffer*% buf = new buffer.initialize();
 
-    buf.append_str(buf, "ABC");
-    buf.append_str(buf, "DEF");
+    buf.append_str("ABC");
+    buf.append_str("DEF");
 
     xassert("buffer test", buf.to_string().equals("ABCDEF"));
-*/
 
     return 0;
 }

@@ -189,37 +189,6 @@ inline void p(char* str)
 }
 
 //////////////////////////////
-/// int
-//////////////////////////////
-inline bool int::equals(int left, int right) 
-{
-    return left == right;
-}
-
-inline int int::get_hash_key(int value)
-{
-    return value;
-}
-
-inline string int::to_string(int value) 
-{
-    return xsprintf("%d", value);
-}
-
-inline int int::compare(int left, int right) 
-{
-    if(left < right) {
-        return -1;
-    }
-    else if(left > right) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-//////////////////////////////
 /// char
 //////////////////////////////
 inline bool char::equals(char left, char right)
@@ -251,16 +220,104 @@ inline int char::compare(char left, char right)
 }
 
 //////////////////////////////
+/// short
+//////////////////////////////
+inline bool short::equals(short left, short right)
+{
+    return left == right;
+}
+
+inline int short::get_hash_key(short value)
+{
+    return value;
+}
+
+inline string short::to_string(short value) 
+{
+    return xsprintf("%d", value);
+}
+
+inline int short::compare(short left, short right) 
+{
+    if(left < right) {
+        return -1;
+    }
+    else if(left > right) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+//////////////////////////////
+/// int
+//////////////////////////////
+inline bool int::equals(int left, int right) 
+{
+    return left == right;
+}
+
+inline int int::get_hash_key(int value)
+{
+    return value;
+}
+
+inline string int::to_string(int value) 
+{
+    return xsprintf("%d", value);
+}
+
+inline int int::compare(int left, int right) 
+{
+    if(left < right) {
+        return -1;
+    }
+    else if(left > right) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+//////////////////////////////
+/// long
+//////////////////////////////
+inline bool long::equals(long left, long right) 
+{
+    return left == right;
+}
+
+inline int long::get_hash_key(long value)
+{
+    return value;
+}
+
+inline string long::to_string(long value) 
+{
+    return xsprintf("%ld", value);
+}
+
+inline int long::compare(long left, long right) 
+{
+    if(left < right) {
+        return -1;
+    }
+    else if(left > right) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+//////////////////////////////
 /// char* 
 //////////////////////////////
 inline bool char*::equals(char* left, char* right)
 {
     return strcmp(left, right) == 0;
-}
-
-inline int char*::length(char* str)
-{
-    return strlen(str);
 }
 
 inline int char*::get_hash_key(char* value)
@@ -284,58 +341,28 @@ inline int char*::compare(char* left, char* right)
     return strcmp(left, right);
 }
 
+inline int char*::length(char* str)
+{
+    return strlen(str);
+}
+
 inline wstring char*::to_wstring(char* value) 
 {
     return wstring(value);
 }
 
-/*
-/// wchar_t ///
-inline bool wchar_t::equals(wchar_t left, wchar_t right)
-{
-    return left == right;
-}
-
-inline int wchar_t::get_hash_key(wchar_t value)
-{
-    return value;
-}
-
-inline string wchar_t::to_string(wchar_t value) {
-    return xasprintf("%lc", value);
-}
-
-inline int wchar_t::compare(wchar_t left, wchar_t right) 
-{
-    if(left < right) {
-        return -1;
-    }
-    else if(left > right) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-*/
-
 //////////////////////////////
-/// wchar_t*
+/// string
 //////////////////////////////
-inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
+inline bool string::equals(string& left, string& right)
 {
-    return wcscmp(left, right) == 0;
+    return strcmp(left, right) == 0;
 }
 
-inline int wchar_t*::length(wchar_t* str)
-{
-    return wcslen(str);
-}
-
-inline int wchar_t*::get_hash_key(wchar_t* value)
+inline int string::get_hash_key(string& value)
 {
     int result = 0;
-    wchar_t* p = value;
+    char* p = value;
     while(*p) {
         result += (*p);
         p++;
@@ -343,20 +370,26 @@ inline int wchar_t*::get_hash_key(wchar_t* value)
     return result;
 }
 
-inline string wchar_t*::to_string(wchar_t* str) 
+inline string string::to_string(string& value) 
 {
-    return xsprintf("%ls", str);
+    return string(value);
 }
 
-inline wstring wchar_t*::to_wstring(wchar_t* str) {
-    return wstring(xsprintf("%ls", str));
+inline int string::compare(string& left, string& right) 
+{
+    return strcmp(left, right);
 }
 
-inline int wchar_t*::compare(wstring& left, wstring& right) {
-    return wcscmp(left, right);
+inline int string::length(string& str)
+{
+    return strlen(str);
 }
 
-/*
+inline wstring string::to_wstring(string& value) 
+{
+    return wstring(value);
+}
+
 //////////////////////////////
 /// buffer
 //////////////////////////////
@@ -394,7 +427,7 @@ void buffer::append(buffer* self, char* mem, size_t size)
         self.size = new_size;
     }
 
-    ncmemcpy(self.buf + self.len, mem, size);
+    memcpy(self.buf + self.len, mem, size);
     self.len += size;
 
     self.buf[self.len] = '\0';
@@ -429,7 +462,6 @@ string buffer::to_string(buffer* self)
 {
     return (string(self.buf));
 }
-*/
 
 
 /*
