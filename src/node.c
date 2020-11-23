@@ -1669,6 +1669,22 @@ unsigned int sNodeTree_create_managed(char* var_name, char* sname, int sline)
     return node;
 }
 
+unsigned int sNodeTree_create_borrow(unsigned int object_node, char* sname, int sline)
+{
+    unsigned node = alloc_node();
+
+    gNodes[node].mNodeType = kNodeTypeBorrow;
+
+    xstrncpy(gNodes[node].mSName, sname, PATH_MAX);
+    gNodes[node].mLine = sline;
+
+    gNodes[node].mLeft = object_node;
+    gNodes[node].mRight = 0;
+    gNodes[node].mMiddle = 0;
+
+    return node;
+}
+
 unsigned int sNodeTree_create_store_value_to_address(unsigned int address_node, unsigned int right_node, char* sname, int sline)
 {
     unsigned int node = alloc_node();

@@ -1,4 +1,6 @@
-finalize
+clone
+
+cast
 
 convert struct name wchat_, wchar_t*
 
@@ -14,6 +16,7 @@ char* aaa[3] = { "ABC", "A", "C" };
 char* aaa[2][2] = { "AA", "BB", "CC", "DD" };
 
 -----
+finalize
 a++
 +=
 a--

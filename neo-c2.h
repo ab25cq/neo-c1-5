@@ -502,6 +502,141 @@ void list!<T>::finalize(list!<T>* self)
     }
 }
 
+void list!<T>::reset(list!<T>* self) 
+{
+    list_item!<T>* it = self.head;
+    while(it != null) {
+        if(isheap(T)) {
+            delete it.item;
+        }
+        list_item!<T>* prev_it = it;
+        it = it.next;
+        delete prev_it;
+    }
+
+    self.head = null;
+    self.tail = null;
+
+    self.len = 0;
+}
+
+void list!<T>::push_back(list!<T>* self, T item) 
+{
+    managed item;
+
+    if(self.len == 0) {
+        list_item!<T>* litem = borrow new list_item!<T>;
+        litem.prev = null;
+        litem.next = null;
+        litem.item = item;
+        
+        self.tail = litem;
+        self.head = litem;
+    }
+    else if(self.len == 1) {
+        list_item!<T>* litem = borrow new list_item!<T>;
+
+        litem.prev = self.head;
+        litem.next = null;
+        litem.item = item;
+        
+        self.tail = litem;
+        self.head.next = litem;
+    }
+    else {
+        list_item!<T>* litem = borrow new list_item!<T>;
+
+        litem.prev = self.tail;
+        litem.next = null;
+        litem.item = item;
+        
+        self.tail.next = litem;
+        self.tail = litem;
+    }
+
+    self.len++;
+}
+
+T& list!<T>::item(list!<T>* self, int position, T& default_value) 
+{
+    if(position < 0) {
+        position += self.len;
+    }
+
+    list_item!<T>* it = self.head;
+    int i = 0;
+    while(it != null) {
+        if(position == i) {
+            return it.item;
+        }
+        it = it.next;
+        i++;
+    }
+
+    return default_value;
+}
+
+T list!<T>::pop_back(list!<T>* self, T& default_value)
+{
+    if(self.len == 0) {
+        return dummy_heap default_value;
+    }
+    else if(self.len == 1) {
+        T result = (T)self.head.item;
+
+        delete self.head;
+
+        self.head = null;
+        self.tail = null;
+
+        self.len--;
+
+        if(isheap(T)) {
+            return clone result;
+        }
+        else {
+            return dummy_heap result;
+        }
+    }
+    else if(self.len == 2) {
+        T result = (T)self.tail.item;
+
+        delete self.tail;
+
+        self.tail = self.head;
+        self.head.next = null;
+        self.head.prev = null;
+
+        self.len--;
+
+        if(isheap(T)) {
+            return clone result;
+        }
+        else {
+            return dummy_heap result;
+        }
+    }
+    else {
+        T result = (T)self.tail.item;
+
+        list_item!<T>* it = self.tail;
+
+        self.tail = self.tail.prev;
+        self.tail.next = null;
+
+        delete it;
+
+        self.len--;
+
+        if(isheap(T)) {
+            return clone result;
+        }
+        else {
+            return dummy_heap result;
+        }
+    }
+}
+
 /*
     list<T>*% clone(list<T>* self) {
         var result = new list<T>.initialize();
@@ -521,120 +656,8 @@ void list!<T>::finalize(list!<T>* self)
         return result;
     }
 
-    void reset(list<T>* self) {
-        list_item<T>* it = self.head;
-        while(it != null) {
-            if(isheap(T)) {
-                delete it.item;
-            }
-            var prev_it = it;
-            it = it.next;
-            delete prev_it;
-        }
 
-        self.head = null;
-        self.tail = null;
 
-        self.len = 0;
-    }
-
-    void push_back(list<T>* self, T item) 
-    {
-        managed item;
-
-        if(self.len == 0) {
-            list_item<T>* litem = borrow new list_item<T>;
-            litem.prev = null;
-            litem.next = null;
-            litem.item = item;
-            
-            self.tail = litem;
-            self.head = litem;
-        }
-        else if(self.len == 1) {
-            list_item<T>* litem = borrow new list_item<T>;
-
-            litem.prev = self.head;
-            litem.next = null;
-            litem.item = item;
-            
-            self.tail = litem;
-            self.head.next = litem;
-        }
-        else {
-            list_item<T>* litem = borrow new list_item<T>;
-
-            litem.prev = self.tail;
-            litem.next = null;
-            litem.item = item;
-            
-            self.tail.next = litem;
-            self.tail = litem;
-        }
-
-        self.len++;
-    }
-
-    T pop_back(list<T>* self, T& default_value)
-    {
-        if(self.len == 0) {
-            return dummy_heap default_value;
-        }
-        else if(self.len == 1) {
-            T result = (T)self.head.item;
-
-            delete self.head;
-
-            self.head = null;
-            self.tail = null;
-
-            self.len--;
-
-            if(isheap(T)) {
-                return clone result;
-            }
-            else {
-                return dummy_heap result;
-            }
-        }
-        else if(self.len == 2) {
-            T result = (T)self.tail.item;
-
-            delete self.tail;
-
-            self.tail = self.head;
-            self.head.next = null;
-            self.head.prev = null;
-
-            self.len--;
-
-            if(isheap(T)) {
-                return clone result;
-            }
-            else {
-                return dummy_heap result;
-            }
-        }
-        else {
-            T result = (T)self.tail.item;
-
-            list_item<T>* it = self.tail;
-
-            self.tail = self.tail.prev;
-            self.tail.next = null;
-
-            delete it;
-
-            self.len--;
-
-            if(isheap(T)) {
-                return clone result;
-            }
-            else {
-                return dummy_heap result;
-            }
-        }
-    }
     
     T pop_front(list<T>* self, T& default_value)
     {
@@ -1017,25 +1040,6 @@ void list!<T>::finalize(list!<T>* self)
             it = it.next;
             i++;
         };
-    }
-    
-    T& item(list<T>* self, int position, T& default_value) 
-    {
-        if(position < 0) {
-            position += self.len;
-        }
-
-        list_item<T>?* it = self.head;
-        var i = 0;
-        while(it != null) {
-            if(position == i) {
-                return it.item;
-            }
-            it = it.next;
-            i++;
-        };
-
-        return default_value;
     }
 
     T clone_item(list<T>* self, int position, T& default_value) 

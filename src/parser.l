@@ -686,6 +686,21 @@ delete {
     return(TOKEN_DELETE);
 }
 
+managed {
+    strncpy(yylval.cval, yytext, 128);
+    return(TOKEN_MANAGED);
+}
+
+borrow {
+    strncpy(yylval.cval, yytext, 128);
+    return(TOKEN_BORROW);
+}
+
+dummy_heap {
+    strncpy(yylval.cval, yytext, 128);
+    return(DUMMY_HEAP);
+}
+
 __extension__ {
 }
 
@@ -766,11 +781,6 @@ __always_inline__ {
 dummy_heap {
     strncpy(yylval.cval, yytext, 128);
     return(DUMMY_HEAP);
-}
-
-managed {
-    strncpy(yylval.cval, yytext, 128);
-    return(MANAGED_TOKEN);
 }
 
 __warn_unused_result__ {

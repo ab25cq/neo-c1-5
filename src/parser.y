@@ -78,6 +78,8 @@ unsigned int else_block;
 %token <cval> TOKEN_TRUE
 %token <cval> TOKEN_FALSE
 %token <cval> TOKEN_DELETE
+%token <cval> TOKEN_MANAGED
+%token <cval> TOKEN_BORROW
 %token <cval> CONST
 %token <cval> UNSIGNED
 %token <cval> SIGNED
@@ -123,8 +125,6 @@ unsigned int else_block;
 %token <cval> NULLPTR
 %token <cval> __ALIGNOF__
 %token <cval> ERROR
-%token <cval> MANAGED_TOKEN
-%token <cval> DUMMY_HEAP
 %token <cval> DEPRECATED
 %token <cval> __WARN_UNUSED_RESULT__
 %token <cval> __CONST__
@@ -154,6 +154,7 @@ unsigned int else_block;
 %token <cval> ANNOTATE
 %token <cval> OVERLOADABLE
 %token <cval> ENABLE_IF
+%token <cval> DUMMY_HEAP
 %type <cval> type 
 %type <cval> type_name
 %type <cval> type_attribute
@@ -2326,6 +2327,9 @@ name:
     | __SCANF__ {
         xstrncpy($$, "scanf", VAR_NAME_MAX);
     }
+    | CLONE {
+        xstrncpy($$, "clone", VAR_NAME_MAX);
+    }
     ;
 
 function: 
@@ -3548,7 +3552,7 @@ exp: node {
     | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, yylineno); }
     | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, yylineno); }
     | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
-    | exp NOT_EQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
+    | exp NOT_EQ exp   { $$ = sNodeTree_create_not_equals($1, $3, gSName, yylineno); }
     | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, yylineno); }
     | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, yylineno); }
     | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, yylineno); }
@@ -3601,7 +3605,7 @@ node: source_point_macro exp {
             unsigned int object_node = $2;
             $$ = sNodeTree_create_dummy_heap(object_node, gSName, yylineno);
         }
-        | MANAGED_TOKEN IDENTIFIER {
+        | TOKEN_MANAGED IDENTIFIER {
             char* var_name = $2;
             $$ = sNodeTree_create_managed(var_name, gSName, yylineno);
         }
@@ -3836,6 +3840,11 @@ node: source_point_macro exp {
             unsigned int exp = $2;
 
             $$ = sNodeTree_create_delete(exp, gSName, yylineno);
+        }
+        | TOKEN_BORROW exp {
+            unsigned int exp = $2;
+
+            $$ = sNodeTree_create_borrow(exp, gSName, yylineno);
         }
         | type LAMBDA '(' function_params ')' '{' function_block '}' block_end 
         {

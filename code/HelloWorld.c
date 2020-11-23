@@ -258,6 +258,49 @@ void sFinalizeTest2!<T>::finalize(sFinalizeTest2!<T>* self)
     printf("sFinalizeTest2<T>::finalize %d %d\n" , self.a, self.b);
 }
 
+struct sCloneTest {
+    int a;
+    int b;
+};
+
+struct sCloneTest2 {
+    sCloneTest*% a;
+    int b;
+};
+
+struct sCloneTest3!<T> {
+    T a;
+    T b;
+};
+
+sCloneTest3!<T>*% sCloneTest3!<T>::clone(sCloneTest3!<T>* self)
+{
+    sCloneTest3!<T>*% result = new sCloneTest3!<T>;
+
+    result.a = self.a;
+    result.b = self.b;
+
+    return result;
+}
+
+struct sCloneTest4 {
+    int a;
+    int b;
+};
+
+sCloneTest4*% sCloneTest4::clone(sCloneTest4* self)
+{
+    sCloneTest4*% result = new sCloneTest4;
+
+printf("sCloneTest4::clone %d %d\n", self.a, self.b);
+
+    result.a = self.a;
+    result.b = self.b;
+
+    return result;
+}
+
+
 int main() 
 {
     puts("HELLO WORLD");
@@ -596,6 +639,56 @@ int main()
     buf.append_str("DEF");
 
     xassert("buffer test", buf.to_string().equals("ABCDEF"));
+
+    list!<int>*% li1 = new list!<int>.initialize();
+
+    li1.push_back(1);
+    li1.push_back(2);
+    li1.push_back(3);
+
+    xassert("list test", li1.item(0, -1) == 1 && li1.item(1, -1) == 2 && li1.item(2, -1) == 3);
+
+    sCloneTest*% clone_test = new sCloneTest;
+
+    clone_test.a = 123;
+    clone_test.b = 234;
+
+    sCloneTest*% clone_test2 = clone clone_test;
+
+    xassert("clone test", clone_test2.a == 123 && clone_test2.b == 234);
+
+    sCloneTest2*% clone_test3 = new sCloneTest2;
+
+    clone_test3.a = new sCloneTest;
+
+    clone_test3.a.a = 123;
+    clone_test3.a.b = 234;
+
+    clone_test3.b = 345;
+
+    sCloneTest2*% clone_test4 = clone clone_test3;
+
+    xassert("clone test2", clone_test4.a.a == 123 && clone_test4.a.b == 234 && clone_test4.b == 345);
+
+    sCloneTest4*% clone_test5 = new sCloneTest4;
+
+    clone_test5.a = 123;
+    clone_test5.b = 234;
+
+    sCloneTest4*% clone_test6 = clone clone_test5;
+
+    xassert("clone test3", clone_test6.a == 123 && clone_test6.b == 234);
+
+    sCloneTest3!<int>*% clone_test7 = new sCloneTest3!<int>;
+
+    clone_test7.a = 123;
+    clone_test7.b = 234;
+
+    sCloneTest3!<int>*% clone_test8 = clone clone_test7;
+/*
+
+    xassert("clone test4", clone_test8.a == 123 && clone_test8.b == 234);
+*/
 
     return 0;
 }
