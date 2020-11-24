@@ -3331,10 +3331,6 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 
     int num_llvm_stack = gLLVMStack - gLLVMStackHead;
 
-    LVALUE* llvm_stack_head = (LVALUE*)xcalloc(1, sizeof(LVALUE)*NEO_C_STACK_SIZE);
-    memcpy(llvm_stack_head, gLLVMStackHead, sizeof(LVALUE)*num_llvm_stack);
-    LVALUE* llvm_stack = gLLVMStack;
-
     sFunction generics_fun = *fun;
 
     if(klass && info->generics_type) {
@@ -3371,10 +3367,6 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     info->lv_table_value = lv_table_value;
 
     info->stack_num = stack_num;
-    memcpy(gLLVMStackHead, llvm_stack_head, sizeof(LVALUE)*num_llvm_stack);
-    gLLVMStack = llvm_stack;
-
-    free(llvm_stack_head);
 
     return TRUE;
 }
