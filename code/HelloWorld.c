@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
-#include <wchar.h>
+//#include <wchar.h>
 #include "neo-c2.h" 
 
 struct sData;
@@ -685,10 +685,8 @@ int main()
     clone_test7.b = 234;
 
     sCloneTest3!<int>*% clone_test8 = clone clone_test7;
-/*
 
     xassert("clone test4", clone_test8.a == 123 && clone_test8.b == 234);
-*/
 
     return 0;
 }

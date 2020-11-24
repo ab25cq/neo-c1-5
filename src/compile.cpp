@@ -2042,13 +2042,10 @@ static BOOL call_clone_method(sNodeType* node_type, Value** address, sCompileInf
             sNodeType* generics_type = info->generics_type;
             info->generics_type = node_type;
 
-printf("gLLVMStack %p\n", gLLVMStack);
-
             if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline))
             {
                 return FALSE;
             }
-printf("gLLVMStack %p\n", gLLVMStack);
 
             info->generics_type = generics_type;
 
@@ -3057,7 +3054,6 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
     if(loop_top) {
         info->loop_top_lv_table = info->lv_table;
     }
-printf("gLLVMStack(d2) %p\n", gLLVMStack);
 
     int i;
     for(i=0; i<num_nodes; i++) {
@@ -3073,14 +3069,10 @@ printf("gLLVMStack(d2) %p\n", gLLVMStack);
         }
         free_right_value_objects(info);
 
-printf("gLLVMStack(LOL) %p\n", gLLVMStack);
-printf("info->stack_num %d\n", info->stack_num);
         dec_stack_ptr(info->stack_num, info);
-printf("gLLVMStack(LOL) %p\n", gLLVMStack);
 
         *last_expression_is_return = gNodes[node].mNodeType == kNodeTypeReturn;
     }
-printf("gLLVMStack(eddddd) %p\n", gLLVMStack);
 
     if(!*last_expression_is_return) {
         free_objects(info->lv_table, nullptr, info);
@@ -3164,7 +3156,6 @@ BOOL get_const_value_from_node(int* array_size, unsigned int array_size_node, sC
 
 static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompileInfo* info, int sline)
 {
-printf("gLLVMStack(a) %p\n", gLLVMStack);
     void* right_value_objects = new_right_value_objects_container(info);
 
     int num_params = fun->mNumParams;
@@ -3197,7 +3188,8 @@ printf("gLLVMStack(a) %p\n", gLLVMStack);
 
     sFunction* function = (sFunction*)info->function;
     info->function = fun;
-    info->function_result_type = result_type;
+    sNodeType* function_result_type = info->function_result_type;
+    info->function_result_type = clone_node_type(result_type);
 
     int n = 0;
     std::vector<Value *> llvm_params;
@@ -3210,7 +3202,6 @@ printf("gLLVMStack(a) %p\n", gLLVMStack);
         
         n++;
     }
-printf("gLLVMStack(b) %p\n", gLLVMStack);
 
     sVarTable* lv_table = info->lv_table;
     info->lv_table = fun_lv_table;
@@ -3289,7 +3280,6 @@ printf("gLLVMStack(b) %p\n", gLLVMStack);
 
         store_address_to_lvtable(index, address, info);
     }
-printf("gLLVMStack(c) %p\n", gLLVMStack);
 
     gNodes[node_block].uValue.sBlock.mLVTable = fun_lv_table;
 
@@ -3298,7 +3288,6 @@ printf("gLLVMStack(c) %p\n", gLLVMStack);
     if(!compile_block(node_block, info, &last_expression_is_return, loop_top)) {
         return FALSE;
     }
-printf("gLLVMStack(d) %p\n", gLLVMStack);
 
     if(!last_expression_is_return) {
         if(type_identify_with_class_name(result_type, "void") && result_type->mPointerNum == 0) {
@@ -3325,9 +3314,9 @@ printf("gLLVMStack(d) %p\n", gLLVMStack);
     if(gNCDebug) {
         finishDebugFunctionInfo();
     }
-printf("gLLVMStack(e) %p\n", gLLVMStack);
 
     info->function = function;
+    info->function_result_type = function_result_type;
 
     info->andand_result_var = NULL;
     info->oror_result_var = NULL;
@@ -3339,6 +3328,12 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 {
     int stack_num = info->stack_num;
     info->stack_num = 0;
+
+    int num_llvm_stack = gLLVMStack - gLLVMStackHead;
+
+    LVALUE* llvm_stack_head = (LVALUE*)xcalloc(1, sizeof(LVALUE)*NEO_C_STACK_SIZE);
+    memcpy(llvm_stack_head, gLLVMStackHead, sizeof(LVALUE)*num_llvm_stack);
+    LVALUE* llvm_stack = gLLVMStack;
 
     sFunction generics_fun = *fun;
 
@@ -3357,14 +3352,9 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     xstrncpy(generics_fun.mID, id, VAR_NAME_MAX);
     xstrncpy(generics_fun.mName, real_fun_name2, VAR_NAME_MAX);
 
-puts(real_fun_name2);
-
-printf("gLLVMStack2 %p\n", gLLVMStack);
-
     if(!entry_llvm_function(&generics_fun, info->generics_type, info)) {
         return FALSE;
     }
-printf("gLLVMStack3 %p\n", gLLVMStack);
 
     sVarTable* fun_lv_table = clone_var_table(generics_fun.mLVTable);
 
@@ -3374,7 +3364,6 @@ printf("gLLVMStack3 %p\n", gLLVMStack);
     if(!create_llvm_function(&generics_fun, fun_lv_table, info, sline)) {
         return FALSE;
     }
-printf("gLLVMStack4 %p\n", gLLVMStack);
 
     gFuncs[real_fun_name2].push_back(generics_fun);
 
@@ -3382,6 +3371,10 @@ printf("gLLVMStack4 %p\n", gLLVMStack);
     info->lv_table_value = lv_table_value;
 
     info->stack_num = stack_num;
+    memcpy(gLLVMStackHead, llvm_stack_head, sizeof(LVALUE)*num_llvm_stack);
+    gLLVMStack = llvm_stack;
+
+    free(llvm_stack_head);
 
     return TRUE;
 }
@@ -5524,10 +5517,9 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
         sNodeType* right_type = clone_node_type(info->type);
 
         LVALUE rvalue = *get_value_from_stack(-1);
+        Value* ret_value = rvalue.value;
 
-        dec_stack_ptr(1, info);
-
-        sNodeType* left_type = info->function_result_type;
+        sNodeType* left_type = clone_node_type(info->function_result_type);
 
         if(auto_cast_posibility(left_type, right_type)) {
             if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
@@ -5560,7 +5552,10 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
             free_objects_with_parents(nullptr, info);
         }
         free_right_value_objects(info);
-        Builder.CreateRet(rvalue.value);
+        dec_stack_ptr(1, info);
+
+        ret_value = rvalue.value;
+        Builder.CreateRet(ret_value);
     }
     else {
         free_right_value_objects(info);
