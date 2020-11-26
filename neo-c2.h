@@ -656,9 +656,6 @@ list!<T>*% list!<T>::clone(list!<T>* self) {
 }
 
 /*
-
-
-
     
     T pop_front(list<T>* self, T& default_value)
     {

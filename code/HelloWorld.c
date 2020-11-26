@@ -686,6 +686,18 @@ int main()
 
     xassert("clone test4", clone_test8.a == 123 && clone_test8.b == 234);
 
+    list!<int>*% li2 = new list!<int>.initialize();
+
+    li2.push_back(1);
+    li2.push_back(2);
+    li2.push_back(3);
+
+    xassert("list test", li2.item(0, -1) == 1 && li2.item(1, -1) == 2 && li2.item(2, -1) == 3);
+
+    list!<int>*% li3 = clone li2;
+
+    xassert("list test2", li3.item(0, -1) == 1 && li3.item(1, -1) == 2 && li3.item(2, -1) == 3);
+
     return 0;
 }
 
