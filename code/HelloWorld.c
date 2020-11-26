@@ -336,8 +336,6 @@ int main()
 
     xassert("load field and store test", data.a == 123 && data.b == 234);
 
-//    gSData = NULL;
-
     GenericsData!<int> data2;
 
     data2.a = 123;

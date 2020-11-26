@@ -637,24 +637,25 @@ T list!<T>::pop_back(list!<T>* self, T& default_value)
     }
 }
 
-/*
-    list<T>*% clone(list<T>* self) {
-        var result = new list<T>.initialize();
+list!<T>*% list!<T>::clone(list!<T>* self) {
+    list!<T>*% result = new list!<T>.initialize();
 
-        list_item<T>* it = self.head;
-        while(it != null) {
-            if(isheap(T)) {
-                result.push_back(clone it.item);
-            }
-            else {
-                result.push_back(dummy_heap it.item);
-            }
-
-            it = it.next;
+    list_item!<T>* it = self.head;
+    while(it != null) {
+        if(isheap(T)) {
+            result.push_back(clone it.item);
+        }
+        else {
+            result.push_back(dummy_heap it.item);
         }
 
-        return result;
+        it = it.next;
     }
+
+    return result;
+}
+
+/*
 
 
 

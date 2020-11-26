@@ -671,7 +671,6 @@ static BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_ty
 
                 if(!create_llvm_type_from_node_type(&field_type, field, generics_type2, info))
                 {
-int a = 1/0;
                     compile_err_msg(info, "Getting llvm type failed(1001)");
                     show_node_type(field);
                     show_node_type(generics_type2);
@@ -756,12 +755,15 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
     }
     else if((klass->mFlags & CLASS_FLAGS_GENERICS) || (klass->mFlags & CLASS_FLAGS_METHOD_GENERICS))
     {
+        *result_type = IntegerType::get(TheContext, 64);
+/*
         if(info && info->no_output) {
             *result_type = IntegerType::get(TheContext, 64);
         }
         else {
             return FALSE;
         }
+*/
     }
     else if(node_type->mSizeNum > 0) {
         *result_type = IntegerType::get(TheContext, node_type->mSizeNum*8);
@@ -3006,6 +3008,7 @@ void dec_stack_ptr(int value, sCompileInfo* info)
 void push_value_to_stack_ptr(LVALUE* value, sCompileInfo* info)
 {
     *gLLVMStack= *value;
+
     gLLVMStack++;
 
     info->stack_num++;
@@ -3289,7 +3292,7 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
         return FALSE;
     }
 
-    if(!last_expression_is_return) {
+    if(!last_expression_is_return || info->no_output) {
         if(type_identify_with_class_name(result_type, "void") && result_type->mPointerNum == 0) {
             Builder.CreateRet(nullptr);
         }
@@ -3329,10 +3332,6 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     int stack_num = info->stack_num;
     info->stack_num = 0;
 
-    int num_llvm_stack = gLLVMStack - gLLVMStackHead;
-
-    sFunction generics_fun = *fun;
-
     if(klass && info->generics_type) {
         xstrncpy(real_fun_name2, klass->mName, VAR_NAME_MAX);
 
@@ -3344,6 +3343,8 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     else {
         xstrncpy(real_fun_name2, fun_name, VAR_NAME_MAX);
     }
+
+    sFunction generics_fun = *fun;
 
     xstrncpy(generics_fun.mID, id, VAR_NAME_MAX);
     xstrncpy(generics_fun.mName, real_fun_name2, VAR_NAME_MAX);
@@ -3363,8 +3364,9 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
 
     gFuncs[real_fun_name2].push_back(generics_fun);
 
-    *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
     info->lv_table_value = lv_table_value;
+
+    *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
 
     info->stack_num = stack_num;
 
@@ -3464,6 +3466,8 @@ static BOOL compile_int_value(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_int_value(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("int");
+
     return TRUE;
 }
 
@@ -3493,6 +3497,8 @@ static BOOL compile_char_value(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_char_value(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("char");
+
     return TRUE;
 }
 
@@ -3523,6 +3529,8 @@ static BOOL compile_str_value(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_str_value(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("const char*");
+
     return TRUE;
 }
 
@@ -3550,6 +3558,8 @@ static BOOL compile_true(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_true(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -3577,6 +3587,7 @@ static BOOL compile_false(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_false(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("bool");
     return TRUE;
 }
 
@@ -3605,6 +3616,7 @@ static BOOL compile_null(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_null(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void*");
     return TRUE;
 }
 
@@ -3815,10 +3827,14 @@ static BOOL pre_compile_add(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4060,10 +4076,14 @@ static BOOL pre_compile_sub(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4139,10 +4159,14 @@ static BOOL pre_compile_mult(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4220,10 +4244,14 @@ static BOOL pre_compile_div(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4301,10 +4329,14 @@ static BOOL pre_compile_mod(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4377,10 +4409,14 @@ static BOOL pre_compile_lshift(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4453,10 +4489,14 @@ static BOOL pre_compile_rshift(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4535,6 +4575,8 @@ static BOOL pre_compile_or(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = clone_node_type(left_type);
+
     return TRUE;
 }
 
@@ -4606,10 +4648,14 @@ static BOOL pre_compile_and(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = info->type;
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -4682,10 +4728,14 @@ static BOOL pre_compile_xor(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = info->type;
+
     int right_node = gNodes[node].mRight;
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = clone_node_type(left_type);
 
     return TRUE;
 }
@@ -5035,6 +5085,8 @@ BOOL pre_compile_store_variable(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* right_type = clone_node_type(info->type);
+
     if(alloc) {
         sNodeType* var_type = create_node_type_with_class_name(type_name);
 
@@ -5054,6 +5106,8 @@ BOOL pre_compile_store_variable(unsigned int node, sCompileInfo* info)
             exit(2);
         }
     }
+
+    info->type = clone_node_type(right_type);
 
     return node;
 }
@@ -5176,6 +5230,38 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_load_variable(unsigned int node, sCompileInfo* info)
 {
+    char var_name[VAR_NAME_MAX];
+
+    xstrncpy(var_name, gNodes[node].uValue.sLoadVariable.mVarName, VAR_NAME_MAX);
+
+    sVar* var = get_variable_from_table(info->lv_table, var_name);
+
+    if(var == NULL) {
+        var = get_variable_from_table(info->gv_table, var_name);
+    }
+
+    if(var == NULL || var->mType == NULL) {
+        compile_err_msg(info, "undeclared variable(1) %s", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    sNodeType* var_type = clone_node_type(var->mType);
+    if(var_type == NULL || var_type->mClass == NULL) 
+    {
+        compile_err_msg(info, "null type %s", var_name);
+        info->err_num++;
+
+        info->type = create_node_type_with_class_name("int"); // dummy
+        return TRUE;
+    }
+
+    BOOL success_solve;
+    solve_generics(&var_type, info->generics_type, &success_solve);
+
+    info->type = var_type;
     return TRUE;
 }
 
@@ -5288,6 +5374,8 @@ BOOL pre_compile_function(unsigned int node, sCompileInfo* info)
         create_global_lvtable(info);
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -5313,8 +5401,6 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
 
     unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
 
-    sVarTable* fun_lv_table = gNodes[node].uValue.sFunction.mLVTable;
-
     char* param_types[PARAMS_MAX];
     char* param_names[PARAMS_MAX];
 
@@ -5324,7 +5410,36 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
         param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
     }
 
-    sFunction fun = gFuncs[fun_name][0];
+    sVarTable* lv_table = info->lv_table;
+
+    sVarTable* fun_lv_table = init_var_table();
+    fun_lv_table->mCoroutineTop = TRUE;
+    fun_lv_table->mParent = cinfo.lv_table;
+    info->lv_table = fun_lv_table;
+
+    char real_fun_name[VAR_NAME_MAX];
+    char real_fun_base_name[VAR_NAME_MAX];
+
+    static int n = 0;
+    n++;
+
+    snprintf(real_fun_name, VAR_NAME_MAX, "%s_%d", fun_name, n);
+    snprintf(real_fun_base_name, VAR_NAME_MAX, "%s_%d", fun_base_name, n);
+
+    if(!add_function(real_fun_name, real_fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, info)) {
+        return FALSE;
+    }
+
+    if(!generics && !method_generics) {
+        sFunction fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
+
+        int sline = gNodes[node].mLine;
+        if(!create_llvm_function(&fun, fun_lv_table, info, sline)) {
+            return FALSE;
+        }
+    }
+
+    sFunction fun = gFuncs[real_fun_name][0];
 
     Function* llvm_fun = fun.mLLVMFunction;
 
@@ -5350,6 +5465,8 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
     push_value_to_stack_ptr(&llvm_value, info);
 
     info->type = lambda_type;
+
+    info->lv_table = lv_table;
 
     return TRUE;
 }
@@ -5393,22 +5510,14 @@ BOOL pre_compile_coroutine(unsigned int node, sCompileInfo* info)
         param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
     }
 
-    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, info)) {
-        return FALSE;
-    }
+    char real_fun_name[VAR_NAME_MAX];
+    char real_fun_base_name[VAR_NAME_MAX];
 
-    if(!generics && !method_generics) {
-        sFunction fun = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+    static int n = 0;
+    n++;
 
-        int sline = gNodes[node].mLine;
-        if(!create_llvm_function(&fun, fun_lv_table, info, sline)) {
-            return FALSE;
-        }
-    }
-
-    sFunction fun = gFuncs[fun_name][0];
-
-    Function* llvm_fun = fun.mLLVMFunction;
+    snprintf(real_fun_name, VAR_NAME_MAX, "%s_%d", fun_name, n);
+    snprintf(real_fun_base_name, VAR_NAME_MAX, "%s_%d", fun_base_name, n);
 
     sNodeType* lambda_type = create_node_type_with_class_name("lambda");
 
@@ -5422,7 +5531,7 @@ BOOL pre_compile_coroutine(unsigned int node, sCompileInfo* info)
     }
 
     LVALUE llvm_value;
-    llvm_value.value = llvm_fun;
+    llvm_value.value = NULL;
     llvm_value.type = lambda_type;
     llvm_value.address = nullptr;
     llvm_value.var = nullptr;
@@ -5487,6 +5596,7 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_external_function(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -5582,6 +5692,8 @@ static BOOL pre_compile_return(unsigned int node, sCompileInfo* info)
             return FALSE;
         }
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -5796,22 +5908,22 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                     char real_fun_name2[VAR_NAME_MAX];
                     int sline = gNodes[node].mLine;
-                    info->no_output = FALSE;
+                    //info->no_output = FALSE;
                     if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
                         return FALSE;
                     }
-                    info->no_output = TRUE;
+                    //info->no_output = TRUE;
 
                     xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
                 }
                 else if(fun.mGenerics) {
                     int sline = gNodes[node].mLine;
                     char real_fun_name2[VAR_NAME_MAX];
-                    info->no_output = FALSE;
+                    //info->no_output = FALSE;
                     if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
                         return FALSE;
                     }
-                    info->no_output = TRUE;
+                    //info->no_output = TRUE;
 
                     xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
                 }
@@ -5830,7 +5942,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
                 if(gFuncs[real_fun_name].size() == 0) {
-                    compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
+                    compile_err_msg(info, "Function not found(1)a %s\n", real_fun_name);
                     info->err_num++;
 
                     info->type = create_node_type_with_class_name("int"); // dummy
@@ -5905,11 +6017,11 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                     char real_fun_name2[VAR_NAME_MAX];
                     int sline = gNodes[node].mLine;
-                    info->no_output = FALSE;
+                    //info->no_output = FALSE;
                     if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
                         return FALSE;
                     }
-                    info->no_output = TRUE;
+                    //info->no_output = TRUE;
 
                     xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
                 }
@@ -6121,6 +6233,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
     return TRUE;
 } 
+
 BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 {
     int num_params = gNodes[node].uValue.sFunctionCall.mNumParams;
@@ -6166,18 +6279,35 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
         }
     }
 
-    /// generate generics function ///
-    BOOL no_output = info->no_output;
-    info->no_output = TRUE;
+    //BOOL no_output = info->no_output;
+    //info->no_output = TRUE;
 
+    /// generate generics function ///
     if(lambda_call) {
+        unsigned int lambda_node = gNodes[node].mLeft;
+
+        /// go ///
+        if(!pre_compile(lambda_node, info)) {
+            return FALSE;
+        }
+
+        sNodeType* lambda_type = clone_node_type(info->type);
+
+        for(i=0; i<num_params; i++) {
+            if(!pre_compile(params[i], info)) {
+                return FALSE;
+            }
+        }
+
+        result_type = lambda_type->mResultType;
     }
     else {
         sNodeType* param_types[PARAMS_MAX];
         LVALUE param_values[PARAMS_MAX];
 
         for(i=0; i<num_params; i++) {
-            if(!compile(params[i], info)) {
+
+            if(!pre_compile(params[i], info)) {
                 return FALSE;
             }
 
@@ -6203,7 +6333,7 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
             char real_fun_name[VAR_NAME_MAX];
 
             if(inherit_) {
-                info->no_output = no_output;
+                //info->no_output = no_output;
                 return TRUE;
             }
             else {
@@ -6217,7 +6347,7 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
                 if(gFuncs[real_fun_name].size() == 0) {
-                    compile_err_msg(info, "Function not found(1) %s\n", real_fun_name);
+                    compile_err_msg(info, "Function not found(1)b %s\n", real_fun_name);
                     info->err_num++;
 
                     info->type = create_node_type_with_class_name("int"); // dummy
@@ -6252,22 +6382,20 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 
                 char real_fun_name2[VAR_NAME_MAX];
                 int sline = gNodes[node].mLine;
-                info->no_output = FALSE;
+
                 if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
                     return FALSE;
                 }
-                info->no_output = TRUE;
 
                 xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
             }
             else if(fun.mGenerics) {
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
-                info->no_output = FALSE;
                 if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline)) {
+
                     return FALSE;
                 }
-                info->no_output = TRUE;
 
                 xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
             }
@@ -6279,7 +6407,7 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
             info->generics_type = NULL;
 
             if(inherit_) {
-                info->no_output = no_output;
+                //info->no_output = no_output;
                 return TRUE;
             }
             else {
@@ -6309,11 +6437,9 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
-                info->no_output = FALSE;
                 if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline)) {
                     return FALSE;
                 }
-                info->no_output = TRUE;
 
                 xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
             }
@@ -6327,9 +6453,13 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
         }
+
+        result_type = create_node_type_with_class_name(fun.mResultTypeName);
     }
 
-    info->no_output = no_output;
+    info->type = clone_node_type(result_type);
+
+    //info->no_output = no_output;
 
     return TRUE;
 }
@@ -6572,6 +6702,8 @@ static BOOL pre_compile_if(unsigned int node, sCompileInfo* info)
         }
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -6721,6 +6853,18 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_create_object(unsigned int node, sCompileInfo* info)
 {
+    char type_name[VAR_NAME_MAX];
+
+    xstrncpy(type_name, gNodes[node].uValue.sCreateObject.mTypeName, VAR_NAME_MAX);
+
+    sNodeType* node_type = create_node_type_with_class_name(type_name);
+
+    sNodeType* node_type2 = clone_node_type(node_type);
+
+    BOOL success_solve;
+    solve_generics(&node_type2, info->generics_type, &success_solve);
+    node_type2->mHeap = TRUE;
+
     unsigned int left_node = gNodes[node].mLeft;
 
     Value* object_num;
@@ -6731,6 +6875,8 @@ static BOOL pre_compile_create_object(unsigned int node, sCompileInfo* info)
             return FALSE;
         }
     }
+
+    info->type = clone_node_type(node_type2);
 
     return TRUE;
 }
@@ -6786,6 +6932,12 @@ static BOOL pre_compile_clone(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+    sNodeType* left_type2 = clone_node_type(left_type);
+    left_type2->mHeap = TRUE;
+
+    info->type = clone_node_type(left_type2);
+
     return TRUE;
 }
 
@@ -6830,6 +6982,8 @@ static BOOL pre_compile_delete(unsigned int node, sCompileInfo* info)
     if(!pre_compile(left_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -6891,6 +7045,8 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_struct(unsigned int node, sCompileInfo* info)
 {
+    
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -6937,6 +7093,9 @@ BOOL compile_union(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_union(unsigned int node, sCompileInfo* info)
 {
+
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -7320,6 +7479,8 @@ static BOOL pre_compile_define_variable(unsigned int node, sCompileInfo* info)
         }
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -7399,6 +7560,8 @@ static BOOL pre_compile_equals(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -7474,6 +7637,8 @@ static BOOL pre_compile_not_equals(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("bool");
 
     return TRUE;
 }
@@ -7651,12 +7816,26 @@ static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_load_field(unsigned int node, sCompileInfo* info)
 {
+    char var_name[VAR_NAME_MAX]; 
+    xstrncpy(var_name, gNodes[node].uValue.sLoadField.mVarName, VAR_NAME_MAX);
+
     /// compile left node ///
     unsigned int lnode = gNodes[node].mLeft;
 
     if(!pre_compile(lnode, info)) {
         return FALSE;
     }
+
+    sNodeType* left_type = info->type;
+
+    int field_index = get_field_index(left_type->mClass, var_name, NULL);
+
+    sNodeType* field_type = clone_node_type(left_type->mClass->mFields[field_index]);
+
+    BOOL success_solve;
+    solve_generics(&field_type, left_type, &success_solve);
+
+    info->type = clone_node_type(field_type);
 
     return TRUE;
 }
@@ -7824,6 +8003,9 @@ static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_store_field(unsigned int node, sCompileInfo* info)
 {
+    char var_name[VAR_NAME_MAX];
+    xstrncpy(var_name, gNodes[node].uValue.sStoreField.mVarName, VAR_NAME_MAX);
+
     /// compile left node ///
     unsigned int lnode = gNodes[node].mLeft;
 
@@ -7831,12 +8013,18 @@ static BOOL pre_compile_store_field(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = clone_node_type(info->type);
+
     /// compile right node ///
     unsigned int rnode = gNodes[node].mRight;
 
     if(!pre_compile(rnode, info)) {
         return FALSE;
     }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    info->type = right_type;
 
     return TRUE;
 }
@@ -7977,6 +8165,8 @@ static BOOL pre_compile_and_and(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -8114,6 +8304,8 @@ static BOOL pre_compile_or_or(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -8194,6 +8386,8 @@ static BOOL pre_compile_gt(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("bool");
 
     return TRUE;
 }
@@ -8276,6 +8470,8 @@ static BOOL pre_compile_lt(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -8356,6 +8552,8 @@ static BOOL pre_compile_ge(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("bool");
 
     return TRUE;
 }
@@ -8438,6 +8636,8 @@ static BOOL pre_compile_le(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("bool");
+
     return TRUE;
 }
 
@@ -8509,6 +8709,8 @@ static BOOL pre_compile_logical_denial(unsigned int node, sCompileInfo* info)
     if(!pre_compile(left_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("bool");
 
     return TRUE;
 }
@@ -8620,6 +8822,10 @@ static BOOL pre_compile_complement(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_node_type = clone_node_type(info->type);
+
+    info->type = left_node_type;
+
     return TRUE;
 }
 
@@ -8677,6 +8883,12 @@ static BOOL pre_compile_dereffernce(unsigned int node, sCompileInfo* info)
     if(!pre_compile(left_node, info)) {
         return FALSE;
     }
+
+    sNodeType* left_type = info->type;
+
+    sNodeType* derefference_type = clone_node_type(left_type);
+
+    info->type = derefference_type;
 
     return TRUE;
 }
@@ -8740,6 +8952,14 @@ static BOOL pre_compile_reffernce(unsigned int node, sCompileInfo* info)
     if(!pre_compile(left_node, info)) {
         return FALSE;
     }
+
+    sNodeType* left_type = info->type;
+
+    sNodeType* refference_type = clone_node_type(left_type);
+
+    refference_type->mPointerNum++;
+
+    info->type = refference_type;
 
     return TRUE;
 }
@@ -8891,6 +9111,8 @@ static BOOL pre_compile_plus_eq(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -9045,6 +9267,8 @@ static BOOL pre_compile_minus_eq(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -9118,6 +9342,8 @@ static BOOL pre_compile_mult_eq(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -9199,6 +9425,8 @@ static BOOL pre_compile_div_eq(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -9279,6 +9507,8 @@ static BOOL pre_compile_mod_eq(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -9352,6 +9582,8 @@ static BOOL pre_compile_and_eq(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -9427,6 +9659,8 @@ static BOOL pre_compile_xor_eq(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -9500,6 +9734,8 @@ static BOOL pre_compile_or_eq(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -9575,6 +9811,8 @@ static BOOL pre_compile_lshift_eq(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -9648,6 +9886,8 @@ static BOOL pre_compile_rshift_eq(unsigned int node, sCompileInfo* info)
     if(!pre_compile(right_node, info)) {
         return FALSE;
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -9997,13 +10237,14 @@ static BOOL pre_compile_load_element(unsigned int node, sCompileInfo* info)
     for(i=0; i<num_dimention; i++) {
         index_node[i] = gNodes[node].uValue.sLoadElement.mIndex[i];
     }
-
     /// compile left node ///
     unsigned int lnode = gNodes[node].mLeft;
 
     if(!pre_compile(lnode, info)) {
         return FALSE;
     }
+
+    sNodeType* left_type = info->type;
 
     /// compile middle node ///
     LVALUE rvalue[ARRAY_DIMENTION_MAX];
@@ -10014,6 +10255,22 @@ static BOOL pre_compile_load_element(unsigned int node, sCompileInfo* info)
             return FALSE;
         }
     }
+
+    /// generate code ///
+    sNodeType* var_type = clone_node_type(left_type);
+
+    if(var_type->mArrayDimentionNum > 0) {
+        var_type->mArrayDimentionNum-=num_dimention;
+    }
+    else {
+        var_type->mPointerNum--;
+    }
+
+    //if(var_type->mPointerNum == 0) {
+        var_type->mHeap = FALSE;
+    //}
+
+    info->type = var_type;
 
     return TRUE;
 }
@@ -10318,6 +10575,8 @@ BOOL pre_compile_store_element(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    sNodeType* left_type = info->type;
+
     /// compile middle node ///
     LVALUE mvalue[ARRAY_DIMENTION_MAX];
 
@@ -10327,8 +10586,20 @@ BOOL pre_compile_store_element(unsigned int node, sCompileInfo* info)
         if(!pre_compile(mnode, info)) {
             return FALSE;
         }
+
+        sNodeType* middle_type = info->type;
     }
 
+    /// compile right node ///
+    unsigned int rnode = gNodes[node].mRight;
+
+    if(!pre_compile(rnode, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = info->type;
+
+    info->type = clone_node_type(right_type);
     return TRUE;
 }
 
@@ -10999,6 +11270,8 @@ BOOL pre_compile_array_initializer(unsigned int node, sCompileInfo* info)
         }
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -11174,6 +11447,8 @@ static BOOL pre_compile_for_statment(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -11311,6 +11586,8 @@ static BOOL pre_compile_while_statment(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -11435,6 +11712,8 @@ static BOOL pre_compile_do_while_statment(unsigned int node, sCompileInfo* info)
         return FALSE;
     }
 
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -11549,6 +11828,8 @@ BOOL pre_compile_switch_statment(unsigned int node, sCompileInfo* info)
             return FALSE;
         }
     }
+
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -11725,6 +12006,7 @@ BOOL compile_break_expression(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_break_expression(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -11766,6 +12048,7 @@ BOOL compile_continue_expression(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_continue_expression(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -11818,11 +12101,16 @@ BOOL compile_cast(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_cast(unsigned int node, sCompileInfo* info)
 {
+    char type_name[VAR_NAME_MAX];
+    xstrncpy(type_name, gNodes[node].uValue.sCast.mTypeName, VAR_NAME_MAX);
+    sNodeType* right_type = create_node_type_with_class_name(type_name);
+
     int left_node = gNodes[node].mLeft;
     if(!pre_compile(left_node, info)) {
         return FALSE;
     }
 
+    info->type = right_type;
     return TRUE;
 }
 
@@ -11888,6 +12176,12 @@ static BOOL compile_sizeof1(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_sizeof1(unsigned int node, sCompileInfo* info)
 {
+#ifdef __32BIT_CPU__
+    info->type = create_node_type_with_class_name("int");
+#else
+    info->type = create_node_type_with_class_name("long");
+#endif
+
     return TRUE;
 }
 
@@ -11969,6 +12263,11 @@ BOOL compile_sizeof2(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_sizeof2(unsigned int node, sCompileInfo* info)
 {
+#ifdef __32BIT_CPU__
+    info->type = create_node_type_with_class_name("int");
+#else
+    info->type = create_node_type_with_class_name("long");
+#endif
     return TRUE;
 }
 
@@ -12031,6 +12330,12 @@ static BOOL compile_alignof1(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_alignof1(unsigned int node, sCompileInfo* info)
 {
+#ifdef __32BIT_CPU__
+    info->type = create_node_type_with_class_name("int");
+#else
+    info->type = create_node_type_with_class_name("long");
+#endif
+
     return TRUE;
 }
 
@@ -12109,6 +12414,12 @@ BOOL compile_alignof2(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_alignof2(unsigned int node, sCompileInfo* info)
 {
+#ifdef __32BIT_CPU__
+    info->type = create_node_type_with_class_name("int");
+#else
+    info->type = create_node_type_with_class_name("long");
+#endif
+
     return TRUE;
 }
 
@@ -12132,6 +12443,7 @@ BOOL compile_typedef(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_typedef(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
@@ -12391,6 +12703,32 @@ static BOOL compile_conditional(unsigned int node, sCompileInfo* info)
 
 BOOL pre_compile_conditional(unsigned int node, sCompileInfo* info)
 {
+    /// compile expression ///
+    unsigned int conditional_node = gNodes[node].mLeft;
+
+    if(!pre_compile(conditional_node, info)) 
+    {
+        return FALSE;
+    }
+
+    sNodeType* conditional_type = info->type;
+
+    unsigned int value1_node  = gNodes[node].mRight;
+
+    if(!pre_compile(value1_node, info)) 
+    {
+        return FALSE;
+    }
+
+    unsigned int value2_node  = gNodes[node].mMiddle;
+
+    if(!pre_compile(value2_node, info)) 
+    {
+        return FALSE;
+    }
+
+    info->type = create_node_type_with_class_name("void");
+
     return TRUE;
 }
 
@@ -12425,6 +12763,18 @@ static BOOL compile_dummy_heap(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_dummy_heap(unsigned int node, sCompileInfo* info)
 {
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!pre_compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* result_type = clone_node_type(info->type);
+
+    result_type->mDummyHeap = TRUE;
+
+    info->type = result_type;
+
     return TRUE;
 }
 
@@ -12463,6 +12813,7 @@ static BOOL compile_managed(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_managed(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("void"); // dummy
 
     return TRUE;
 }
@@ -12520,11 +12871,31 @@ static BOOL compile_store_address(unsigned int node, sCompileInfo* info)
 
     Builder.CreateAlignedStore(value, address, alignment);
 
+    info->type = right_type;
+
     return TRUE;
 }
 
 static BOOL pre_compile_store_address(unsigned int node, sCompileInfo* info)
 {
+    unsigned int left_node = gNodes[node].mLeft;
+
+    if(!pre_compile(left_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* left_type = clone_node_type(info->type);
+
+    unsigned int right_node = gNodes[node].mRight;
+
+    if(!pre_compile(right_node, info)) {
+        return FALSE;
+    }
+
+    sNodeType* right_type = clone_node_type(info->type);
+
+    info->type = right_type;
+
     return TRUE;
 }
 
@@ -12568,6 +12939,7 @@ static BOOL compile_isheap(unsigned int node, sCompileInfo* info)
 
 static BOOL pre_compile_isheap(unsigned int node, sCompileInfo* info)
 {
+    info->type = create_node_type_with_class_name("bool");
 
     return TRUE;
 }
@@ -13116,6 +13488,7 @@ BOOL pre_compile(unsigned int node, sCompileInfo* info)
     if(node == 0) {
         return TRUE;
     }
+
     xstrncpy(info->sname, gNodes[node].mSName, PATH_MAX);
     info->sline = gNodes[node].mLine;
 

@@ -24,7 +24,7 @@ BUFFER_H	src/buffer.h	2;"	d
 CASE	parser.tab.c	/^    CASE = 312,$/;"	e	enum:yytokentype	file:
 CASE	parser.tab.h	/^    CASE = 312,$/;"	e	enum:yytokentype
 CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -O3$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-Isrc\/ -I. -DPREFIX="\\"${DESTDIR}\/\\"" -fPIC -I\/usr\/local\/include -g -DMDEBUG$/;"	m
 CHARNUM	parser.tab.c	/^    CHARNUM = 259,$/;"	e	enum:yytokentype	file:
 CHARNUM	parser.tab.h	/^    CHARNUM = 259,$/;"	e	enum:yytokentype
 CLASS_FLAGS_ANONYMOUS	src/common.h	65;"	d
@@ -50,7 +50,7 @@ CONTINUE	parser.tab.h	/^    CONTINUE = 314,$/;"	e	enum:yytokentype
 CSTRING	parser.tab.c	/^    CSTRING = 264,$/;"	e	enum:yytokentype	file:
 CSTRING	parser.tab.h	/^    CSTRING = 264,$/;"	e	enum:yytokentype
 CXX	Makefile	/^CXX=g++$/;"	m
-CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -O3 -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS=`llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\\"${DESTDIR}\/\\""$/;"	m
 DBuilder	src/compile.cpp	/^DIBuilder* DBuilder;$/;"	v
 DEFAULT	parser.tab.c	/^    DEFAULT = 315,$/;"	e	enum:yytokentype	file:
 DEFAULT	parser.tab.h	/^    DEFAULT = 315,$/;"	e	enum:yytokentype
