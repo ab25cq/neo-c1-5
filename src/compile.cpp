@@ -3369,8 +3369,6 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
         xstrncpy(real_fun_name2, fun_name, VAR_NAME_MAX);
     }
 
-puts(real_fun_name2);
-
     sFunction generics_fun = *fun;
 
     xstrncpy(generics_fun.mID, id, VAR_NAME_MAX);
@@ -6912,8 +6910,6 @@ static BOOL pre_compile_create_object(unsigned int node, sCompileInfo* info)
     }
 
     info->type = clone_node_type(node_type2);
-
-show_node_type(node_type2);
 
     return TRUE;
 }
