@@ -698,6 +698,10 @@ int main()
 
     xassert("list test2", li3.item(0, -1) == 1 && li3.item(1, -1) == 2 && li3.item(2, -1) == 3);
 
+    li3.insert(1, 5);
+
+    xassert("list test3", li3.item(1, -1) == 5 && li3.item(2, -1) == 2 && li3.item(3, -1) == 3);
+
     return 0;
 }
 
