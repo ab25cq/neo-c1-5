@@ -1,2 +1,0 @@
-g++ -o src/compile.o -c src/compile.cpp -Isrc/ -I. -DPREFIX="\"/usr/local/\"" -fPIC -I/usr/local/include -g -DMDEBUG `llvm-config --cxxflags --ldflags --system-libs --libs all`  -DMDEBUG -g -I . -I src -DPREFIX="\"/usr/local/\""
-make: *** [Makefile:42: src/compile.o] 割り込み
