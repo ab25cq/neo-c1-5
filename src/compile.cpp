@@ -755,12 +755,7 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
     }
     else if((klass->mFlags & CLASS_FLAGS_GENERICS) || (klass->mFlags & CLASS_FLAGS_METHOD_GENERICS))
     {
-        if(info && info->no_output) {
-            *result_type = IntegerType::get(TheContext, 64);
-        }
-        else {
-            return FALSE;
-        }
+        return FALSE;
     }
     else if(node_type->mSizeNum > 0) {
         *result_type = IntegerType::get(TheContext, node_type->mSizeNum*8);
