@@ -5142,7 +5142,7 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     }
 
     if(var == NULL || var->mType == NULL) {
-        compile_err_msg(info, "undeclared variable(1) %s", var_name);
+        compile_err_msg(info, "undeclared variable(1-2) %s", var_name);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -5258,7 +5258,7 @@ static BOOL pre_compile_load_variable(unsigned int node, sCompileInfo* info)
     }
 
     if(var == NULL || var->mType == NULL) {
-        compile_err_msg(info, "undeclared variable(1) %s", var_name);
+        compile_err_msg(info, "undeclared variable(1-3) %s", var_name);
         info->err_num++;
 
         info->type = create_node_type_with_class_name("int"); // dummy
@@ -6568,6 +6568,11 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
+/*
+    sVarTable* lv_table = info->lv_table;
+    info->lv_table = gNodes[node].uValue.sIf.mLVTable;
+*/
+
     unsigned int else_block = gNodes[node].uValue.sIf.mElseBlock;
     int elif_num = gNodes[node].uValue.sIf.mElifNum;
 
@@ -6751,6 +6756,7 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
 
     BasicBlock* current_block_before2;
     llvm_change_block(cond_end_block, &current_block_before2, info, FALSE);
+//    info->lv_table = lv_table;
 
     info->type = create_node_type_with_class_name("void");
 
@@ -6762,14 +6768,20 @@ static BOOL pre_compile_if(unsigned int node, sCompileInfo* info)
     unsigned int else_block = gNodes[node].uValue.sIf.mElseBlock;
     int elif_num = gNodes[node].uValue.sIf.mElifNum;
 
+/*
+    sVarTable* lv_table = info->lv_table;
+    sVarTable* block_lv_table = init_var_table();
+    block_lv_table->mParent = info->lv_table;
+    gNodes[node].uValue.sIf.mLVTable = block_lv_table;
+*/
+
     /// compile expression ///
     unsigned int if_exp = gNodes[node].uValue.sIf.mIfExp;
+    unsigned int if_block = gNodes[node].uValue.sIf.mIfBlock;
 
     if(!pre_compile(if_exp, info)) {
         return FALSE;
     }
-
-    unsigned int if_block = gNodes[node].uValue.sIf.mIfBlock;
 
     if(!pre_compile_block(if_block, info)) {
         return FALSE;
@@ -6781,11 +6793,11 @@ static BOOL pre_compile_if(unsigned int node, sCompileInfo* info)
         for(i=0; i<elif_num; i++) {
             unsigned int if_exp = gNodes[node].uValue.sIf.mElifExps[i];
 
+            unsigned int elif_block = gNodes[node].uValue.sIf.mElifBlocks[i];
+
             if(!pre_compile(if_exp, info)) {
                 return FALSE;
             }
-
-            unsigned int elif_block = gNodes[node].uValue.sIf.mElifBlocks[i];
 
             if(!pre_compile_block(elif_block, info)) {
                 return FALSE;
@@ -6800,6 +6812,7 @@ static BOOL pre_compile_if(unsigned int node, sCompileInfo* info)
     }
 
     info->type = create_node_type_with_class_name("void");
+//    info->lv_table = lv_table;
 
     return TRUE;
 }

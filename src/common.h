@@ -364,6 +364,8 @@ struct sNodeTreeStruct
             unsigned int mElifExps[ELIF_NUM_MAX];
             unsigned int mElifBlocks[ELIF_NUM_MAX];
             unsigned int mElseBlock;
+
+            sVarTable* mLVTable;
         } sIf;
         struct {
             char mTypeName[VAR_NAME_MAX];

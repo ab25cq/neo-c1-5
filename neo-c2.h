@@ -718,6 +718,107 @@ void list!<T>::insert(list!<T>* self, int position, T item)
     }
 }
 
+void list!<T>::delete(list!<T>* self, int position)
+{
+    if(position < 0) {
+        position += self.len + 1;
+    }
+
+    if(position >= 0 && position < self.len)
+    {
+        if(self.len == 1) {
+            if(isheap(T)) {
+                delete self.head.item;
+            }
+            delete self.head;
+
+            self.head = null;
+            self.tail = null;
+
+            self.len = 0;
+        }
+        else if(self.len == 2) {
+            if(position == 0) {
+                list_item!<T>* it = self.head;
+
+                self.head = it.next;
+
+                self.head.prev = null;
+                self.head.next = null;
+
+                self.tail = self.head;
+
+                if(isheap(T)) {
+                    delete it.item;
+                }
+                delete it;
+
+                self.len--;
+            }
+            else {
+                list_item!<T>* it = self.tail;
+
+                self.head.next = null;
+                self.head.prev = null;
+
+                self.tail = self.head;
+
+                if(isheap(T)) {
+                    delete it.item;
+                }
+                delete it;
+
+                self.len--;
+            }
+        }
+        else {
+            list_item!<T>* it = self.head;
+            int i = 0;
+            while(it != null) {
+                if(position == i) {
+                    if(i == 0) {
+                        self.head = it.next;
+                        self.head.prev = null;
+
+                        if(isheap(T)) {
+                            delete it.item;
+                        }
+                        delete it;
+
+                        self.len--;
+                    }
+                    else if(i == self.len-1)
+                    {
+                       self.tail = it.prev;
+                       self.tail.next = null;
+                       if(isheap(T)) 
+                       {
+                            delete it.item;
+                        }
+                        delete it;
+
+                        self.len--;
+                    }
+                    else {
+                        it.prev.next = it.next;
+                        it.next.prev = it.prev;
+                        if(isheap(T)) {
+                            delete it.item;
+                        }
+                        delete it;
+
+                        self.len--;
+                    }
+                    break;
+                }
+
+                it = it.next;
+                i++;
+            }
+        }
+    }
+}
+
 /*
     
     T pop_front(list<T>* self, T& default_value)
@@ -783,107 +884,6 @@ void list!<T>::insert(list!<T>* self, int position, T item)
         }
     }
 
-
-    void delete(list<T>* self, int position)
-    {
-        if(position < 0) {
-            position += self.len + 1;
-        }
-
-        if(position >= 0 && position < self.len)
-        {
-            if(self.len == 1) {
-                if(isheap(T)) {
-                    delete self.head.item;
-                }
-                delete self.head;
-
-                self.head = null;
-                self.tail = null;
-
-                self.len = 0;
-            }
-            else if(self.len == 2) {
-                if(position == 0) {
-                    list_item<T>?* it = self.head;
-
-                    self.head = it.next;
-
-                    self.head.prev = null;
-                    self.head.next = null;
-
-                    self.tail = self.head;
-
-                    if(isheap(T)) {
-                        delete it.item;
-                    }
-                    delete it;
-
-                    self.len--;
-                }
-                else {
-                    list_item<T>?* it = self.tail;
-
-                    self.head.next = null;
-                    self.head.prev = null;
-
-                    self.tail = self.head;
-
-                    if(isheap(T)) {
-                        delete it.item;
-                    }
-                    delete it;
-
-                    self.len--;
-                }
-            }
-            else {
-                list_item<T>?* it = self.head;
-                var i = 0;
-                while(it != null) {
-                    if(position == i) {
-                        if(i == 0) {
-                            self.head = it.next;
-                            self.head.prev = null;
-
-                            if(isheap(T)) {
-                                delete it.item;
-                            }
-                            delete it;
-
-                            self.len--;
-                        }
-                        else if(i == self.len-1)
-                        {
-                           self.tail = it.prev;
-                           self.tail.next = null;
-                           if(isheap(T)) 
-                           {
-                                delete it.item;
-                            }
-                            delete it;
-
-                            self.len--;
-                        }
-                        else {
-                            it.prev.next = it.next;
-                            it.next.prev = it.prev;
-                            if(isheap(T)) {
-                                delete it.item;
-                            }
-                            delete it;
-
-                            self.len--;
-                        }
-                        break;
-                    }
-
-                    it = it.next;
-                    i++;
-                }
-            }
-        }
-    }
 
     void delete_range(list<T>* self, int head, int tail)
     {

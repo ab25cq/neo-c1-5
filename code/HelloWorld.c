@@ -702,6 +702,10 @@ int main()
 
     xassert("list test3", li3.item(1, -1) == 5 && li3.item(2, -1) == 2 && li3.item(3, -1) == 3);
 
+    li3.delete(1);
+
+    xassert("list test4", li3.item(0, -1) == 1 && li3.item(1, -1) == 2 && li3.item(2, -1) == 3);
+
     return 0;
 }
 

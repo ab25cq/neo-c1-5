@@ -174,7 +174,7 @@ unsigned int else_block;
 %type <cval> name
 %type <cval> struct_name
 %type <cval> struct_name2
-%type <node> program function block function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields;
+%type <node> program function block block_no_lv_table function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields;
 
 %left '[' ']' '='
 %left '?' ':'
@@ -2330,6 +2330,9 @@ name:
     | CLONE {
         xstrncpy($$, "clone", VAR_NAME_MAX);
     }
+    | TOKEN_DELETE {
+        xstrncpy($$, "delete", VAR_NAME_MAX);
+    }
     ;
 
 function: 
@@ -3134,6 +3137,41 @@ block:  statment                  {
             }
 
             BOOL create_lv_table = TRUE;
+
+            block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
+            append_node_to_node_block(block, $1); 
+
+            $$ = block; 
+
+            int i=0;
+            for(i=0; i< num_multiple_node; i++) {
+                append_node_to_node_block(block, multiple_nodes[i]); 
+            }
+            num_multiple_node = 0;
+        } 
+        | block statment          { 
+            $$ = block; 
+
+            append_node_to_node_block(block, $2); 
+
+            int i=0;
+            for(i=0; i< num_multiple_node; i++) {
+                append_node_to_node_block(block, multiple_nodes[i]); 
+            }
+            num_multiple_node = 0;
+        }
+        ;
+
+block_no_lv_table:  statment                  { 
+            prev_block[num_prev_block] = block;
+            num_prev_block++;
+
+            if(num_prev_block >= BLOCK_NEST_MAX) {
+                fprintf(stderr, "overflow nest block\n");
+                exit(2);
+            }
+
+            BOOL create_lv_table = FALSE;
 
             block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
             append_node_to_node_block(block, $1); 
