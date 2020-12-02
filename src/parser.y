@@ -15,9 +15,11 @@ unsigned int params;
 extern int yyerror(char *msg);
 extern int yylex();
 sCompileInfo cinfo;
-unsigned int elif_exps[ELIF_NUM_MAX];
-unsigned int elif_blocks[ELIF_NUM_MAX];
-int elif_num;
+unsigned int elif_exps[ELIF_NEST_MAX][ELIF_NUM_MAX];
+unsigned int elif_blocks[ELIF_NEST_MAX][ELIF_NUM_MAX];
+int elif_num[ELIF_NEST_MAX];
+unsigned int else_block[ELIF_NEST_MAX];
+int elif_nest_num = 0;
 unsigned int fields[128];
 int num_fields = 0;
 char variable_names[VAR_NAME_MAX][128];
@@ -50,7 +52,6 @@ unsigned int multiple_nodes[128];
 int num_multiple_node = 0;
 char recent_type_name[VAR_NAME_MAX];
 char struct_name_now[VAR_NAME_MAX];
-unsigned int else_block;
 %}
 
 %union {
@@ -174,7 +175,7 @@ unsigned int else_block;
 %type <cval> name
 %type <cval> struct_name
 %type <cval> struct_name2
-%type <node> program function block block_no_lv_table function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields;
+%type <node> program function block block_no_lv_table function_block block_end statment node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment end_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields;
 
 %left '[' ']' '='
 %left '?' ':'
@@ -3325,14 +3326,14 @@ statment: comma_exp free_right_value_objects ';'              { $$ = $1; }
         
         $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
     }
-    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment
+    | IF '(' comma_exp free_right_value_objects ')' '{' block '}' block_end ELSE IF prepare_elif_statment elif_statment end_elif_statment
     {
         unsigned int if_exp = $3;
         unsigned int if_block = $7;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num[elif_nest_num], elif_exps[elif_nest_num], elif_blocks[elif_nest_num], else_block[elif_nest_num], gSName, yylineno);
     }
-    | IF '(' comma_exp free_right_value_objects ')' statment ELSE IF prepare_elif_statment elif_statment {
+    | IF '(' comma_exp free_right_value_objects ')' statment ELSE IF prepare_elif_statment elif_statment end_elif_statment {
         BOOL create_lv_table = FALSE;
 
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
@@ -3342,7 +3343,7 @@ statment: comma_exp free_right_value_objects ';'              { $$ = $1; }
         unsigned int if_block = block;
         unsigned else_block = 0;
         
-        $$ = sNodeTree_create_if(if_exp, if_block, elif_num, elif_exps, elif_blocks, else_block, gSName, yylineno);
+        $$ = sNodeTree_create_if(if_exp, if_block, elif_num[elif_nest_num], elif_exps[elif_nest_num], elif_blocks[elif_nest_num], else_block, gSName, yylineno);
     }
     | FOR '(' comma_exp free_right_value_objects ';' comma_exp free_right_value_objects ';' comma_exp free_right_value_objects ')' '{' block '}' block_end {
         unsigned int expression_node1 = $3;
@@ -3493,14 +3494,20 @@ switch_block: statment {
 
 
 prepare_elif_statment: '(' comma_exp ')' '{' block '}' block_end {
-    elif_num = 0;
-    elif_exps[elif_num] = $2;
-    elif_blocks[elif_num] = $5;
-    elif_num++;
-    else_block = 0;
+    elif_num[elif_nest_num] = 0;
+    elif_exps[elif_nest_num][elif_num[elif_nest_num]] = $2;
+    elif_blocks[elif_nest_num][elif_num[elif_nest_num]] = $5;
+    elif_num[elif_nest_num]++;
+    else_block[elif_nest_num] = 0;
+    elif_nest_num++;
 
-    if(elif_num >= ELIF_NUM_MAX) {
+    if(elif_num[elif_nest_num-1] >= ELIF_NUM_MAX) {
         fprintf(stderr, "overflow else if number\n");
+        exit(2);
+    }
+
+    if(elif_nest_num >= ELIF_NEST_MAX) {
+        fprintf(stderr, "overflow else if nest number\n");
         exit(2);
     }
 
@@ -3508,13 +3515,18 @@ prepare_elif_statment: '(' comma_exp ')' '{' block '}' block_end {
     }
     ;
 
+end_elif_statment: {
+    elif_nest_num--;
+    }
+    ;
+
 elif_statment:
     ELSE IF '(' comma_exp ')' '{' block '}' block_end {
-        elif_exps[elif_num] = $4;
-        elif_blocks[elif_num] = $7;
-        elif_num++;
+        elif_exps[elif_nest_num-1][elif_num[elif_nest_num-1]] = $4;
+        elif_blocks[elif_nest_num-1][elif_num[elif_nest_num-1]] = $7;
+        elif_num[elif_nest_num-1]++;
 
-        if(elif_num >= ELIF_NUM_MAX) {
+        if(elif_num[elif_nest_num-1] >= ELIF_NUM_MAX) {
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
@@ -3525,31 +3537,31 @@ elif_statment:
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
         append_node_to_node_block(block, $6);
 
-        elif_exps[elif_num] = $4;
-        elif_blocks[elif_num] = block;
-        elif_num++;
+        elif_exps[elif_nest_num-1][elif_num[elif_nest_num-1]] = $4;
+        elif_blocks[elif_nest_num-1][elif_num[elif_nest_num-1]] = block;
+        elif_num[elif_nest_num-1]++;
 
-        if(elif_num >= ELIF_NUM_MAX) {
+        if(elif_num[elif_nest_num-1] >= ELIF_NUM_MAX) {
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
     }
     | ELSE '{' block '}' block_end {
-        else_block = $3;
+        else_block[elif_nest_num-1] = $3;
     }
     | ELSE statment {
         BOOL create_lv_table = FALSE;
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
         append_node_to_node_block(block, $2);
 
-        else_block = block;
+        else_block[elif_nest_num-1] = block;
     }
     | elif_statment ELSE IF '(' comma_exp ')' '{' block '}' block_end {
-        elif_exps[elif_num] = $5;
-        elif_blocks[elif_num] = $8;
-        elif_num++;
+        elif_exps[elif_nest_num-1][elif_num[elif_nest_num-1]] = $5;
+        elif_blocks[elif_nest_num-1][elif_num[elif_nest_num-1]] = $8;
+        elif_num[elif_nest_num-1]++;
 
-        if(elif_num >= ELIF_NUM_MAX) {
+        if(elif_num[elif_nest_num-1] >= ELIF_NUM_MAX) {
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
@@ -3560,24 +3572,24 @@ elif_statment:
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
         append_node_to_node_block(block, $7);
 
-        elif_exps[elif_num] = $5;
-        elif_blocks[elif_num] = block;
-        elif_num++;
+        elif_exps[elif_nest_num-1][elif_num[elif_nest_num-1]] = $5;
+        elif_blocks[elif_nest_num-1][elif_num[elif_nest_num-1]] = block;
+        elif_num[elif_nest_num-1]++;
 
-        if(elif_num >= ELIF_NUM_MAX) {
+        if(elif_num[elif_nest_num-1] >= ELIF_NUM_MAX) {
             fprintf(stderr, "overflow else if number\n");
             exit(2);
         }
     }
     | elif_statment ELSE '{' block '}' block_end {
-        else_block = $4;
+        else_block[elif_nest_num-1] = $4;
     }
     | elif_statment ELSE statment {
         BOOL create_lv_table = FALSE;
         unsigned int block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
         append_node_to_node_block(block, $3);
 
-        else_block = block;
+        else_block[elif_nest_num-1] = block;
     }
     ;
 

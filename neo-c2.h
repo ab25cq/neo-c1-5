@@ -819,6 +819,137 @@ void list!<T>::delete(list!<T>* self, int position)
     }
 }
 
+void list!<T>::delete_range(list!<T>* self, int head, int tail)
+{
+    if(head < 0) {
+        head += self.len;
+    }
+    if(tail < 0) {
+        tail += self.len + 1;
+    }
+
+    if(head > tail) {
+        int tmp = tail;
+        tail = head;
+        head = tmp;
+    }
+
+    if(head < 0) {
+        head = 0;
+    }
+
+    if(tail > self.len) {
+        tail = self.len;
+    }
+
+    if(head == tail) {
+        return;
+    }
+
+    if(head == 0 && tail == self.len) 
+    {
+        self.reset();
+    }
+    else if(head == 0) {
+        list_item!<T>* it = self.head;
+        int i = 0;
+        while(it != null) {
+            if(i < tail) {
+                if(isheap(T)) {
+                    delete it.item;
+                }
+                list_item!<T>* prev_it = it;
+
+                it = it.next;
+                i++;
+
+                delete prev_it;
+
+                self.len--;
+            }
+            else if(i == tail) {
+                self.head = it;
+                self.head.prev = null;
+                break;
+            }
+            else {
+                it = it.next;
+                i++;
+            }
+        }
+    }
+    else if(tail == self.len) {
+        list_item!<T>* it = self.head;
+        int i = 0;
+        while(it != null) {
+            if(i == head) {
+                self.tail = it.prev;
+                self.tail.next = null;
+            }
+
+            if(i >= head) {
+                if(isheap(T)) {
+                    delete it.item;
+                }
+                list_item!<T>* prev_it = it;
+
+                it = it.next;
+                i++;
+
+                delete prev_it;
+
+                self.len--;
+            }
+            else {
+                it = it.next;
+                i++;
+            }
+        }
+    }
+    else {
+        list_item!<T>* it = self.head;
+
+        list_item!<T>* head_prev_it = null;
+        list_item!<T>* tail_it = null;
+
+        int i = 0;
+        while(it != null) {
+            if(i == head) {
+                head_prev_it = it.prev;
+            }
+            if(i == tail) {
+                tail_it = it;
+            }
+
+            if(i >= head && i < tail) 
+            {
+                if(isheap(T)) {
+                    delete it.item;
+                }
+                list_item!<T>* prev_it = it;
+
+                it = it.next;
+                i++;
+
+                delete prev_it;
+
+                self.len--;
+            }
+            else {
+                it = it.next;
+                i++;
+            }
+        }
+
+        if(head_prev_it != null) {
+            head_prev_it.next = tail_it;
+        }
+        if(tail_it != null) {
+            tail_it.prev = head_prev_it;
+        }
+    }
+}
+
 /*
     
     T pop_front(list<T>* self, T& default_value)
@@ -880,139 +1011,6 @@ void list!<T>::delete(list!<T>* self, int position)
             }
             else {
                 return dummy_heap result;
-            }
-        }
-    }
-
-
-    void delete_range(list<T>* self, int head, int tail)
-    {
-        if(head < 0) {
-            head += self.len;
-        }
-        if(tail < 0) {
-            tail += self.len + 1;
-        }
-
-        if(head > tail) {
-            int tmp = tail;
-            tail = head;
-            head = tmp;
-        }
-
-        if(head < 0) {
-            head = 0;
-        }
-
-        if(tail > self.len) {
-            tail = self.len;
-        }
-
-        if(head == tail) {
-            return;
-        }
-
-        if(head == 0 && tail == self.len) 
-        {
-            self.reset();
-        }
-        else if(head == 0) {
-            list_item<T>?* it = self.head;
-            var i = 0;
-            while(it != null) {
-                if(i < tail) {
-                    if(isheap(T)) {
-                        delete it.item;
-                    }
-                    list_item<T>?* prev_it = it;
-
-                    it = it.next;
-                    i++;
-
-                    delete prev_it;
-
-                    self.len--;
-                }
-                else if(i == tail) {
-                    self.head = it;
-                    self.head.prev = null;
-                    break;
-                }
-                else {
-                    it = it.next;
-                    i++;
-                }
-            }
-        }
-        else if(tail == self.len) {
-            list_item<T>?* it = self.head;
-            var i = 0;
-            while(it != null) {
-                if(i == head) {
-                    self.tail = it.prev;
-                    self.tail.next = null;
-                }
-
-                if(i >= head) {
-                    if(isheap(T)) {
-                        delete it.item;
-                    }
-                    list_item<T>?* prev_it = it;
-
-                    it = it.next;
-                    i++;
-
-                    delete prev_it;
-
-                    self.len--;
-                }
-                else {
-                    it = it.next;
-                    i++;
-                }
-            }
-        }
-        else {
-            list_item<T>?* it = self.head;
-
-            list_item<T>?* head_prev_it = null;
-            list_item<T>?* tail_it = null;
-
-
-            var i = 0;
-            while(it != null) {
-                if(i == head) {
-                    head_prev_it = it.prev;
-                }
-                if(i == tail) {
-                    tail_it = it;
-                }
-
-                if(i >= head && i < tail) 
-                {
-                    if(isheap(T)) {
-                        delete it.item;
-                    }
-                    list_item<T>?* prev_it = it;
-
-                    it = it.next;
-                    i++;
-
-                    delete prev_it;
-
-                    self.len--;
-                }
-                else {
-                    it = it.next;
-                    i++;
-                }
-            }
-
-            if(head_prev_it != null) {
-                head_prev_it.next = tail_it;
-            }
-            if(tail_it != null) {
-                tail_it.prev = head_prev_it;
             }
         }
     }
@@ -1720,10 +1718,6 @@ impl vector<T>
     int length(vector<T>* self)
     {
         return self.len;
-    }
-
-    void reset(vector<T>* self) {
-        self.len = 0;
     }
     
     list<T>*% to_list(vector<T>* self) {

@@ -706,6 +706,12 @@ int main()
 
     xassert("list test4", li3.item(0, -1) == 1 && li3.item(1, -1) == 2 && li3.item(2, -1) == 3);
 
+    list!<int>*% li4 = clone li2;
+
+    li4.delete_range(0,2);
+
+    xassert("list test5", li4.item(0, -1) == 3);
+
     return 0;
 }
 
