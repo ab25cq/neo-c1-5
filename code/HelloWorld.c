@@ -712,6 +712,12 @@ int main()
 
     xassert("list test5", li4.item(0, -1) == 3);
 
+    list!<int>*% li5 = clone li2;
+
+    int ah = li5.pop_front(-1);
+
+    xassert("list test6", ah == 1 && li5.item(0, -1) == 2);
+
     return 0;
 }
 
