@@ -1037,6 +1037,21 @@ void list!<T>::replace(list!<T>* self, int position, T item)
     }
 }
 
+void list!<T>::each(list!<T>* self, void (*block_)(T&,int,bool*)) {
+    list_item!<T>* it_ = self.head;
+    int i_ = 0;
+    while(it_ != null) {
+        bool end_flag_ = false;
+        block_(it_.item, i_, &end_flag_);
+
+        if(end_flag_ == true) {
+            break;
+        }
+        it_ = it_.next;
+        i_++;
+    }
+}
+
 
 /*
 
@@ -1062,21 +1077,6 @@ void list!<T>::replace(list!<T>* self, int position, T item)
         };
 
         return dummy_heap default_value;
-    }
-    
-    void each(list<T>* self, void (*block_)(T&,int,bool*)) {
-        list_item<T>?* it_ = self.head;
-        var i_ = 0;
-        while(it_ != null) {
-            bool end_flag_ = false;
-            block_(it_.item, i_, &end_flag_);
-
-            if(end_flag_ == true) {
-                break;
-            }
-            it_ = it_.next;
-            i_++;
-        }
     }
 
     list<T>*% sublist(list<T>* self, int begin, int tail) {

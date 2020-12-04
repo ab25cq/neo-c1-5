@@ -724,6 +724,13 @@ int main()
 
     xassert("list test7", li6.item(0, -1) == 5 && li6.item(1, -1) == 2 && li6.item(2, -1) == 3);
 
+    list!<int>*% li7 = clone li2;
+
+    li7.each(void lambda(int it, int it2, bool* it3) {
+            printf("it %d it2 %d\n", it, it2);
+        }
+    );
+
     return 0;
 }
 
