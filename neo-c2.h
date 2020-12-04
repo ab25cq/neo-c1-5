@@ -1013,31 +1013,32 @@ T list!<T>::pop_front(list!<T>* self, T& default_value)
     }
 }
 
+void list!<T>::replace(list!<T>* self, int position, T item)
+{
+    managed item;
+
+    if(position < 0) {
+        position += self.len;
+    }
+
+    list_item!<T>* it = self.head;
+    int i = 0;
+    while(it != null) {
+        if(position == i) {
+            if(isheap(T)) {
+                delete it.item;
+            }
+
+            it.item = item;
+            break;
+        }
+        it = it.next;
+        i++;
+    }
+}
+
 
 /*
-    void replace(list<T>* self, int position, T item)
-    {
-        managed item;
-
-        if(position < 0) {
-            position += self.len;
-        }
-
-        list_item<T>?* it = self.head;
-        var i = 0;
-        while(it != null) {
-            if(position == i) {
-                if(isheap(T)) {
-                    delete it.item;
-                }
-
-                it.item = item;
-                break;
-            }
-            it = it.next;
-            i++;
-        };
-    }
 
     T clone_item(list<T>* self, int position, T& default_value) 
     {

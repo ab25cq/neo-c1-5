@@ -718,6 +718,12 @@ int main()
 
     xassert("list test6", ah == 1 && li5.item(0, -1) == 2);
 
+    list!<int>*% li6 = clone li2;
+
+    li6.replace(0, 5);
+
+    xassert("list test7", li6.item(0, -1) == 5 && li6.item(1, -1) == 2 && li6.item(2, -1) == 3);
+
     return 0;
 }
 
