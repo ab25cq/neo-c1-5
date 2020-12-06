@@ -727,9 +727,16 @@ int main()
     list!<int>*% li7 = clone li2;
 
     li7.each(void lambda(int it, int it2, bool* it3) {
-            printf("it %d it2 %d\n", it, it2);
-        }
-    );
+        printf("it %d it2 %d\n", it, it2);
+    });
+
+    list!<int>*% li8 = li2.sublist(0,2);
+
+    li8.each(void lambda(int it, int it2, bool* it3) {
+        printf("it %d it2 %d\n", it, it2);
+    });
+
+    xassert("list test8", li8.length() == 2 && li8.item(0, -1) == 1 && li8.item(1, -1) == 2);
 
     return 0;
 }

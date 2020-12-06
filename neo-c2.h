@@ -1052,6 +1052,48 @@ void list!<T>::each(list!<T>* self, void (*block_)(T&,int,bool*)) {
     }
 }
 
+list!<T>*% list!<T>::sublist(list!<T>* self, int begin, int tail) {
+    list!<T>*% result = new list!<T>.initialize();
+
+    if(begin < 0) {
+        begin += self.len;
+    }
+
+    if(tail < 0) {
+        tail += self.len + 1;
+    }
+
+    if(begin < 0) {
+        begin = 0;
+    }
+
+    if(tail >= self.len) {
+        tail = self.len;
+    }
+
+
+    list_item!<T>* it = self.head;
+    int i = 0;
+    while(it != null) {
+        if(i >= begin && i < tail) {
+            if(isheap(T)) {
+                result.push_back(clone it.item);
+            }
+            else {
+                result.push_back(dummy_heap it.item);
+            }
+        }
+        it = it.next;
+        i++;
+    }
+
+    return result;
+}
+
+int list!<T>::length(list!<T>* self)
+{
+    return self.len;
+}
 
 /*
 
@@ -1079,43 +1121,6 @@ void list!<T>::each(list!<T>* self, void (*block_)(T&,int,bool*)) {
         return dummy_heap default_value;
     }
 
-    list<T>*% sublist(list<T>* self, int begin, int tail) {
-        list<T>%* result = new list<T>.initialize();
-
-        if(begin < 0) {
-            begin += self.len;
-        }
-
-        if(tail < 0) {
-            tail += self.len + 1;
-        }
-
-        if(begin < 0) {
-            begin = 0;
-        }
-
-        if(tail >= self.len) {
-            tail = self.len;
-        }
-
-
-        list_item<T>?* it = self.head;
-        var i = 0;
-        while(it != null) {
-            if(i >= begin && i < tail) {
-                if(isheap(T)) {
-                    result.push_back(clone it.item);
-                }
-                else {
-                    result.push_back(dummy_heap it.item);
-                }
-            }
-            it = it.next;
-            i++;
-        };
-
-        return result;
-    }
 
     list<T>*% reverse(list<T>* self) {
         list<T>%* result = new list<T>.initialize();
@@ -1462,10 +1467,6 @@ void list!<T>::each(list!<T>* self, void (*block_)(T&,int,bool*)) {
         return true;
     }
 
-    int length(list<T>* self)
-    {
-        return self.len;
-    }
     template <R> list<R>*% map(list<T>* self, R (*block_)(T&))
     {
         var result_ = new list<R>.initialize();
