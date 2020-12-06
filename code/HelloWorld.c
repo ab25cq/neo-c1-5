@@ -738,6 +738,10 @@ int main()
 
     xassert("list test8", li8.length() == 2 && li8.item(0, -1) == 1 && li8.item(1, -1) == 2);
 
+    list!<int>*% li9 = li2.reverse();
+
+    xassert("list test9", li9.length() == 3 && li9.item(0, -1) == 3 && li9.item(1, -1) == 2 && li9.item(2, -1) == 1);
+
     return 0;
 }
 

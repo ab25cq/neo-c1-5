@@ -464,7 +464,9 @@ string buffer::to_string(buffer* self)
 }
 
 
-/// list ///
+//////////////////////////////
+/// list
+//////////////////////////////
 struct list_item!<T>
 {
     T& item;
@@ -1095,49 +1097,24 @@ int list!<T>::length(list!<T>* self)
     return self.len;
 }
 
-/*
+list!<T>*% list!<T>::reverse(list!<T>* self) {
+    list!<T>*% result = new list!<T>.initialize();
 
-    T clone_item(list<T>* self, int position, T& default_value) 
-    {
-        if(position < 0) {
-            position += self.len;
+    list_item!<T>* it = self.tail;
+    while(it != null) {
+        if(isheap(T)) {
+            result.push_back(clone it.item);
         }
-
-        list_item<T>?* it = self.head;
-        var i = 0;
-        while(it != null) {
-            if(position == i) {
-                if(isheap(T)) {
-                    return clone it.item;
-                }
-                else {
-                    return dummy_heap it.item;
-                }
-            }
-            it = it.next;
-            i++;
-        };
-
-        return dummy_heap default_value;
+        else {
+            result.push_back(dummy_heap it.item);
+        }
+        it = it.prev;
     }
 
+    return result;
+}
 
-    list<T>*% reverse(list<T>* self) {
-        list<T>%* result = new list<T>.initialize();
-
-        list_item<T>?* it = self.tail;
-        while(it != null) {
-            if(isheap(T)) {
-                result.push_back(clone it.item);
-            }
-            else {
-                result.push_back(dummy_heap it.item);
-            }
-            it = it.prev;
-        };
-
-        return result;
-    }
+/*
     string join(list<string>* self, char* separator) {
         buffer%* buf = new buffer.initialize();
 
