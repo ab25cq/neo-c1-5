@@ -4835,7 +4835,7 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     (void)solve_generics(&left_type, info->generics_type, &success_solve);
 
-    var->mType = clone_node_type(left_type);
+    //var->mType = clone_node_type(left_type);
 
     if(auto_cast_posibility(left_type, right_type)) {
         if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))

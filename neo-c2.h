@@ -1114,27 +1114,28 @@ list!<T>*% list!<T>::reverse(list!<T>* self) {
     return result;
 }
 
-/*
-    string join(list<string>* self, char* separator) {
-        buffer%* buf = new buffer.initialize();
+string list!<T>::join(list!<string>* self, char* separator) {
+    buffer*% buf = new buffer.initialize();
 
-        list_item<T>?* it = self.head;
-        var i = 0;
-        while(it != null) {
-            if(i == self.length() - 1) {
-                buf.append_str(it.item);
-            }
-            else {
-                buf.append_str(it.item);
-                buf.append_str(separator);
-            }
-
-            it = it.next;
-            i++;
+    list_item!<T>* it = self.head;
+    int i = 0;
+    while(it != null) {
+        if(i == self.length() - 1) {
+            buf.append_str(it.item);
+        }
+        else {
+            buf.append_str(it.item);
+            buf.append_str(separator);
         }
 
-        return string(buf.buf);
+        it = it.next;
+        i++;
     }
+
+    return string(buf.buf);
+}
+
+/*
     list<T>*% merge_list(list<T>* left, list<T>* right) {
         var result = new list<T>.initialize();
 

@@ -742,6 +742,15 @@ int main()
 
     xassert("list test9", li9.length() == 3 && li9.item(0, -1) == 3 && li9.item(1, -1) == 2 && li9.item(2, -1) == 1);
 
+    list!<string>*% li10 = new list!<string>.initialize();
+
+    li10.push_back(string("aaa"));
+    li10.push_back(string("bbb"));
+    li10.push_back(string("ccc"));
+
+    xassert("list test10", li10.join(",").equals("aaa,bbb,ccc"));
+    
+
     return 0;
 }
 
