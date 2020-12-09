@@ -1136,22 +1136,63 @@ string list!<T>::join(list!<string>* self, char* separator) {
 }
 
 /*
-    list<T>*% merge_list(list<T>* left, list<T>* right) {
-        var result = new list<T>.initialize();
+list!<T>*% list!<T>::merge_list(list!<T>* left, list!<T>* right) 
+{
+    list!<T>*% result = new list!<T>.initialize();
 
-        list_item<T>*? it = left.head;
-        list_item<T>*? it2= right.head;
+    list_item!<T>* it = left.head;
+    list_item!<T>* it2= right.head;
 
-        while(true) {
-            if(it && it2) {
-                if(it.item == null) {
-                    it = it.next;
+    while(true) {
+        if(it && it2) {
+            if(it.item == null) {
+                it = it.next;
+            }
+            else if(it2.item == null) {
+                it2 = it2.next;
+            }
+            else if(it.item.compare(it2.item) <= 0) 
+            {
+                if(isheap(T)) {
+                    result.push_back(clone it.item);
                 }
-                else if(it2.item == null) {
+                else {
+                    result.push_back(dummy_heap it.item);
+                }
+
+                it = it.next;
+            }
+            else {
+                if(isheap(T)) {
+                    result.push_back(clone it2.item);
+                }
+                else {
+                    result.push_back(dummy_heap it2.item);
+                }
+
+
+                it2 = it2.next;
+            }
+        }
+
+        if(it == null) {
+            if(it2 != null) {
+                while(it2 != null) {
+                    if(isheap(T)) {
+                        result.push_back(clone it2.item);
+                    }
+                    else {
+                        result.push_back(dummy_heap it2.item);
+                    }
+
                     it2 = it2.next;
                 }
-                else if(it.item.compare(it2.item) <= 0) 
-                {
+            }
+            break;
+        }
+        else if(it2 == null) {
+            if(it != null) {
+                while(it != null) {
                     if(isheap(T)) {
                         result.push_back(clone it.item);
                     }
@@ -1161,103 +1202,68 @@ string list!<T>::join(list!<string>* self, char* separator) {
 
                     it = it.next;
                 }
-                else {
-                    if(isheap(T)) {
-                        result.push_back(clone it2.item);
-                    }
-                    else {
-                        result.push_back(dummy_heap it2.item);
-                    }
-
-
-                    it2 = it2.next;
-                }
             }
-
-            if(it == null) {
-                if(it2 != null) {
-                    while(it2 != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it2.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it2.item);
-                        }
-
-                        it2 = it2.next;
-                    }
-                }
-                break;
-            }
-            else if(it2 == null) {
-                if(it != null) {
-                    while(it != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it.item);
-                        }
-
-                        it = it.next;
-                    }
-                }
-                break;
-            }
+            break;
         }
-
-        return result;
     }
-    list<T>*% merge_sort(list<T>* self) {
-        if(self.head == null) {
-            return clone self;
+
+    return result;
+}
+
+list!<T>*% list!<T>::merge_sort(list!<T>* self) {
+    if(self.head == null) {
+        return clone self;
+    }
+    if(self.head.next == null) {
+        return clone self;
+    }
+
+    list!<T>*% list1 = new list!<T>.initialize();
+    list!<T>*% list2 = new list!<T>.initialize();
+
+    list_item!<T>* it = self.head;
+
+    while(true) {
+        if(isheap(T)) {
+            list1.push_back(clone it.item);
         }
-        if(self.head.next == null) {
-            return clone self;
+        else {
+            list1.push_back(dummy_heap it.item);
         }
 
-        var list1 = new list<T>.initialize();
-        var list2 = new list<T>.initialize();
+        if(isheap(T)) {
+            list2.push_back(clone it.next.item);
+        }
+        else {
+            list2.push_back(dummy_heap it.next.item);
+        }
 
-        list_item<T>* it = self.head;
+        if(it.next.next == null) {
+            break;
+        }
 
-        while(true) {
+        it = it.next.next;
+
+        if(it.next == null) {
             if(isheap(T)) {
                 list1.push_back(clone it.item);
             }
             else {
                 list1.push_back(dummy_heap it.item);
             }
-
-            if(isheap(T)) {
-                list2.push_back(clone it.next.item);
-            }
-            else {
-                list2.push_back(dummy_heap it.next.item);
-            }
-
-            if(it.next.next == null) {
-                break;
-            }
-
-            it = it.next.next;
-
-            if(it.next == null) {
-                if(isheap(T)) {
-                    list1.push_back(clone it.item);
-                }
-                else {
-                    list1.push_back(dummy_heap it.item);
-                }
-                break;
-            }
+            break;
         }
+    }
 
-        return list1.merge_sort().merge_list( list2.merge_sort());
-    }
-    list<T>*% sort(list<T>* self) {
-        return self.merge_sort();
-    }
+    return list1.merge_sort().merge_list( list2.merge_sort());
+}
+
+list<T>*% list!<T>::sort(list!<T>* self) {
+    return self.merge_sort();
+}
+*/
+
+/*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
         var result = new list<T>.initialize();
 

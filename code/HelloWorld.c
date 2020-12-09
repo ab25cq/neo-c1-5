@@ -749,6 +749,17 @@ int main()
     li10.push_back(string("ccc"));
 
     xassert("list test10", li10.join(",").equals("aaa,bbb,ccc"));
+
+    list!<string>*% li11 = new list!<string>.initialize();
+
+    li11.push_back(string("CCC"));
+    li11.push_back(string("AAA"));
+    li11.push_back(string("BBB"));
+
+    //list!<string>*% li12 = li11.sort();
+
+    //xassert("list test11", li12.item(0, -1).equals("AAA") && li12.item(1,-1).equals("BBB") && li12.item(2, -1).equals("CCC"));
+    
     
 
     return 0;
