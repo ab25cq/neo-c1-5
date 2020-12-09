@@ -6336,6 +6336,10 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 
     BOOL message_passing = gNodes[node].uValue.sFunctionCall.mMessagePassing;
 
+    if(info->pre_compiling_generics_function) {
+        return TRUE;
+    }
+
     Value* llvm_fun;
     std::vector<Value*> llvm_params;
     sNodeType* result_type;
@@ -6433,6 +6437,8 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncpy(real_fun_name, type_name2, VAR_NAME_MAX);
                 xstrncat(real_fun_name, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
+
+printf("pre %d\n", info->pre_compiling_generics_function);
 
                 if(gFuncs[real_fun_name].size() == 0) {
                     compile_err_msg(info, "Function not found(1)b %s\n", real_fun_name);

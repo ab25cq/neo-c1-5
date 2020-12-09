@@ -562,6 +562,8 @@ struct sCompileInfoStruct
 
     sVarTable* loop_top_lv_table;
     void* loop_top_block;
+
+    BOOL pre_compiling_generics_function;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;

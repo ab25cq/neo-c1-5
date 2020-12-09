@@ -1135,7 +1135,6 @@ string list!<T>::join(list!<string>* self, char* separator) {
     return string(buf.buf);
 }
 
-/*
 list!<T>*% list!<T>::merge_list(list!<T>* left, list!<T>* right) 
 {
     list!<T>*% result = new list!<T>.initialize();
@@ -1258,10 +1257,9 @@ list!<T>*% list!<T>::merge_sort(list!<T>* self) {
     return list1.merge_sort().merge_list( list2.merge_sort());
 }
 
-list<T>*% list!<T>::sort(list!<T>* self) {
+list!<T>*% list!<T>::sort(list!<T>* self) {
     return self.merge_sort();
 }
-*/
 
 /*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {

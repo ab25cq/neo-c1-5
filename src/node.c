@@ -321,6 +321,8 @@ unsigned int sNodeTree_create_function(unsigned int node, char* fun_name, char* 
 
     gNodes[node].uValue.sFunction.mNodeBlock = node_block;
 
+    cinfo.pre_compiling_generics_function = generics || method_generics;
+
     if(!pre_compile(node, &cinfo)) {
         fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, yylineno);
         exit(2);
@@ -330,6 +332,8 @@ unsigned int sNodeTree_create_function(unsigned int node, char* fun_name, char* 
         fprintf(stderr, "%s %d: faield to pre-compile\n", gSName, yylineno);
         exit(2);
     }
+
+    cinfo.pre_compiling_generics_function = FALSE;
 
     return node;
 }
