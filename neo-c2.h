@@ -44,7 +44,7 @@ inline void*% ncmalloc(long long size)
     return dummy_heap result;
 }
 
-inline void*% nccalloc(long long num, long long nsize)
+inline void*% nccalloc(long long num, long long nsize, char* type_name)
 {
     void* result = calloc(num, nsize);
 
@@ -93,6 +93,13 @@ inline long long ncmalloc_usable_size(void* block)
 #endif
 }
 
+inline void ncfree(void* mem, char* type_name)
+{
+    if(mem) {
+        free(mem);
+    }
+}
+
 inline void*% ncmemdup(void*% block)
 {
 #ifdef __DARWIN__
@@ -103,7 +110,7 @@ inline void*% ncmemdup(void*% block)
 
     if (!block) return (void*)0;
 
-    void*% ret = ncmalloc(size);
+    void*% ret = nccalloc(1, size, "memdupe");
 
     if (ret) {
         char* p = ret;
@@ -1258,7 +1265,8 @@ list!<T>*% list!<T>::merge_sort(list!<T>* self) {
 }
 
 list!<T>*% list!<T>::sort(list!<T>* self) {
-    return self.merge_sort();
+    list!<T>*% result = self.merge_sort();
+    return result;
 }
 
 /*

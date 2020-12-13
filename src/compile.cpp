@@ -1236,7 +1236,7 @@ BOOL function_existance(char* fun_name)
     return fun.size() != 0;
 }
 
-static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompileInfo* info)
+static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompileInfo* info, Function** llvm_fun)
 {
     char result_type_name[VAR_NAME_MAX];
 
@@ -1324,13 +1324,13 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
 
     if(inline_ || static_) {
         FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
-        Function* llvm_fun = Function::Create(function_type, Function::InternalLinkage, fun_name, TheModule);
-        fun->mLLVMFunction = llvm_fun;
+        *llvm_fun = Function::Create(function_type, Function::InternalLinkage, fun_name, TheModule);
+        fun->mLLVMFunction = *llvm_fun;
     }
     else {
         FunctionType* function_type = FunctionType::get(llvm_result_type, llvm_param_types, var_arg);
-        Function* llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
-        fun->mLLVMFunction = llvm_fun;
+        *llvm_fun = Function::Create(function_type, Function::ExternalLinkage, fun_name, TheModule);
+        fun->mLLVMFunction = *llvm_fun;
     }
 
     return TRUE;
@@ -1402,14 +1402,16 @@ BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, i
                 get_version(&fun, fun_name);
             }
 
-            if(!entry_llvm_function(&fun, NULL, info)) {
+            Function* llvm_fun = NULL;
+            if(!entry_llvm_function(&fun, NULL, info, &llvm_fun)) {
                 return FALSE;
             }
 
             gFuncs[fun_name].push_back(fun);
         }
         else {
-            if(!entry_llvm_function(&fun, NULL, info)) {
+            Function* llvm_fun = NULL;
+            if(!entry_llvm_function(&fun, NULL, info, &llvm_fun)) {
                 return FALSE;
             }
 
@@ -1554,7 +1556,7 @@ static void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
     }
 }
 
-static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline, BOOL pre_compile) ;
+static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline, BOOL pre_compile, BOOL inherit_) ;
 
 static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info)
 {
@@ -1588,10 +1590,11 @@ static BOOL call_destructor(Value* obj, sNodeType* node_type, sCompileInfo* info
         int sline = yylineno;
 
         sNodeType* generics_type = info->generics_type;
-        info->generics_type = node_type;
+        info->generics_type = clone_node_type(node_type);
 
         BOOL pre_compile = TRUE;
-        if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile))
+        BOOL inherit_ = FALSE;
+        if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_))
         {
             return FALSE;
         }
@@ -1724,6 +1727,8 @@ static void call_field_destructor(Value* obj, sNodeType* node_type, sCompileInfo
     info->current_block = cond_end_block;;
 }
 
+Value* llvm_create_string(char* str);
+
 static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_delete, sCompileInfo* info)
 {
     BOOL exist_recursive_field = FALSE;
@@ -1734,6 +1739,20 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
 
     sNodeType* node_type2 = clone_node_type(node_type);
     node_type2->mPointerNum = 0;
+
+    if(info->generics_type) {
+        BOOL success_solve;
+        if(!solve_generics(&node_type2, info->generics_type, &success_solve))
+        {
+            fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
+            return;
+        }
+        if(!solve_generics(&node_type, info->generics_type, &success_solve))
+        {
+            fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
+            return;
+        }
+    }
 
     Type* llvm_struct_type;
     if(!create_llvm_type_from_node_type(&llvm_struct_type, node_type2, node_type2, info))
@@ -1833,7 +1852,7 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
     /// free ///
     if((force_delete || node_type->mHeap ) && node_type->mPointerNum > 0 && !info->no_output) 
     {
-        Function* fun = TheModule->getFunction("free");
+        Function* fun = TheModule->getFunction("ncfree");
 
         if(fun == nullptr) {
             fprintf(stderr, "require free\n");
@@ -1842,8 +1861,11 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
 
         std::vector<Value*> params2;
         Value* param = Builder.CreateCast(Instruction::BitCast, obj2, PointerType::get(IntegerType::get(TheContext, 8), 0));
-
         params2.push_back(param);
+
+        Value* param2 = llvm_create_string(node_type->mClass->mName);
+        params2.push_back(param2);
+
         Builder.CreateCall(fun, params2);
     }
 
@@ -2049,7 +2071,8 @@ static BOOL call_clone_method(sNodeType* node_type, Value** address, sCompileInf
             info->generics_type = node_type;
 
             BOOL pre_compile = TRUE;
-            if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile))
+            BOOL inherit_ = FALSE;
+            if(!create_generics_function(id, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_))
             {
                 return FALSE;
             }
@@ -3344,7 +3367,7 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     return TRUE;
 }
 
-static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline, BOOL pre_compile) 
+static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, sFunction* fun, char* real_fun_name2, sCompileInfo* info, int sline, BOOL pre_compile, BOOL inherit_) 
 {
     int stack_num = info->stack_num;
     info->stack_num = 0;
@@ -3357,6 +3380,15 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
         xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
         xstrncat(real_fun_name2, fun_name, VAR_NAME_MAX);
     }
+    else if(fun->mMethodGenerics) {
+        xstrncpy(real_fun_name2, fun_name, VAR_NAME_MAX);
+
+        int i;
+        for(i=0; i<fun->mNumParams; i++) {
+            xstrncat(real_fun_name2, "_", VAR_NAME_MAX);
+            xstrncat(real_fun_name2, fun->mParamTypes[i], VAR_NAME_MAX);
+        }
+    }
     else {
         xstrncpy(real_fun_name2, fun_name, VAR_NAME_MAX);
     }
@@ -3366,24 +3398,34 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     xstrncpy(generics_fun.mID, id, VAR_NAME_MAX);
     xstrncpy(generics_fun.mName, real_fun_name2, VAR_NAME_MAX);
 
-    if(!entry_llvm_function(&generics_fun, info->generics_type, info)) {
-        return FALSE;
+    if(gFuncs[real_fun_name2].size() > 0 && !inherit_) {
+        int n = gFuncs[real_fun_name2].size();
+        *fun = gFuncs[real_fun_name2][n-1];
     }
+    else {
+        gFuncs[real_fun_name2].push_back(generics_fun);
 
-    sVarTable* fun_lv_table = clone_var_table(generics_fun.mLVTable);
+        Function* llvm_fun = NULL;
+        if(!entry_llvm_function(&generics_fun, info->generics_type, info, &llvm_fun)) {
+            return FALSE;
+        }
 
-    void* lv_table_value = info->lv_table_value;
-    create_global_lvtable(info);
+        int n = gFuncs[real_fun_name2].size();
+        gFuncs[real_fun_name2][n-1].mLLVMFunction = llvm_fun;
 
-    if(!create_llvm_function(&generics_fun, fun_lv_table, info, sline, pre_compile)) {
-        return FALSE;
+        sVarTable* fun_lv_table = clone_var_table(generics_fun.mLVTable);
+
+        void* lv_table_value = info->lv_table_value;
+        create_global_lvtable(info);
+
+        if(!create_llvm_function(&generics_fun, fun_lv_table, info, sline, pre_compile)) {
+            return FALSE;
+        }
+
+        info->lv_table_value = lv_table_value;
+
+        *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
     }
-
-    gFuncs[real_fun_name2].push_back(generics_fun);
-
-    info->lv_table_value = lv_table_value;
-
-    *fun = gFuncs[real_fun_name2][gFuncs[real_fun_name2].size()-1];
 
     info->stack_num = stack_num;
 
@@ -5666,6 +5708,8 @@ static BOOL compile_return(unsigned int node, sCompileInfo* info)
             return TRUE;
         }
 
+        remove_from_right_value_object(rvalue.value, info);
+
         if(right_type->mHeap && left_type->mHeap) {
             free_objects_with_parents(rvalue.address, info);
         }
@@ -5931,7 +5975,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     int sline = gNodes[node].mLine;
                     //info->no_output = FALSE;
                     BOOL pre_compile = FALSE;
-                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                         return FALSE;
                     }
                     //info->no_output = TRUE;
@@ -5943,7 +5987,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     char real_fun_name2[VAR_NAME_MAX];
                     //info->no_output = FALSE;
                     BOOL pre_compile = FALSE;
-                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                         return FALSE;
                     }
                     //info->no_output = TRUE;
@@ -6002,7 +6046,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 int sline = gNodes[node].mLine;
 
                 BOOL pre_compile = FALSE;
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                     return FALSE;
                 }
                 
@@ -6014,7 +6058,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
                 BOOL pre_compile = FALSE;
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
 
                     return FALSE;
                 }
@@ -6078,7 +6122,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     int sline = gNodes[node].mLine;
                     //info->no_output = FALSE;
                     BOOL pre_compile = FALSE;
-                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                    if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                         return FALSE;
                     }
                     //info->no_output = TRUE;
@@ -6114,7 +6158,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
                 BOOL pre_compile = FALSE;
-                if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                     return FALSE;
                 }
 
@@ -6398,7 +6442,6 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
         LVALUE param_values[PARAMS_MAX];
 
         for(i=0; i<num_params; i++) {
-
             if(!pre_compile(params[i], info)) {
                 return FALSE;
             }
@@ -6431,6 +6474,9 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
             else {
                 sNodeType* node_type = param_types2[0];
 
+                BOOL success_solve;
+                (void)solve_generics(&node_type, info->generics_type, &success_solve);
+
                 char type_name2[VAR_NAME_MAX];
                 convert_type_to_struct_name(node_type, type_name2);
 
@@ -6438,22 +6484,22 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncat(real_fun_name, "_", VAR_NAME_MAX);
                 xstrncat(real_fun_name, fun_name, VAR_NAME_MAX);
 
-printf("pre %d\n", info->pre_compiling_generics_function);
-
                 if(gFuncs[real_fun_name].size() == 0) {
+                    return TRUE;
+/*
                     compile_err_msg(info, "Function not found(1)b %s\n", real_fun_name);
                     info->err_num++;
 
                     info->type = create_node_type_with_class_name("int"); // dummy
 
                     return FALSE;
+*/
                 }
 
                 fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
             }
 
             if(fun.mMethodGenerics) {
-/*
                 char* method_generics_types[GENERICS_TYPES_MAX];
                 int i;
                 for(i=0; i<GENERICS_TYPES_MAX; i++) {
@@ -6478,20 +6524,21 @@ printf("pre %d\n", info->pre_compiling_generics_function);
                 char real_fun_name2[VAR_NAME_MAX];
                 int sline = gNodes[node].mLine;
 
+/*
                 BOOL pre_compile = FALSE;
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
                     return FALSE;
                 }
 */
 
-                //xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
             }
             else if(fun.mGenerics) {
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
                 BOOL pre_compile = FALSE;
 /*
-                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(real_fun_name, fun_name, klass, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
 
                     return FALSE;
                 }
@@ -6508,6 +6555,7 @@ printf("pre %d\n", info->pre_compiling_generics_function);
 
             if(inherit_) {
                 //info->no_output = no_output;
+                info->generics_type = generics_type;
                 return TRUE;
             }
             else {
@@ -6535,16 +6583,17 @@ printf("pre %d\n", info->pre_compiling_generics_function);
 
                 fun = fun2;
 
+/*
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
                 BOOL pre_compile = FALSE;
-/*
-                if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline, pre_compile)) {
+                if(!create_generics_function(fun_name, fun_name, NULL, &fun, real_fun_name2, info, sline, pre_compile, inherit_)) {
+                    info->generics_type = generics_type;
                     return FALSE;
                 }
 */
 
-                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+//                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
             }
 
             if(!fun.existance) {
@@ -6553,6 +6602,7 @@ printf("pre %d\n", info->pre_compiling_generics_function);
 
                 info->type = create_node_type_with_class_name("int"); // dummy
 
+                info->generics_type = generics_type;
                 return TRUE;
             }
         }
@@ -6563,6 +6613,8 @@ printf("pre %d\n", info->pre_compiling_generics_function);
     info->type = clone_node_type(result_type);
 
     //info->no_output = no_output;
+
+    info->generics_type = generics_type;
 
     return TRUE;
 }
@@ -6909,7 +6961,7 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-    Function* fun = TheModule->getFunction("calloc");
+    Function* fun = TheModule->getFunction("nccalloc");
 
     if(fun == nullptr) {
         fprintf(stderr, "require calloc\n");
@@ -6930,6 +6982,11 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
     }
 
     params2.push_back(param2);
+
+    Value* param3;
+    param3 = llvm_create_string(type_name);
+
+    params2.push_back(param3);
 
     Value* address = Builder.CreateCall(fun, params2);
 
@@ -7081,6 +7138,8 @@ static BOOL compile_delete(unsigned int node, sCompileInfo* info)
 
     LVALUE llvm_value = *get_value_from_stack(-1);
     dec_stack_ptr(1, info);
+
+    remove_from_right_value_object(llvm_value.value, info);
 
     sNodeType* node_type = clone_node_type(info->type);
 
@@ -7638,7 +7697,7 @@ static BOOL compile_equals(unsigned int node, sCompileInfo* info)
     }
 
     if(!type_identify(left_type, right_type)) {
-        compile_err_msg(info, "Operand posibility failed");
+        compile_err_msg(info, "Operand posibility failed. equals");
         show_node_type(left_type);
         show_node_type(right_type);
         info->err_num++;
@@ -8156,9 +8215,7 @@ static BOOL compile_and_and(unsigned int node, sCompileInfo* info)
 
     Function* llvm_function = fun->mLLVMFunction;
 
-    if(info->andand_result_var == NULL) {
-        info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-    }
+    info->andand_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
 
     Value* result_var = (Value*)info->andand_result_var;
 
@@ -8297,9 +8354,7 @@ static BOOL compile_or_or(unsigned int node, sCompileInfo* info)
 
     Function* llvm_function = fun->mLLVMFunction;
 
-    if(info->oror_result_var == NULL) {
-        info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "andand_result_var");
-    }
+    info->oror_result_var = (void*)Builder.CreateAlloca(IntegerType::get(TheContext, 1), 0, "oror_result_var");
     Value* result_var = (Value*)info->oror_result_var;
 
     /// compile expression ///
@@ -13033,6 +13088,11 @@ static BOOL compile_isheap(unsigned int node, sCompileInfo* info)
         info->type = create_node_type_with_class_name("int"); // dummy
 
         return TRUE;
+    }
+
+    if(info->generics_type) {
+        BOOL success_solve;
+        (void)solve_generics(&node_type2, info->generics_type, &success_solve);
     }
 
     BOOL is_heap = node_type2->mHeap;

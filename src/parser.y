@@ -491,6 +491,7 @@ type:
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
+/*
     | type_attribute restrict pointer restrict '&' {
         if(strcmp($1, "long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
@@ -528,7 +529,9 @@ type:
         }
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
+        xstrncat(recent_type_name, "&" VAR_NAME_MAX);
     }
+*/
     | type_attribute restrict type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
