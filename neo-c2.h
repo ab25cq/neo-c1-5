@@ -1269,6 +1269,20 @@ list!<T>*% list!<T>::sort(list!<T>* self) {
     return result;
 }
 
+template !<R> list!<R>*% list!<T>::map(list!<T>* self, R (*block_)(T&))
+{
+    list!<R>*% result_ = new list!<R>.initialize();
+
+    list_item!<T>* it_ = self.head;
+    while(it_ != null) {
+        result_.push_back(block_(it_.item));
+
+        it_ = it_.next;
+    }
+
+    return result_;
+}
+
 /*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
         var result = new list<T>.initialize();
@@ -1455,20 +1469,6 @@ list!<T>*% list!<T>::sort(list!<T>* self) {
         }
 
         return true;
-    }
-
-    template <R> list<R>*% map(list<T>* self, R (*block_)(T&))
-    {
-        var result_ = new list<R>.initialize();
-
-        list_item<T>?* it_ = self.head;
-        while(it_ != null) {
-            result_.push_back(block_(it_.item));
-
-            it_ = it_.next;
-        }
-
-        result_
     }
     list<T>*% filter(list<T>* self, bool (*block_)(T&))
     {

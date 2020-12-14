@@ -1,5 +1,5 @@
 # neo-c2 compiler language
 
-version 0.9.2
+version 0.9.3
 
 

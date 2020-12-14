@@ -121,7 +121,8 @@ void GenericsData2!<T>::fun(GenericsData2!<T>* self)
 
 
 template !<M> M fun2(M a) {
-    return a + 1;
+    M b = 1;
+    return a + 1 + b;
 }
 
 template !<M> M fun3(M (*aaa)(char*), char* bbb) {
@@ -344,7 +345,7 @@ int main()
     xassert("load field and store test2", data2.a == 123 && data2.b == 234);
     xassert("generics fun test", data2.show() == 555);
 
-    xassert("method generics fun test", fun2(123) == 124);
+    xassert("method generics fun test", fun2(123) == 125);
 
     xassert("method generics fun test2", fun3(int lambda(char* str) { return atoi(str); }, "123") == 123);
 
@@ -759,6 +760,24 @@ int main()
     list!<string>*% li12 = li11.sort();
 
     xassert("list test11", li12.item(0, -1).equals("AAA") && li12.item(1,-1).equals("BBB") && li12.item(2, -1).equals("CCC"));
+
+    list!<string>*% li12 = new list!<string>.initialize();
+
+    li12.push_back(string("1"));
+    li12.push_back(string("2"));
+    li12.push_back(string("3"));
+
+    list!<int>*% li13 = li12.map(
+        int lambda(char* item) { return atoi(item); }
+    );
+
+    printf("li13 %d\n", li13.length());
+
+    li13.each(void lambda(int it, int it2, bool* it3) {
+        printf("it %d it2 %d\n", it, it2);
+    });
+
+    xassert("list test12", li13.item(0, -1) == 1 && li13.item(1, -1) == 2 && li13.item(2, -1) == 3);
 
     return 0;
 }

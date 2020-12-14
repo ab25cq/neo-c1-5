@@ -1115,11 +1115,16 @@ void create_type_name_from_node_type(char* type_name, int type_name_max, sNodeTy
     for(i=0; i<pointer_num; i++) {
         xstrncat(type_name, "*", type_name_max);
     }
+    if(node_type->mHeap) {
+        xstrncat(type_name, "%", type_name_max);
+    }
+/*
     if(node_type->mNullable) {
         xstrncat(type_name, "?", type_name_max);
     }
-    if(node_type->mHeap) {
-        xstrncat(type_name, "%", type_name_max);
+*/
+    if(node_type->mNoHeap) {
+        xstrncat(type_name, "&", type_name_max);
     }
     if(node_type->mNumGenericsTypes > 0) {
         xstrncat(type_name, "<", type_name_max);

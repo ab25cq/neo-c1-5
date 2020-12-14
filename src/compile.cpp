@@ -368,6 +368,8 @@ static void create_real_struct_name(char* real_struct_name, int size_real_struct
     }
 }
 
+static void solve_method_generics2(sNodeType** node_type, char** method_generics_types);
+
 static BOOL create_llvm_union_type(sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
@@ -396,6 +398,8 @@ static BOOL create_llvm_union_type(sNodeType* node_type, sNodeType* generics_typ
 
             BOOL success_solve;
             (void)solve_generics(&field, field, &success_solve);
+
+            solve_method_generics2(&field, info->method_generics_types);
 
             if(success_solve)
             {
@@ -459,8 +463,12 @@ static BOOL create_llvm_union_type(sNodeType* node_type, sNodeType* generics_typ
 
             sNodeType* generics_type2 = generics_type;
 
+            solve_method_generics2(&field, info->method_generics_types);
+
             BOOL success_solve;
             (void)solve_generics(&field, field, &success_solve);
+
+            solve_method_generics2(&field, info->method_generics_types);
 
             if(success_solve)
             {
@@ -559,6 +567,8 @@ static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generic
                 BOOL success_solve;
                 (void)solve_generics(&field, field, &success_solve);
 
+                solve_method_generics2(&field, info->method_generics_types);
+
                 if(!solve_generics(&field, generics_type, &success_solve))
                 {
                     return FALSE;
@@ -653,6 +663,8 @@ static BOOL create_llvm_struct_type(sNodeType* node_type, sNodeType* generics_ty
 
 
                 sNodeType* generics_type2 = generics_type;
+
+                solve_method_generics2(&field, info->method_generics_types);
 
                 if(!is_generics_type(field) && field->mNumGenericsTypes > 0)
                 {
@@ -1290,6 +1302,8 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
     BOOL success_solve;
     (void)solve_generics(&result_type, generics_type, &success_solve);
 
+    solve_method_generics2(&result_type, info->method_generics_types);
+
     Type* llvm_result_type;
     if(!create_llvm_type_from_node_type(&llvm_result_type, result_type, result_type, info))
     {
@@ -1308,6 +1322,8 @@ static BOOL entry_llvm_function(sFunction* fun, sNodeType* generics_type, sCompi
 
         BOOL success_solve;
         (void)solve_generics(&param_type, generics_type, &success_solve);
+
+        solve_method_generics2(&param_type, info->method_generics_types);
 
         Type* llvm_param_type;
         if(!create_llvm_type_from_node_type(&llvm_param_type, param_type, param_type, info))
@@ -1686,6 +1702,9 @@ static void call_field_destructor(Value* obj, sNodeType* node_type, sCompileInfo
             fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
             return;
         }
+
+        solve_method_generics2(&field_type, info->method_generics_types);
+
         sCLClass* field_class = field_type->mClass;
 
         if(field_type->mHeap && field_type->mPointerNum > 0)
@@ -1747,11 +1766,16 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
             fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
             return;
         }
+
+        solve_method_generics2(&node_type2, info->method_generics_types);
+
         if(!solve_generics(&node_type, info->generics_type, &success_solve))
         {
             fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
             return;
         }
+
+        solve_method_generics2(&node_type, info->method_generics_types);
     }
 
     Type* llvm_struct_type;
@@ -1771,6 +1795,8 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
             fprintf(stderr, "%s %d: The error at solve_generics\n", info->sname, info->sline);
             return;
         }
+
+        solve_method_generics2(&field_type, info->method_generics_types);
         sCLClass* field_class = field_type->mClass;
 
         if(field_type->mHeap && field_type->mPointerNum > 0)
@@ -3208,6 +3234,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
         BOOL success_solve;
         (void)solve_generics(&params[i].mType, info->generics_type, &success_solve);
 
+        solve_method_generics2(&params[i].mType, info->method_generics_types);
+
         if(params[i].mType == NULL || params[i].mType->mClass == NULL) {
             compile_err_msg(info, "Invalid type name %s 3\n", fun->mParamNames[i]);
             return FALSE;
@@ -3217,6 +3245,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
     sNodeType* result_type = create_node_type_with_class_name(fun->mResultTypeName);
     BOOL success_solve;
     (void)solve_generics(&result_type, info->generics_type, &success_solve);
+
+    solve_method_generics2(&result_type, info->method_generics_types);
 
     Function* llvm_fun = fun->mLLVMFunction;
 
@@ -3269,6 +3299,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
             BOOL success_solve;
             (void)solve_generics(&var_type, info->generics_type, &success_solve);
 
+            solve_method_generics2(&var_type, info->method_generics_types);
+
             if(var_type == NULL || var_type->mClass == NULL) {
                 compile_err_msg(info, "Invalid type name %s 4\n", param.mTypeName);
                 return FALSE;
@@ -3289,6 +3321,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
             var->mType = clone_node_type(param_type);
             BOOL success_solve;
             (void)solve_generics(&var->mType, info->generics_type, &success_solve);
+
+            solve_method_generics2(&var->mType, info->method_generics_types);
 
             var_type = var->mType;
         }
@@ -3432,8 +3466,58 @@ static BOOL create_generics_function(char* id, char* fun_name, sCLClass* klass, 
     return TRUE;
 }
 
+static void solve_method_generics2(sNodeType** node_type, char** method_generics_types)
+{
+    if(method_generics_types) {
+        if(type_identify_with_class_name(*node_type, "lambda")) 
+        {
+            solve_method_generics2(&(*node_type)->mResultType, method_generics_types);
+
+            int i;
+            for(i=0; i<(*node_type)->mNumParams; i++)
+            {
+                solve_method_generics2(&(*node_type)->mParamTypes[i], method_generics_types);
+            }
+        }
+        else {
+            int i;
+            for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                char generics_type_name[VAR_NAME_MAX];
+                snprintf(generics_type_name, VAR_NAME_MAX, "mgenerics%d", i);
+
+                char result_type[VAR_NAME_MAX];
+
+                if(strcmp((*node_type)->mClass->mName, generics_type_name) == 0) {
+                    sNodeType* generics_type = create_node_type_with_class_name(method_generics_types[i]);
+
+                    *node_type = generics_type;
+                    break;
+                }
+
+                int j;
+                for(j=0; j<(*node_type)->mNumGenericsTypes; j++) {
+                    solve_method_generics2(&(*node_type)->mGenericsTypes[j], method_generics_types);
+                }
+            }
+        }
+    }
+}
+
 static void solve_method_generics(char* node_type, char** method_generics_types)
 {
+/*
+    sNodeType* node_type2 = create_node_type_with_class_name(node_type);
+
+    solve_method_generics2(&node_type2, method_generics_types);
+
+    char new_node_type[VAR_NAME_MAX];
+
+    new_node_type[0] = '\0';
+
+    create_type_name_from_node_type(new_node_type, VAR_NAME_MAX, node_type2, TRUE);
+
+    xstrncpy(node_type, new_node_type, VAR_NAME_MAX);
+*/
     int i;
     for(i=0; i<GENERICS_TYPES_MAX; i++) {
         char generics_type_name[VAR_NAME_MAX];
@@ -4877,6 +4961,8 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     (void)solve_generics(&left_type, info->generics_type, &success_solve);
 
+    solve_method_generics2(&left_type, info->method_generics_types);
+
     //var->mType = clone_node_type(left_type);
 
     if(auto_cast_posibility(left_type, right_type)) {
@@ -5204,6 +5290,8 @@ static BOOL compile_load_variable(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     solve_generics(&var_type, info->generics_type, &success_solve);
 
+    solve_method_generics2(&var_type, info->method_generics_types);
+
     if(info->no_output) {
         info->type = var_type;
         return TRUE;
@@ -5320,6 +5408,8 @@ static BOOL pre_compile_load_variable(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     solve_generics(&var_type, info->generics_type, &success_solve);
 
+    solve_method_generics2(&var_type, info->method_generics_types);
+
     info->type = var_type;
     return TRUE;
 }
@@ -5391,6 +5481,8 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
 
             BOOL success_solve;
             (void)solve_generics(&lambda_type->mParamTypes[i], info->generics_type, &success_solve);
+
+            solve_method_generics2(&lambda_type->mParamTypes[i], info->method_generics_types);
         }
 
         LVALUE llvm_value;
@@ -5513,6 +5605,8 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
 
         BOOL success_solve;
         (void)solve_generics(&lambda_type->mParamTypes[i], info->generics_type, &success_solve);
+
+        solve_method_generics2(&lambda_type->mParamTypes[i], info->method_generics_types);
     }
 
     LVALUE llvm_value;
@@ -5589,6 +5683,8 @@ BOOL pre_compile_coroutine(unsigned int node, sCompileInfo* info)
 
         BOOL success_solve;
         (void)solve_generics(&lambda_type->mParamTypes[i], info->generics_type, &success_solve);
+
+        solve_method_generics2(&lambda_type->mParamTypes[i], info->method_generics_types);
     }
 
     LVALUE llvm_value;
@@ -5965,9 +6061,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                         solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                     }
 
-                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                        free(method_generics_types[i]);
-                    }
+                    char** method_generics_types_before = info->method_generics_types;
+                    info->method_generics_types = method_generics_types;
 
                     fun = fun2;
 
@@ -5981,6 +6076,11 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     //info->no_output = TRUE;
 
                     xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+                    info->method_generics_types = method_generics_types_before;
+
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        free(method_generics_types[i]);
+                    }
                 }
                 else if(fun.mGenerics) {
                     int sline = gNodes[node].mLine;
@@ -6036,9 +6136,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                 }
 
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
+                char** method_generics_types_before = info->method_generics_types;
+                info->method_generics_types = method_generics_types;
 
                 fun = fun2;
 
@@ -6053,6 +6152,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 std::vector<sFunction> v = gFuncs[real_fun_name2];
 
                 fun = v[v.size()-1];
+
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
+
+                info->method_generics_types = method_generics_types_before;
             }
             else if(fun.mGenerics) {
                 int sline = gNodes[node].mLine;
@@ -6112,10 +6217,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                         solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                     }
 
-                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                        free(method_generics_types[i]);
-                    }
-
                     fun = fun2;
 
                     char real_fun_name2[VAR_NAME_MAX];
@@ -6128,6 +6229,10 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                     //info->no_output = TRUE;
 
                     xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+
+                    for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                        free(method_generics_types[i]);
+                    }
                 }
             }
             else {
@@ -6149,11 +6254,11 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 for(i=0; i<fun2.mNumParams; i++) {
                     solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                 }
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
 
                 fun = fun2;
+
+                char** method_generics_types_before = info->method_generics_types;
+                info->method_generics_types = method_generics_types;
 
                 int sline = gNodes[node].mLine;
                 char real_fun_name2[VAR_NAME_MAX];
@@ -6168,6 +6273,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 std::vector<sFunction> v = gFuncs[real_fun_name2];
 
                 fun = v[v.size()-1];
+
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
+
+                info->method_generics_types = method_generics_types_before;
             }
 
             if(!fun.existance) {
@@ -6189,6 +6300,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 BOOL success_solve;
                 (void)solve_generics(&left_type, info->generics_type, &success_solve);
+
+                solve_method_generics2(&left_type, info->method_generics_types);
 
                 LVALUE rvalue = param_values[num_params-i-1];
 
@@ -6273,6 +6386,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 BOOL success_solve;
                 (void)solve_generics(&left_type, info->generics_type, &success_solve);
 
+                solve_method_generics2(&left_type, info->method_generics_types);
+
                 LVALUE rvalue = param_values[num_params-i-1];
 
                 if(auto_cast_posibility(left_type, right_type)) {
@@ -6346,6 +6461,8 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
     BOOL success_solve;
     (void)solve_generics(&result_type, info->generics_type, &success_solve);
+
+    solve_method_generics2(&result_type, info->method_generics_types);
 
     if(!info->no_output) {
         LVALUE llvm_value;
@@ -6477,6 +6594,8 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 BOOL success_solve;
                 (void)solve_generics(&node_type, info->generics_type, &success_solve);
 
+                solve_method_generics2(&node_type, info->method_generics_types);
+
                 char type_name2[VAR_NAME_MAX];
                 convert_type_to_struct_name(node_type, type_name2);
 
@@ -6515,10 +6634,6 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                     solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                 }
 
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
-
                 fun = fun2;
 
                 char real_fun_name2[VAR_NAME_MAX];
@@ -6532,6 +6647,10 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 */
 
                 xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
             }
             else if(fun.mGenerics) {
                 int sline = gNodes[node].mLine;
@@ -6577,9 +6696,6 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
                 for(i=0; i<fun2.mNumParams; i++) {
                     solve_method_generics(fun2.mParamTypes[i], method_generics_types);
                 }
-                for(i=0; i<GENERICS_TYPES_MAX; i++) {
-                    free(method_generics_types[i]);
-                }
 
                 fun = fun2;
 
@@ -6594,6 +6710,10 @@ BOOL pre_compile_function_call(unsigned int node, sCompileInfo* info)
 */
 
 //                xstrncpy(gNodes[node].uValue.sFunctionCall.mRealFunName, real_fun_name2, VAR_NAME_MAX);
+
+                for(i=0; i<GENERICS_TYPES_MAX; i++) {
+                    free(method_generics_types[i]);
+                }
             }
 
             if(!fun.existance) {
@@ -6892,6 +7012,8 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
 
     BOOL success_solve;
     solve_generics(&node_type2, info->generics_type, &success_solve);
+
+    solve_method_generics2(&node_type2, info->method_generics_types);
     node_type2->mHeap = TRUE;
 
     if(info->no_output) {
@@ -7036,6 +7158,8 @@ static BOOL pre_compile_create_object(unsigned int node, sCompileInfo* info)
 
     BOOL success_solve;
     solve_generics(&node_type2, info->generics_type, &success_solve);
+
+    solve_method_generics2(&node_type2, info->method_generics_types);
     node_type2->mHeap = TRUE;
 
     unsigned int left_node = gNodes[node].mLeft;
@@ -7336,6 +7460,8 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
 
     BOOL success_solve;
     solve_generics(&var_type, info->generics_type, &success_solve);
+
+    solve_method_generics2(&var_type, info->method_generics_types);
 
     var->mType = clone_node_type(var_type);
 
@@ -7875,6 +8001,8 @@ static BOOL compile_load_field(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
+    solve_method_generics2(&field_type, info->method_generics_types);
+
     if(info->no_output) {
         info->type = field_type;
         return TRUE;
@@ -8010,6 +8138,8 @@ static BOOL pre_compile_load_field(unsigned int node, sCompileInfo* info)
     BOOL success_solve;
     solve_generics(&field_type, left_type, &success_solve);
 
+    solve_method_generics2(&field_type, info->method_generics_types);
+
     info->type = clone_node_type(field_type);
 
     return TRUE;
@@ -8081,6 +8211,8 @@ static BOOL compile_store_field(unsigned int node, sCompileInfo* info)
 
         return TRUE;
     }
+
+    solve_method_generics2(&field_type, info->method_generics_types);
 
     if(auto_cast_posibility(field_type, right_type)) {
         if(!cast_right_type_to_left_type(field_type, &right_type, &rvalue, info))
@@ -13093,6 +13225,8 @@ static BOOL compile_isheap(unsigned int node, sCompileInfo* info)
     if(info->generics_type) {
         BOOL success_solve;
         (void)solve_generics(&node_type2, info->generics_type, &success_solve);
+
+        solve_method_generics2(&node_type2, info->method_generics_types);
     }
 
     BOOL is_heap = node_type2->mHeap;

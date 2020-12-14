@@ -564,6 +564,7 @@ struct sCompileInfoStruct
     void* loop_top_block;
 
     BOOL pre_compiling_generics_function;
+    char** method_generics_types;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;
