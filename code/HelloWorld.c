@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
-//#include <wchar.h>
-#include "neo-c2.h" 
+#include "neo-c2.h"
+
 
 struct sData;
 typedef struct sData sDataType;
@@ -300,7 +300,6 @@ printf("sCloneTest4::clone %d %d\n", self.a, self.b);
 
     return result;
 }
-
 
 int main() 
 {
@@ -779,18 +778,19 @@ int main()
 
     xassert("list test12", li13.item(0, -1) == 1 && li13.item(1, -1) == 2 && li13.item(2, -1) == 3);
 
+    list!<int>*% li14 = new list!<int>.initialize();
+
+    li14.push_back(1);
+    li14.push_back(1);
+    li14.push_back(2);
+    li14.push_back(2);
+    li14.push_back(3);
+
+    list!<int>*% li15 = li14.uniq();
+
+    xassert("list test13", li15.item(0, -1) == 1 && li15.item(1, -1) == 2 && li15.item(2, -1) == 3);
+
     return 0;
 }
 
 
-/*
-    for(int i=0; i<3; i++) {
-        printf("i %d\n", i);
-
-        if(i == 2) {
-            continue;
-        }
-    }
-*/
-/*
-*/

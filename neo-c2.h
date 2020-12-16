@@ -1283,6 +1283,38 @@ template !<R> list!<R>*% list!<T>::map(list!<T>* self, R (*block_)(T&))
     return result_;
 }
 
+list!<T>*% list!<T>::uniq(list!<T>* self) {
+    list!<T>*% result = new list!<T>.initialize();
+
+    if(self.length() > 0) {
+        T& item_before = self.item(0, null);
+
+        if(isheap(T)) {
+            result.push_back(clone item_before);
+        }
+        else {
+            result.push_back(dummy_heap item_before);
+        }
+
+        self.sublist(1,-1).each (
+            void lambda(T it, int it2, bool* it3) {
+                if(!it.equals(item_before)) {
+                    if(isheap(T)) {
+                        result.push_back(clone it);
+                    }
+                    else {
+                        result.push_back(dummy_heap it);
+                    }
+                }
+
+                item_before = it; 
+            }
+        );
+    }
+
+    return result;
+}
+
 /*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
         var result = new list<T>.initialize();

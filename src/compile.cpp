@@ -1419,7 +1419,7 @@ BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, i
             }
 
             Function* llvm_fun = NULL;
-            if(!entry_llvm_function(&fun, NULL, info, &llvm_fun)) {
+            if(!entry_llvm_function(&fun, info->generics_type, info, &llvm_fun)) {
                 return FALSE;
             }
 
@@ -1427,7 +1427,7 @@ BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, i
         }
         else {
             Function* llvm_fun = NULL;
-            if(!entry_llvm_function(&fun, NULL, info, &llvm_fun)) {
+            if(!entry_llvm_function(&fun, info->generics_type, info, &llvm_fun)) {
                 return FALSE;
             }
 
@@ -5586,7 +5586,7 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
         sFunction fun = gFuncs[real_fun_name][gFuncs[real_fun_name].size()-1];
 
         int sline = gNodes[node].mLine;
-        BOOL pre_compile = FALSE;
+        BOOL pre_compile = TRUE;
         if(!create_llvm_function(&fun, fun_lv_table, info, sline, pre_compile)) {
             return FALSE;
         }
@@ -6936,7 +6936,7 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
     llvm_change_block(cond_end_block, &current_block_before2, info, FALSE);
 //    info->lv_table = lv_table;
 
-    info->type = create_node_type_with_class_name("void");
+//    info->type = create_node_type_with_class_name("void");
 
     return TRUE;
 }
