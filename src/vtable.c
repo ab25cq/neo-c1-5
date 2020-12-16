@@ -74,6 +74,8 @@ sVarTable* clone_var_table(sVarTable* lv_table)
         result->mParent = NULL;
     }
 
+    result->mVarNum = lv_table->mVarNum;
+
     return result;
 }
 

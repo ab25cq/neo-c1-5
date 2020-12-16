@@ -1315,6 +1315,19 @@ list!<T>*% list!<T>::uniq(list!<T>* self) {
     return result;
 }
 
+int list!<T>::find(list!<T>* self, T& item, int default_value) {
+    int result = default_value;
+    self.each (void lambda(T it, int it2, bool* it3) {
+        if(it.equals(item)) {
+            result = it2;
+            *it3 = true;
+            return;
+        }
+    });
+
+    return result;
+}
+
 /*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
         var result = new list<T>.initialize();
@@ -1437,49 +1450,6 @@ list!<T>*% list!<T>::uniq(list!<T>* self) {
     }
     list<T>*% sort_block(list<T>* self, int (*compare)(T&,T&)) {
         return self.merge_sort2(compare);
-    }
-
-    list<T>*% uniq(list<T>* self) {
-        list<T>*% result = new list<T>.initialize();
-
-        if(self.length() > 0) {
-            T& item_before = self.item(0, null);
-
-            if(isheap(T)) {
-                result.push_back(clone item_before);
-            }
-            else {
-                result.push_back(dummy_heap item_before);
-            }
-
-            self.sublist(1,-1).each {
-                if(!it.equals(item_before)) {
-                    if(isheap(T)) {
-                        result.push_back(clone it);
-                    }
-                    else {
-                        result.push_back(dummy_heap it);
-                    }
-                }
-
-                item_before = it;
-            }
-        }
-
-        return result;
-    }
-
-    int find(list<T>* self, T& item, int default_value) {
-        int result = default_value;
-        self.each {
-            if(it.equals(item)) {
-                result = it2;
-                *it3 = true;
-                return;
-            }
-        }
-
-        return result;
     }
 
     bool equals(list<T>* left, list<T>* right)

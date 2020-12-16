@@ -5,7 +5,6 @@
 #include <malloc.h>
 #include "neo-c2.h"
 
-
 struct sData;
 typedef struct sData sDataType;
 
@@ -789,6 +788,19 @@ int main()
     list!<int>*% li15 = li14.uniq();
 
     xassert("list test13", li15.item(0, -1) == 1 && li15.item(1, -1) == 2 && li15.item(2, -1) == 3);
+
+    list!<int>*% li15 = new list!<int>.initialize();
+
+    li15.push_back(1);
+    li15.push_back(1);
+    li15.push_back(2);
+    li15.push_back(2);
+    li15.push_back(5);
+    li15.push_back(3);
+
+    printf("%d\n", li15.find(5, -1));
+
+    xassert("list test14", li15.find(5, -1) == 4);
 
     return 0;
 }
