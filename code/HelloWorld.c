@@ -802,6 +802,33 @@ int main()
 
     xassert("list test14", li15.find(5, -1) == 4);
 
+    list!<int>*% li16 = new list!<int>.initialize();
+
+    li16.push_back(1);
+    li16.push_back(2);
+    li16.push_back(3);
+
+    list!<int>*% li17 = new list!<int>.initialize();
+
+    li17.push_back(1);
+    li17.push_back(2);
+    li17.push_back(3);
+
+    xassert("list test15", li16.equals(li17));
+
+    list!<int>*% li18 = new list!<int>.initialize();
+
+    li18.push_back(1);
+    li18.push_back(2);
+    li18.push_back(3);
+
+    list!<int>*% li19 = li18.filter(bool lambda(int it) {
+        return it >= 2;
+    }
+    );
+
+    xassert("list test16", li19.item(0, -1) == 2 && li19.item(1, -1) == 3);
+
     return 0;
 }
 

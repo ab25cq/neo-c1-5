@@ -1328,6 +1328,48 @@ int list!<T>::find(list!<T>* self, T& item, int default_value) {
     return result;
 }
 
+bool list!<T>::equals(list!<T>* left, list!<T>* right)
+{
+    if(left.len != right.len) {
+        return false;
+    }
+
+    list_item!<T>* it = left.head;
+    list_item!<T>* it2 = right.head;
+
+    while(it != null) {
+        if(!it.item.equals(it2.item)) {
+            return false;
+        }
+
+        it = it.next;
+        it2 = it2.next;
+    }
+
+    return true;
+}
+
+list!<T>*% list!<T>::filter(list!<T>* self, bool (*block_)(T&))
+{
+    list!<T>*% result_ = new list!<T>.initialize();
+
+    list_item!<T>* it_ = self.head;
+    while(it_ != null) {
+        if(block_(it_.item)) {
+            if(isheap(T)) {
+                result_.push_back(clone it_.item);
+            }
+            else {
+                result_.push_back(dummy_heap it_.item);
+            }
+        }
+
+        it_ = it_.next;
+    }
+
+    return result_;
+} 
+
 /*
     list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
         var result = new list<T>.initialize();
@@ -1452,46 +1494,6 @@ int list!<T>::find(list!<T>* self, T& item, int default_value) {
         return self.merge_sort2(compare);
     }
 
-    bool equals(list<T>* left, list<T>* right)
-    {
-        if(left.len != right.len) {
-            return false;
-        }
-
-        list_item<T>?* it = left.head;
-        list_item<T>?* it2 = right.head;
-
-        while(it != null) {
-            if(!it.item.equals(it2.item)) {
-                return false;
-            }
-
-            it = it.next;
-            it2 = it2.next;
-        }
-
-        return true;
-    }
-    list<T>*% filter(list<T>* self, bool (*block_)(T&))
-    {
-        var result_ = new list<T>.initialize();
-
-        list_item<T>?* it_ = self.head;
-        while(it_ != null) {
-            if(block_(it_.item)) {
-                if(isheap(T)) {
-                    result_.push_back(clone it_.item);
-                }
-                else {
-                    result_.push_back(dummy_heap it_.item);
-                }
-            }
-
-            it_ = it_.next;
-        }
-
-        result_
-    } 
     
     vector<T> to_vector(list<T>* self) {
         var result = new list<T>.initialize();
