@@ -138,7 +138,7 @@ inline string string(char* str)
 
     return result;
 }
-/// wstring ///
+
 inline wstring wstring(char* str)
 {
     int len = strlen(str);
@@ -488,7 +488,6 @@ struct list!<T>
     int len;
 };
 
-/// list ///
 list!<T>*% list!<T>::initialize(list!<T>*% self) 
 {
     self.head = null;
@@ -1370,164 +1369,39 @@ list!<T>*% list!<T>::filter(list!<T>* self, bool (*block_)(T&))
     return result_;
 } 
 
-/*
-    list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
-        var result = new list<T>.initialize();
-
-        list_item<T>*? it = left.head;
-        list_item<T>*? it2= right.head;
-
-        while(true) {
-            if(it && it2) {
-                if(it.item == null) {
-                    it = it.next;
-                }
-                else if(it2.item == null) {
-                    it2 = it2.next;
-                }
-                else if(compare(it.item, it2.item) <= 0) 
-                {
-                    if(isheap(T)) {
-                        result.push_back(clone it.item);
-                    }
-                    else {
-                        result.push_back(dummy_heap it.item);
-                    }
-
-                    it = it.next;
-                }
-                else {
-                    if(isheap(T)) {
-                        result.push_back(clone it2.item);
-                    }
-                    else {
-                        result.push_back(dummy_heap it2.item);
-                    }
-
-
-                    it2 = it2.next;
-                }
-            }
-
-            if(it == null) {
-                if(it2 != null) {
-                    while(it2 != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it2.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it2.item);
-                        }
-
-                        it2 = it2.next;
-                    }
-                }
-                break;
-            }
-            else if(it2 == null) {
-                if(it != null) {
-                    while(it != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it.item);
-                        }
-
-                        it = it.next;
-                    }
-                }
-                break;
-            }
-        }
-
-        return result;
-    }
-    list<T>*% merge_sort2(list<T>* self, int (*compare)(T&,T&)) {
-        if(self.head == null) {
-            return clone self;
-        }
-        if(self.head.next == null) {
-            return clone self;
-        }
-
-        var list1 = new list<T>.initialize();
-        var list2 = new list<T>.initialize();
-
-        list_item<T>* it = self.head;
-
-        while(true) {
-            if(isheap(T)) {
-                list1.push_back(clone it.item);
-            }
-            else {
-                list1.push_back(dummy_heap it.item);
-            }
-
-            if(isheap(T)) {
-                list2.push_back(clone it.next.item);
-            }
-            else {
-                list2.push_back(dummy_heap it.next.item);
-            }
-
-            if(it.next.next == null) {
-                break;
-            }
-
-            it = it.next.next;
-
-            if(it.next == null) {
-                if(isheap(T)) {
-                    list1.push_back(clone it.item);
-                }
-                else {
-                    list1.push_back(dummy_heap it.item);
-                }
-                break;
-            }
-        }
-
-        return list1.merge_sort2(compare).merge_list2( list2.merge_sort2(compare), compare);
-    }
-    list<T>*% sort_block(list<T>* self, int (*compare)(T&,T&)) {
-        return self.merge_sort2(compare);
-    }
-
-    
-    vector<T> to_vector(list<T>* self) {
-        var result = new list<T>.initialize();
-        
-        self.each {
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
-        }
-        
-        return result;
-    }
-}
-
-/*
-/// vector ///
-struct vector<T> 
+//////////////////////////////
+/// vector
+//////////////////////////////
+struct vector!<T> 
 {
-    T&* items;
+    T*& items;
     int len;
     int size;
 };
 
-impl vector<T> 
+vector!<T>*% vector!<T>::initialize(vector!<T>* self) 
 {
-    initialize() 
-    {
-        self.size = 16;
-        self.len = 0;
-        self.items = borrow new T[self.size];
+    self.size = 16;
+    self.len = 0;
+    self.items = borrow new T[self.size];
+
+    return self;
+}
+
+void vector!<T>::finalize(vector!<T>* self)
+{
+    if(isheap(T)) {
+        for(int i=0; i<self.len; i++) 
+        {
+            delete self.items[i];
+
+        }
     }
+
+    delete self.items;
+}
+
+/*
     vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
     {
         self.size = len;
@@ -1560,18 +1434,6 @@ impl vector<T>
         }
 
         return result;
-    }
-
-    finalize()
-    {
-        if(isheap(T)) {
-            for(int i=0; i<self.len; i++) 
-            {
-                delete self.items[i];
-
-            }
-        }
-        delete self.items;
     }
     
     void push_back(vector<T>* self, T item) {
@@ -1730,7 +1592,150 @@ impl vector<T>
         
         return result;
     }
+
+/*
+    list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
+        var result = new list<T>.initialize();
+
+        list_item<T>*? it = left.head;
+        list_item<T>*? it2= right.head;
+
+        while(true) {
+            if(it && it2) {
+                if(it.item == null) {
+                    it = it.next;
+                }
+                else if(it2.item == null) {
+                    it2 = it2.next;
+                }
+                else if(compare(it.item, it2.item) <= 0) 
+                {
+                    if(isheap(T)) {
+                        result.push_back(clone it.item);
+                    }
+                    else {
+                        result.push_back(dummy_heap it.item);
+                    }
+
+                    it = it.next;
+                }
+                else {
+                    if(isheap(T)) {
+                        result.push_back(clone it2.item);
+                    }
+                    else {
+                        result.push_back(dummy_heap it2.item);
+                    }
+
+
+                    it2 = it2.next;
+                }
+            }
+
+            if(it == null) {
+                if(it2 != null) {
+                    while(it2 != null) {
+                        if(isheap(T)) {
+                            result.push_back(clone it2.item);
+                        }
+                        else {
+                            result.push_back(dummy_heap it2.item);
+                        }
+
+                        it2 = it2.next;
+                    }
+                }
+                break;
+            }
+            else if(it2 == null) {
+                if(it != null) {
+                    while(it != null) {
+                        if(isheap(T)) {
+                            result.push_back(clone it.item);
+                        }
+                        else {
+                            result.push_back(dummy_heap it.item);
+                        }
+
+                        it = it.next;
+                    }
+                }
+                break;
+            }
+        }
+
+        return result;
+    }
+    list<T>*% merge_sort2(list<T>* self, int (*compare)(T&,T&)) {
+        if(self.head == null) {
+            return clone self;
+        }
+        if(self.head.next == null) {
+            return clone self;
+        }
+
+        var list1 = new list<T>.initialize();
+        var list2 = new list<T>.initialize();
+
+        list_item<T>* it = self.head;
+
+        while(true) {
+            if(isheap(T)) {
+                list1.push_back(clone it.item);
+            }
+            else {
+                list1.push_back(dummy_heap it.item);
+            }
+
+            if(isheap(T)) {
+                list2.push_back(clone it.next.item);
+            }
+            else {
+                list2.push_back(dummy_heap it.next.item);
+            }
+
+            if(it.next.next == null) {
+                break;
+            }
+
+            it = it.next.next;
+
+            if(it.next == null) {
+                if(isheap(T)) {
+                    list1.push_back(clone it.item);
+                }
+                else {
+                    list1.push_back(dummy_heap it.item);
+                }
+                break;
+            }
+        }
+
+        return list1.merge_sort2(compare).merge_list2( list2.merge_sort2(compare), compare);
+    }
+    list<T>*% sort_block(list<T>* self, int (*compare)(T&,T&)) {
+        return self.merge_sort2(compare);
+    }
+
+    
+    vector<T> to_vector(list<T>* self) {
+        var result = new list<T>.initialize();
+        
+        self.each {
+            if(isheap(T)) {
+                result.push_back(clone it);
+            }
+            else {
+                result.push_back(dummy_heap it);
+            }
+        }
+        
+        return result;
+    }
 }
+*/
+
+/*
 
 ruby_macro vec {
     params = [];
