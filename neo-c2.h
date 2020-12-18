@@ -1379,7 +1379,7 @@ struct vector!<T>
     int size;
 };
 
-vector!<T>*% vector!<T>::initialize(vector!<T>* self) 
+vector!<T>*% vector!<T>::initialize(vector!<T>*% self) 
 {
     self.size = 16;
     self.len = 0;
@@ -1399,6 +1399,43 @@ void vector!<T>::finalize(vector!<T>* self)
     }
 
     delete self.items;
+}
+
+void vector!<T>::push_back(vector!<T>* self, T item) {
+    managed item;
+
+    if(self.len == self.size) {
+        int new_size = self.size * 2;
+        T*& items = self.items;
+
+        self.items = borrow new T[new_size];
+
+        int i;
+        for(i=0; i<self.size; i++) {
+            self.items[i] = items[i];
+        }
+
+        self.size = new_size;
+
+        delete items;
+    }
+
+    self.items[self.len] = item;
+    self.len++;
+}
+
+T& vector!<T>::item(vector!<T>* self, int index, T& default_value) 
+{
+    if(index < 0) {
+        index += self.len;
+    }
+
+    if(index >= 0 && index < self.len)
+    {
+        return self.items[index];
+    }
+
+    return default_value;
 }
 
 /*
@@ -1435,29 +1472,6 @@ void vector!<T>::finalize(vector!<T>* self)
 
         return result;
     }
-    
-    void push_back(vector<T>* self, T item) {
-        managed item;
-
-        if(self.len == self.size) {
-            var new_size = self.size * 2;
-            var items = self.items;
-
-            self.items = borrow new T[new_size];
-
-            int i;
-            for(i=0; i<self.size; i++) {
-                self.items[i] = items[i];
-            }
-
-            self.size = new_size;
-
-            delete items;
-        }
-
-        self.items[self.len] = item;
-        self.len++;
-    }
 
     T pop_back(vector<T>* self, T& default_value)
     {
@@ -1470,20 +1484,6 @@ void vector!<T>::finalize(vector!<T>* self)
         self.len--;
 
         return result;
-    }
-
-    T& item(vector<T>* self, int index, T& default_value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            return self.items[index];
-        }
-
-        return default_value;
     }
     T clone_item(vector<T>* self, int index, T& default_value) 
     {

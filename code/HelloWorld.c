@@ -829,6 +829,13 @@ int main()
 
     xassert("list test16", li19.item(0, -1) == 2 && li19.item(1, -1) == 3);
 
+    vector!<int>*% v1 = new vector!<int>.initialize();
+
+    v1.push_back(1);
+    v1.push_back(2);
+
+    xassert("vector test1", v1.item(0, -1) == 1 && v1.item(1, -1) == 2);
+
     return 0;
 }
 
