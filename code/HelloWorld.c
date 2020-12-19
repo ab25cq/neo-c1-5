@@ -833,8 +833,15 @@ int main()
 
     v1.push_back(1);
     v1.push_back(2);
+    v1.push_back(3);
 
-    xassert("vector test1", v1.item(0, -1) == 1 && v1.item(1, -1) == 2);
+    xassert("vector test1", v1.item(0, -1) == 1 && v1.item(1, -1) == 2 && v1.item(2, -1) == 3);
+
+    vector!<int>*% v2 = clone v1;
+
+    xassert("vector test2", v2.item(0, -1) == 1 && v2.item(1, -1) == 2 && v2.item(2, -1) == 3 && v2.length() == 3);
+
+
 
     return 0;
 }

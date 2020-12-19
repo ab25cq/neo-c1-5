@@ -1438,6 +1438,28 @@ T& vector!<T>::item(vector!<T>* self, int index, T& default_value)
     return default_value;
 }
 
+vector!<T>*% vector!<T>::clone(vector!<T>* self) 
+{
+    vector!<T>*% result = new vector!<T>.initialize();
+
+    for(int i=0; i<self.len; i++) {
+        T& it = self.items[i];
+        if(isheap(T)) {
+            result.push_back(clone it);
+        }
+        else {
+            result.push_back(dummy_heap it);
+        }
+    }
+
+    return result;
+}
+
+int vector!<T>::length(vector!<T>* self)
+{
+    return self.len;
+}
+
 /*
     vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
     {
@@ -1455,22 +1477,6 @@ T& vector!<T>::item(vector!<T>* self, int index, T& default_value)
         }
 
         return self;
-    }
-
-    vector<T>%* clone(vector<T>* self) {
-        var result = new vector<T>.initialize();
-
-        for(int i=0; i<self.len; i++) {
-            T& it = self.items[i];
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
-        }
-
-        return result;
     }
 
     T pop_back(vector<T>* self, T& default_value)
@@ -1571,11 +1577,6 @@ T& vector!<T>::item(vector!<T>* self, int index, T& default_value)
         }
 
         return false;
-    }
-
-    int length(vector<T>* self)
-    {
-        return self.len;
     }
     
     list<T>*% to_list(vector<T>* self) {
