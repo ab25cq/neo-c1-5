@@ -841,7 +841,31 @@ int main()
 
     xassert("vector test2", v2.item(0, -1) == 1 && v2.item(1, -1) == 2 && v2.item(2, -1) == 3 && v2.length() == 3);
 
+    v2.each (void lambda(int it, int it2, bool* it3) {
+        printf("it %d it2 %d\n", it, it2);
+    });
 
+    xassert("vector test3", v2.find(1, -1) == 0);
+
+    vector!<int>*% v3 = clone v1;
+
+    xassert("vector test4", v3.pop_back(-1) == 3 && v3.length() == 2);
+
+    vector!<int>*% v4 = clone v1;
+
+    vector!<string>*% v5 = v4.map (
+        string lambda(int it) {
+            return xsprintf("%d", it);
+        }
+    );
+
+    v5.each (
+        void lambda(char* it, int it2, bool* it3) {
+            printf("it %s it2 %d\n", it, it2);
+        }
+    );
+
+    xassert("vector test5", v5.item(0, -1).equals("1") && v5.item(1, -1).equals("2") && v5.item(2, -1).equals("3") && v5.length() == 3);
 
     return 0;
 }

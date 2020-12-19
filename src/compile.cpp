@@ -3548,6 +3548,15 @@ static void determine_method_generics_core(sNodeType* left_type, sNodeType* righ
     int n;
     if(sscanf(left_type->mClass->mName, "mgenerics%d", &n) == 1) {
         xstrncpy(method_generics_types[n], right_type->mClass->mName, VAR_NAME_MAX);
+
+        int i;
+        for(i=0; i<right_type->mPointerNum; i++) {
+            xstrncat(method_generics_types[n], "*", VAR_NAME_MAX);
+        }
+
+        if(right_type->mHeap) {
+            xstrncat(method_generics_types[n], "%", VAR_NAME_MAX);
+        }
     }
 
     int i;
@@ -6319,7 +6328,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 if(!substitution_posibility(left_type, right_type, FALSE)) 
                 {
-                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
+                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.(1)", fun_name, i);
                     show_node_type(left_type);
                     show_node_type(right_type);
                     info->err_num++;
@@ -6355,7 +6364,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         else if(strcmp(fun_name, "llvm.va_start") == 0 || strcmp(fun_name, "llvm.va_end") == 0)
         {
             if(fun.mNumParams > num_params) {
-                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                compile_err_msg(info, "Calling function parametor number is invalid %s (2)\n", fun_name);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
@@ -6371,7 +6380,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
         else if(!fun.mVarArg) {
             if(fun.mNumParams != num_params) {
-                compile_err_msg(info, "Calling function parametor number is invalid %s(left %d, right %d)\n", fun_name, fun.mNumParams, num_params);
+                compile_err_msg(info, "Calling function parametor number is invalid %s(left %d, right %d) (3)\n", fun_name, fun.mNumParams, num_params);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy
@@ -6404,7 +6413,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
 
                 if(!substitution_posibility(left_type, right_type, FALSE)) 
                 {
-                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type.", fun_name, i);
+                    compile_err_msg(info, "Calling function(%s) parametor #%d is invalid. The different type between left type and right type. (4)", fun_name, i);
                     show_node_type(left_type);
                     show_node_type(right_type);
                     info->err_num++;
@@ -6436,7 +6445,7 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         }
         else {
             if(fun.mNumParams > num_params) {
-                compile_err_msg(info, "Calling function parametor number is invalid %s\n", fun_name);
+                compile_err_msg(info, "Calling function parametor number is invalid %s (5)\n", fun_name);
                 info->err_num++;
 
                 info->type = create_node_type_with_class_name("int"); // dummy

@@ -171,6 +171,10 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
 {
     sNodeType* node_type = alloc_node_type();
 
+    BOOL heap = FALSE;
+    BOOL no_heap = FALSE;
+    int pointer_num = 0;
+
     node_type->mClass = NULL;
     node_type->mNumGenericsTypes = 0;
     node_type->mArrayDimentionNum = 0;
@@ -250,6 +254,13 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             }
             else if(buf[0] != '\0') {
                 node_type->mResultType = create_node_type_with_class_name(buf);
+
+                node_type->mResultType->mHeap = heap;
+                heap = FALSE;
+                node_type->mResultType->mNoHeap = no_heap;
+                no_heap = FALSE;
+                node_type->mResultType->mPointerNum = pointer_num;
+                pointer_num = 0;
 
                 if(node_type->mResultType == NULL) {
                     return NULL;
@@ -397,20 +408,26 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             (*p)++;
             skip_spaces_for_parse_class_name(p);
 
-            node_type->mHeap = TRUE;
+            heap = TRUE;
+
+//            node_type->mHeap = TRUE;
         }
         else if(**p == '&') {
             (*p)++;
             skip_spaces_for_parse_class_name(p);
 
-            node_type->mNoHeap = TRUE;
-            node_type->mHeap = FALSE;
+            no_heap = TRUE;
+            heap = FALSE;
+
+//            node_type->mNoHeap = TRUE;
+//            node_type->mHeap = FALSE;
         }
         else if(**p == '*') {
             (*p)++;
             skip_spaces_for_parse_class_name(p);
 
-            node_type->mPointerNum++;
+            pointer_num++;
+//            node_type->mPointerNum++;
         }
         else if(**p == '>') {
             char* pp = *p2;
@@ -428,6 +445,10 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             else if(short_) {
                 node_type->mClass = get_class("short");
             }
+
+            node_type->mPointerNum = pointer_num;
+            node_type->mNoHeap = no_heap;
+            node_type->mHeap = heap;
 
             return node_type;
         }
@@ -485,6 +506,10 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
     else if(short_) {
         node_type->mClass = get_class("short");
     }
+
+    node_type->mPointerNum = pointer_num;
+    node_type->mNoHeap = no_heap;
+    node_type->mHeap = heap;
 
     return node_type;
 }

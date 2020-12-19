@@ -1460,6 +1460,55 @@ int vector!<T>::length(vector!<T>* self)
     return self.len;
 }
 
+void vector!<T>::each(vector!<T>* self, void (*block_)(T&,int,bool*)) 
+{
+    for(int i_=0; i_<self.len; i_++) {
+        bool end_flag_ = false;
+        block_(self.items[i_], i_, &end_flag_);
+        if(end_flag_ == true) {
+            break;
+        }
+    }
+}
+
+int vector!<T>::find(vector!<T>* self, T& item, int default_value) 
+{
+    int result = default_value;
+    self.each (void lambda(T it, int it2, bool* it3) {
+        if(it.equals(item)) {
+            result = it2;
+            *it3 = true;
+            return;
+        }
+    });
+
+    return result;
+}
+
+T vector!<T>::pop_back(vector!<T>* self, T& default_value)
+{
+    if(self.len == 0) {
+        return dummy_heap default_value;
+    }
+
+    T result = (T)self.items[self.len-1];
+
+    self.len--;
+
+    return result;
+}
+
+template !<R> vector!<R>*% vector!<T>::map(vector!<T>* self, R (*block_)(T&))
+{
+    vector!<R>*% result_ = new vector!<R>.initialize();
+
+    for(int i_=0; i_<self.len; i_++) {
+        result_.push_back(block_(self.items[i_]));
+    }
+
+    return result_;
+}
+
 /*
     vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
     {
@@ -1478,19 +1527,6 @@ int vector!<T>::length(vector!<T>* self)
 
         return self;
     }
-
-    T pop_back(vector<T>* self, T& default_value)
-    {
-        if(self.len == 0) {
-            return dummy_heap default_value;
-        }
-
-        T result = (T)self.items[self.len-1];
-
-        self.len--;
-
-        return result;
-    }
     T clone_item(vector<T>* self, int index, T& default_value) 
     {
         if(index < 0) {
@@ -1508,39 +1544,6 @@ int vector!<T>::length(vector!<T>* self)
         }
 
         return dummy_heap default_value;
-    }
-    void each(vector<T>* self, void (*block_)(T&,int,bool*)) {
-        for(int i_=0; i_<self.len; i_++) {
-            bool end_flag_ = false;
-            block_(self.items[i_], i_, &end_flag_);
-            if(end_flag_ == true) {
-                break;
-            }
-        };
-    }
-
-    int find(vector<T>* self, T& item, int default_value) {
-        int result = default_value;
-        self.each {
-            if(it.equals(item)) {
-                result = it2;
-                *it3 = true;
-                return;
-            }
-        }
-
-        return result;
-    }
-
-    template <R> vector<R>*% map(vector<T>* self, R (*block_)(T&))
-    {
-        var result_ = new vector<R>.initialize();
-
-        for(int i_=0; i_<self.len; i_++) {
-            result_.push_back(block_(self.items[i_]));
-        }
-
-        result_
     }
 
     bool equals(vector<T>* left, vector<T>* right)
