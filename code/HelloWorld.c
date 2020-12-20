@@ -865,7 +865,30 @@ int main()
         }
     );
 
-    xassert("vector test5", v5.item(0, -1).equals("1") && v5.item(1, -1).equals("2") && v5.item(2, -1).equals("3") && v5.length() == 3);
+    xassert("vector test5", v5.item(0, null).equals(string("1")) && v5.item(1, null).equals(string("2")) && v5.item(2, null).equals(string("3")) && v5.length() == 3);
+
+    vector!<int>*% v6 = new vector!<int>.initialize();
+
+    v6.push_back(1);
+    v6.push_back(2);
+    v6.push_back(3);
+
+    vector!<int>*% v7 = new vector!<int>.initialize();
+
+    v7.push_back(1);
+    v7.push_back(2);
+    v7.push_back(3);
+
+    xassert("vector test6", v6.equals(v7));
+
+    vector!<string>*% v8 = new vector!<string>.initialize();
+
+    v8.push_back(string("aaa"));
+    v8.push_back(string("bbb"));
+    v8.push_back(string("ccc"));
+
+    xassert("vector test7", v8.item(0, null).equals(string("aaa")));
+
 
     return 0;
 }

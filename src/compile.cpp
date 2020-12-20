@@ -149,6 +149,14 @@ typedef sFunctionStruct sFunction;
 
 std::map<std::string, std::vector<sFunction>> gFuncs;
 
+struct sRightHeapValueStruct {
+    sNodeType* mNodeType;
+    int mFlag;
+    Value* mVariableValue;
+};
+
+typedef struct sRightHeapValueStruct sRightHeapValue;
+
 ///////////////////////////////////////////////////////////////////////
 // debug
 ///////////////////////////////////////////////////////////////////////
@@ -1542,7 +1550,7 @@ BOOL call_function(const char* fun_name, Value** params, int num_params, const c
 void* new_right_value_objects_container(sCompileInfo* info)
 {
     void* result = (void*)info->right_value_objects;
-    info->right_value_objects = (void*)new std::map<Value*, std::pair<sNodeType*, int>>;
+    info->right_value_objects = (void*)new std::map<Value*, sRightHeapValueStruct>;
 
     return result;
 }
@@ -1895,7 +1903,7 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
         Builder.CreateCall(fun, params2);
     }
 
-    std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+    std::map<Value*, sRightHeapValueStruct>* right_value_objects = (std::map<Value*, sRightHeapValueStruct>*)info->right_value_objects;
     right_value_objects->erase(obj2);
 }
 
@@ -1921,7 +1929,7 @@ void std_move(Value* var_address, sNodeType* lvar_type, LVALUE* rvalue, BOOL all
 
     if(lvar_type->mHeap)
     {
-        std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+        std::map<Value*, sRightHeapValueStruct>* right_value_objects = (std::map<Value*, sRightHeapValueStruct>*)info->right_value_objects;
         if(right_value_objects->count(rvalue->value) > 0)
         {
             right_value_objects->erase(rvalue->value);
@@ -1936,18 +1944,23 @@ void free_right_value_objects(sCompileInfo* info)
     }
 
     if(info->right_value_objects) {
-        std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+        std::map<Value*, sRightHeapValue>* right_value_objects = (std::map<Value*, sRightHeapValue>*)info->right_value_objects;
 
-        std::map<Value*, std::pair<sNodeType*, int>> old_heap_objects(*right_value_objects);
+        std::map<Value*, sRightHeapValue> old_heap_objects(*right_value_objects);
 
         right_value_objects->clear();
 
-        for(std::pair<Value*, std::pair<sNodeType*, int>> it: old_heap_objects) 
+        for(std::pair<Value*, sRightHeapValue> it: old_heap_objects) 
         {
-            Value* address = it.first;
+            sNodeType* node_type = it.second.mNodeType;
+            int flag = it.second.mFlag;
+            Value* variable_value = it.second.mVariableValue;
 
-            sNodeType* node_type = it.second.first; 
-            int flag = it.second.second;
+            int alignment = get_llvm_alignment_from_node_type(node_type);
+
+            Value* address = Builder.CreateAlignedLoad(variable_value, alignment);
+
+//            Value* address = it.first;
 
             if(flag <= 0) {
                 free_right_value_object(node_type, address, FALSE, info);
@@ -1955,11 +1968,13 @@ void free_right_value_objects(sCompileInfo* info)
             else {
                 flag--;
 
-                std::pair<sNodeType*, int> pair_value;
-                pair_value.first = clone_node_type(node_type);
-                pair_value.second = flag;
+                sRightHeapValue right_heap_value;
 
-                (*right_value_objects)[address] = pair_value;
+                right_heap_value.mNodeType = clone_node_type(node_type);
+                right_heap_value.mFlag = flag;
+                right_heap_value.mVariableValue = variable_value;
+
+                (*right_value_objects)[address] = right_heap_value;
             }
         }
     }
@@ -1967,7 +1982,7 @@ void free_right_value_objects(sCompileInfo* info)
 
 void remove_from_right_value_object(Value* value, sCompileInfo* info)
 {
-    std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+    std::map<Value*, sRightHeapValue>* right_value_objects = (std::map<Value*, sRightHeapValue>*)info->right_value_objects;
     if(right_value_objects->count(value) > 0)
     {
         right_value_objects->erase(value);
@@ -1977,19 +1992,46 @@ void remove_from_right_value_object(Value* value, sCompileInfo* info)
 void append_heap_object_to_right_value(LVALUE* llvm_value, sCompileInfo* info)
 {
     if(llvm_value->type->mHeap) {
-        std::map<Value*, std::pair<sNodeType*, int>>* right_value_objects = (std::map<Value*, std::pair<sNodeType*, int>>*)info->right_value_objects;
+        std::map<Value*, sRightHeapValue>* right_value_objects = (std::map<Value*, sRightHeapValue>*)info->right_value_objects;
 
         if(right_value_objects->count(llvm_value->value) == 0)
         {
-            int flg = (*right_value_objects)[llvm_value->value].second;
+            int flg = (*right_value_objects)[llvm_value->value].mFlag;
 
             flg = 1;
 
-            std::pair<sNodeType*, int> pair_value;
-            pair_value.first = clone_node_type(llvm_value->type);
-            pair_value.second = 0;
+            sNodeType* node_type = clone_node_type(llvm_value->type);
 
-            (*right_value_objects)[llvm_value->value] = pair_value;
+            Type* llvm_type;
+            (void)create_llvm_type_from_node_type(&llvm_type, node_type, node_type, info);
+
+            BasicBlock* entry_block = (BasicBlock*)info->entry_block;
+
+            BasicBlock* current_block = Builder.GetInsertBlock();
+            BasicBlock::iterator current_point = Builder.GetInsertPoint();
+
+            BasicBlock::iterator point = entry_block->getFirstInsertionPt();
+            Builder.SetInsertPoint(entry_block, point);
+
+            static int n = 0;
+            char name[128];
+            snprintf(name, 128, "right_heap_value%d", n++);
+
+            Value* variable_value = Builder.CreateAlloca(llvm_type, 0, name);
+            
+            Builder.SetInsertPoint(current_block, current_point);
+
+            int alignment = get_llvm_alignment_from_node_type(node_type);
+
+            Builder.CreateAlignedStore(llvm_value->value, variable_value, alignment);
+
+            sRightHeapValue right_heap_value;
+
+            right_heap_value.mNodeType = clone_node_type(llvm_value->type);
+            right_heap_value.mFlag = 0;
+            right_heap_value.mVariableValue = variable_value;
+
+            (*right_value_objects)[llvm_value->value] = right_heap_value;
         }
     }
 }
@@ -3281,6 +3323,10 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
 
     BasicBlock* current_block_before;
     BasicBlock* current_block = BasicBlock::Create(TheContext, "entry", llvm_fun);
+
+    BasicBlock* entry_block_before = (BasicBlock*)info->entry_block;
+    info->entry_block = current_block;
+
     llvm_change_block(current_block, &current_block_before, info, FALSE);
 
     /// ready for params ///
@@ -3397,6 +3443,8 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
 
     info->andand_result_var = NULL;
     info->oror_result_var = NULL;
+
+    info->entry_block = entry_block_before;
 
     return TRUE;
 }

@@ -1509,6 +1509,22 @@ template !<R> vector!<R>*% vector!<T>::map(vector!<T>* self, R (*block_)(T&))
     return result_;
 }
 
+bool vector!<T>::equals(vector!<T>* left, vector!<T>* right)
+{
+    if(left.len != right.len) {
+        return false;
+    }
+
+    for(int i=0; i<left.len; i++) {
+        if(!(left.items[i].equals(right.items[i])))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /*
     vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
     {
@@ -1544,22 +1560,6 @@ template !<R> vector!<R>*% vector!<T>::map(vector!<T>* self, R (*block_)(T&))
         }
 
         return dummy_heap default_value;
-    }
-
-    bool equals(vector<T>* left, vector<T>* right)
-    {
-        if(left.len != right.len) {
-            return false;
-        }
-
-        for(int i=0; i<left.len; i++) {
-            if(!(left.items[i].equals(right.items[i])))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     bool replace(vector<T>* self, int index, T value) 

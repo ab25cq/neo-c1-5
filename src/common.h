@@ -565,6 +565,8 @@ struct sCompileInfoStruct
 
     BOOL pre_compiling_generics_function;
     char** method_generics_types;
+
+    void* entry_block;
 };
 
 typedef struct sCompileInfoStruct sCompileInfo;
