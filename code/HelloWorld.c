@@ -903,6 +903,23 @@ int main()
 
     xassert("vector test7", v9.item(0, null).equals(string("DDD")) && v9.item(1, null).equals(string("bbb")) && v9.item(2,null).equals(string("ccc")) && v9.length() == 3);
 
+    list!<string>*% li21 = v9.to_list();
+
+    xassert("vector test8", li21.item(0, null).equals(string("DDD")) && li21.item(1, null).equals(string("bbb")) && li21.item(2,null).equals(string("ccc")) && li21.length() == 3);
+
+    vector!<int>*% v10 = new vector!<int>.initialize_with_values(3, 10);
+
+    xassert("vector test9", v10.item(0, -1) == 10 && v10.item(1, -1) == 10 && v10.item(2, -1) == 10 && v10.length() == 3);
+
+    tuple4!<int,int,string,char*>*% t1 = new tuple4!<int,int,string,char*>;
+
+    t1.v1 = 123;
+    t1.v2 = 234;
+    t1.v3 = string("ABC");
+    t1.v4 = "DEF";
+
+   xassert("tuple test1", t1.v1 == 123 && t1.v2 == 234 && t1.v3.equals(string("ABC")) && t1.v4.equals("DEF"));
+
     return 0;
 }
 

@@ -32,6 +32,16 @@ inline char* xstrncpy(char* des, char* src, int size)
     return result;
 }
 
+inline char* xstrncat(char* des, char* str, int size)
+{
+    char* result;
+
+    result = strncat(des, str, size-1);
+    des[size-1] = 0;
+
+    return result;
+}
+
 inline void*% ncmalloc(long long size)
 {
     void* result = malloc(size);
@@ -1562,488 +1572,120 @@ list!<T>*% vector!<T>::to_list(vector!<T>* self) {
     return result;
 }
 
-
-/*
-    vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
-    {
-        self.size = len;
-        self.len = len;
-        self.items = borrow new T[self.size];
-
-        for(int i=0; i<len; i++) {
-            if(isheap(T)) {
-                self.items[i] = borrow clone value;
-            }
-            else {
-                self.items[i] = value;
-            }
-        }
-
-        return self;
-    }
-    T clone_item(vector<T>* self, int index, T& default_value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            if(isheap(T)) {
-                return clone self.items[index];
-            }
-            else {
-                return dummy_heap self.items[index];
-            }
-        }
-
-        return dummy_heap default_value;
-    }
-
-/*
-    list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
-        var result = new list<T>.initialize();
-
-        list_item<T>*? it = left.head;
-        list_item<T>*? it2= right.head;
-
-        while(true) {
-            if(it && it2) {
-                if(it.item == null) {
-                    it = it.next;
-                }
-                else if(it2.item == null) {
-                    it2 = it2.next;
-                }
-                else if(compare(it.item, it2.item) <= 0) 
-                {
-                    if(isheap(T)) {
-                        result.push_back(clone it.item);
-                    }
-                    else {
-                        result.push_back(dummy_heap it.item);
-                    }
-
-                    it = it.next;
-                }
-                else {
-                    if(isheap(T)) {
-                        result.push_back(clone it2.item);
-                    }
-                    else {
-                        result.push_back(dummy_heap it2.item);
-                    }
-
-
-                    it2 = it2.next;
-                }
-            }
-
-            if(it == null) {
-                if(it2 != null) {
-                    while(it2 != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it2.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it2.item);
-                        }
-
-                        it2 = it2.next;
-                    }
-                }
-                break;
-            }
-            else if(it2 == null) {
-                if(it != null) {
-                    while(it != null) {
-                        if(isheap(T)) {
-                            result.push_back(clone it.item);
-                        }
-                        else {
-                            result.push_back(dummy_heap it.item);
-                        }
-
-                        it = it.next;
-                    }
-                }
-                break;
-            }
-        }
-
-        return result;
-    }
-    list<T>*% merge_sort2(list<T>* self, int (*compare)(T&,T&)) {
-        if(self.head == null) {
-            return clone self;
-        }
-        if(self.head.next == null) {
-            return clone self;
-        }
-
-        var list1 = new list<T>.initialize();
-        var list2 = new list<T>.initialize();
-
-        list_item<T>* it = self.head;
-
-        while(true) {
-            if(isheap(T)) {
-                list1.push_back(clone it.item);
-            }
-            else {
-                list1.push_back(dummy_heap it.item);
-            }
-
-            if(isheap(T)) {
-                list2.push_back(clone it.next.item);
-            }
-            else {
-                list2.push_back(dummy_heap it.next.item);
-            }
-
-            if(it.next.next == null) {
-                break;
-            }
-
-            it = it.next.next;
-
-            if(it.next == null) {
-                if(isheap(T)) {
-                    list1.push_back(clone it.item);
-                }
-                else {
-                    list1.push_back(dummy_heap it.item);
-                }
-                break;
-            }
-        }
-
-        return list1.merge_sort2(compare).merge_list2( list2.merge_sort2(compare), compare);
-    }
-    list<T>*% sort_block(list<T>* self, int (*compare)(T&,T&)) {
-        return self.merge_sort2(compare);
-    }
-
+vector!<T>*% list!<T>::to_vector(list!<T>* self) {
+    vector!<T>*% result = new vector!<T>.initialize();
     
-    vector<T> to_vector(list<T>* self) {
-        var result = new list<T>.initialize();
-        
-        self.each {
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
+    self.each (void lambda(T it, int it2, bool* it3) {
+        if(isheap(T)) {
+            result.push_back(clone it);
         }
-        
-        return result;
-    }
+        else {
+            result.push_back(dummy_heap it);
+        }
+    });
+    
+    return result;
 }
-*/
+
+vector!<T>*% vector!<T>::initialize_with_values(vector!<T>*% self, int len, T& value) 
+{
+    self.size = len;
+    self.len = len;
+    self.items = borrow new T[self.size];
+
+    for(int i=0; i<len; i++) {
+        if(isheap(T)) {
+            self.items[i] = borrow clone value;
+        }
+        else {
+            self.items[i] = value;
+        }
+    }
+
+    return self;
+}
+
+struct tuple1!<T>
+{
+    T v1;
+};
+
+bool tuple1!<T>::equals(tuple1!<T>* left, tuple1!<T>* right)
+{
+    if(!left.v1.equals(right.v1)) {
+        return false;
+    }
+
+    return true;
+}
+
+struct tuple2!<T, T2>
+{
+    T v1;
+    T2 v2;
+};
+
+bool tuple2!<T,T2>::equals(tuple2!<T, T2>* left, tuple2!<T, T2>* right)
+{
+    if(!left.v1.equals(right.v1)) {
+        return false;
+    }
+    if(!left.v2.equals(right.v2)) {
+        return false;
+    }
+
+    return true;
+}
+
+struct tuple3!<T, T2, T3>
+{
+    T v1;
+    T2 v2;
+    T3 v3;
+};
+
+bool tuple3!<T,T2,T3>::equals(tuple3!<T, T2, T3>* left, tuple3!<T, T2, T3>* right)
+{
+    if(!left.v1.equals(right.v1)) {
+        return false;
+    }
+    if(!left.v2.equals(right.v2)) {
+        return false;
+    }
+    if(!left.v3.equals(right.v3)) {
+        return false;
+    }
+
+    return true;
+}
+
+struct tuple4!<T, T2, T3, T4>
+{
+    T v1;
+    T2 v2;
+    T3 v3;
+    T4 v4;
+};
+
+bool tuple4!<T,T2,T3,T4>::equals(tuple4!<T, T2, T3, T4>* left, tuple4!<T, T2, T3, T4>* right)
+{
+    if(!left.v1.equals(right.v1)) {
+        return false;
+    }
+    if(!left.v2.equals(right.v2)) {
+        return false;
+    }
+    if(!left.v3.equals(right.v3)) {
+        return false;
+    }
+    if(!left.v4.equals(right.v4)) {
+        return false;
+    }
+
+    return true;
+}
 
 /*
-
-ruby_macro vec {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() > 0
-        puts("{");
-        puts("var result = new vector<typeof(#{params[0]})>.initialize();");
-
-        params.each do |param|
-            puts("result.push_back(#{param});");
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
-
-
-ruby_macro list {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() > 0
-        puts("{");
-        puts("var result = new list<typeof(#{params[0]})>.initialize();");
-
-        params.each do |param|
-            puts("result.push_back(#{param});");
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
-
-
-struct tuple1<T>
-{
-    T v1;
-}
-
-impl tuple1 <T>
-{
-    initialize() {
-    }
-
-    bool equals(tuple1<T>* left, tuple1<T>* right)
-    {
-        if(!left.v1.equals(right.v1)) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-struct tuple2<T, T2>
-{
-    T v1;
-    T2 v2;
-}
-
-impl tuple2 <T, T2>
-{
-    initialize() {
-    }
-
-    bool equals(tuple2<T, T2>* left, tuple2<T, T2>* right)
-    {
-        if(!left.v1.equals(right.v1)) {
-            return false;
-        }
-        if(!left.v2.equals(right.v2)) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-struct tuple3<T, T2, T3>
-{
-    T v1;
-    T2 v2;
-    T3 v3;
-}
-
-impl tuple3 <T, T2, T3>
-{
-    initialize() {
-    }
-
-    bool equals(tuple3<T, T2, T3>* left, tuple3<T, T2, T3>* right)
-    {
-        if(!left.v1.equals(right.v1)) {
-            return false;
-        }
-        if(!left.v2.equals(right.v2)) {
-            return false;
-        }
-        if(!left.v3.equals(right.v3)) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-struct tuple4<T, T2, T3, T4>
-{
-    T v1;
-    T2 v2;
-    T3 v3;
-    T4 v3;
-}
-
-impl tuple4 <T, T2, T3, T4>
-{
-    initialize() {
-    }
-
-    bool equals(tuple4<T, T2, T3, T4>* left, tuple4<T, T2, T3, T4>* right)
-    {
-        if(!left.v1.equals(right.v1)) {
-            return false;
-        }
-        if(!left.v2.equals(right.v2)) {
-            return false;
-        }
-        if(!left.v3.equals(right.v3)) {
-            return false;
-        }
-        if(!left.v4.equals(right.v4)) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-ruby_macro tuple {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() == 1
-    then
-        puts("{");
-        puts("var result = new tuple1<typeof(#{params[0]})>;");
-
-        puts("result.v1 = #{params[0]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 2 
-    then
-        puts("{");
-        puts("var result = new tuple2<typeof(#{params[0]}),typeof(#{params[1]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 3
-    then
-        puts("{");
-        puts("var result = new tuple3<typeof(#{params[0]}),typeof(#{params[1]}),typeof(#{params[2]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-        puts("result.v3 = #{params[2]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 4
-    then
-        puts("{");
-        puts("var result = new tuple4<typeof(#{params[0]}),typeof(#{params[1]}),typeof(#{params[2]}),typeof(#{params[3]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-        puts("result.v3 = #{params[2]};");
-        puts("result.v4 = #{params[3]};");
-
-        puts("result");
-        puts("}");
-    end
-}
-
 struct map<T, T2>
 {
     T&* keys;
@@ -2353,106 +1995,6 @@ impl map <T, T2>
     }
 }
 
-ruby_macro map {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        elsif c == ":"
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() >= 2
-    then
-        puts("{");
-        puts("var result = new map<typeof(#{params[0]}), typeof(#{params[1]})>.initialize();");
-
-        key = nil;
-        for it in params do
-            if key == nil
-            then
-                key = it;
-            else
-                puts("result.insert(#{key}, #{it});");
-                key = nil;
-            end
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
-
-
-
-
-/// char* ///
-extern string operator+(char* left, char* right);
-extern string operator*(char* left, int num);
-
-impl char
-{
-    inline bool equals(char left, char right)
-    {
-        return left == right;
-    }
-
-    inline int get_hash_key(char value)
-    {
-        return value;
-    }
-
-    inline string to_string(char value) {
-        return xasprintf("%c", value);
-    }
-
-    inline int compare(char left, char right) {
-        if(left < right) {
-            return -1;
-        }
-        else if(left > right) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
-}
-
 impl char*
 {
     inline bool equals(char* left, char* right)
@@ -2621,77 +2163,6 @@ struct regex_struct {
 typedef regex_struct*% nregex;
 
 extern nregex regex(char* str, bool ignore_case, bool multiline, bool global, bool extended, bool dotall, bool anchored, bool dollar_endonly, bool ungreedy);
-
-ruby_macro regex {
-    param_line = ENV['PARAMS'];
-
-    n = 0;
-
-    
-    if param_line[n] == "/"
-      n = n + 1
-    elsif param_line[n] == "\""
-      n = n + 1
-    end
-
-    str = ""
-
-    ignore_case = false;
-    multiline = false;
-    global = false;
-    extended = false;
-    dotall = false;
-    anchored = false;
-    dollar_endonly = false;
-    ungreedy = false;
-
-    while(n < param_line.length()) do
-      c = param_line[n];
-      c2 = param_line[n+1]
-
-      if c == "\\" && c2 == "/"
-          str = str + c + c2
-
-          n = n + 2
-      elsif c == "\\" && c2 == "\""
-          str = str + c + c2
-
-          n = n + 2
-      elsif c == "/" || c == "\""
-          n = n + 1;
-
-          while(n < param_line.length()) do
-              c = param_line[n];
-
-              if c == "i"
-                  ignore_case = true;
-              elsif c == "m"
-                  multiline = true;
-              elsif c == "g"
-                  global = true;
-              elsif c == "s"
-                  dotall = true;
-              elsif c == "A"
-                  anchoared = true;
-              elsif c == "D"
-                  dollar_endonly = true;
-              elsif c == "U"
-                  ungreedy = true;
-              elsif c == "x"
-                  extended = true;
-              end
-
-              n = n + 1;
-          end
-      else
-          str = str + c
-      end
-
-      n = n + 1;
-    end
-
-    puts("regex(\"#{str}\", #{ignore_case}, #{multiline}, #{global}, #{extended}, #{dotall}, #{anchored}, #{dollar_endonly}, #{ungreedy})");
-}
 
 /// list ///
 struct list_item<T>
@@ -2994,58 +2465,6 @@ impl vector<T>
         
         return result;
     }
-}
-
-ruby_macro vec {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() > 0
-        puts("{");
-        puts("var result = new vector<typeof(#{params[0]})>.initialize();");
-
-        params.each do |param|
-            puts("result.push_back(#{param});");
-        end
-
-        puts("result");
-        puts("}");
-    end
 }
 
 /// list ///
@@ -4080,59 +3499,6 @@ impl list <T>
     }
 }
 
-ruby_macro list {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() > 0
-        puts("{");
-        puts("var result = new list<typeof(#{params[0]})>.initialize();");
-
-        params.each do |param|
-            puts("result.push_back(#{param});");
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
-
-
 struct tuple1<T>
 {
     T v1;
@@ -4235,96 +3601,6 @@ impl tuple4 <T, T2, T3, T4>
 
         return true;
     }
-}
-
-ruby_macro tuple {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() == 1
-    then
-        puts("{");
-        puts("var result = new tuple1<typeof(#{params[0]})>;");
-
-        puts("result.v1 = #{params[0]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 2 
-    then
-        puts("{");
-        puts("var result = new tuple2<typeof(#{params[0]}),typeof(#{params[1]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 3
-    then
-        puts("{");
-        puts("var result = new tuple3<typeof(#{params[0]}),typeof(#{params[1]}),typeof(#{params[2]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-        puts("result.v3 = #{params[2]};");
-
-        puts("result");
-        puts("}");
-    end
-
-    if params.length() == 4
-    then
-        puts("{");
-        puts("var result = new tuple4<typeof(#{params[0]}),typeof(#{params[1]}),typeof(#{params[2]}),typeof(#{params[3]})>;");
-
-        puts("result.v1 = #{params[0]};");
-        puts("result.v2 = #{params[1]};");
-        puts("result.v3 = #{params[2]};");
-        puts("result.v4 = #{params[3]};");
-
-        puts("result");
-        puts("}");
-    end
 }
 
 struct map<T, T2>
@@ -4636,70 +3912,6 @@ impl map <T, T2>
     }
 }
 
-ruby_macro map {
-    params = [];
-    param = "";
-    dquort = false;
-    squort = false;
-    param_line = ENV['PARAMS'];
-    n = 0;
-    while(n < param_line.length()) do
-        c = param_line[n];
-        n = n + 1;
-
-        if (dquort || squort) && c == "\\"
-            param.concat(c);
-            
-            c = param_line[n];
-            n = n + 1;
-
-            param.concat(c);
-        elsif c == "\""
-            param.concat(c);
-            dquort = !dquort
-        elsif c == "'"
-            param.concat(c);
-            squort = !squort
-        elsif dquort || squort
-            param.concat(c);
-        elsif c == ","
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        elsif c == ":"
-            if param.length() > 0
-                params.push(param); param = ""
-            end
-        else
-            param.concat(c);
-        end
-    end
-
-    if param.length() != 0
-        params.push(param);
-    end
-
-    if params.length() >= 2
-    then
-        puts("{");
-        puts("var result = new map<typeof(#{params[0]}), typeof(#{params[1]})>.initialize();");
-
-        key = nil;
-        for it in params do
-            if key == nil
-            then
-                key = it;
-            else
-                puts("result.insert(#{key}, #{it});");
-                key = nil;
-            end
-        end
-
-        puts("result");
-        puts("}");
-    end
-}
-
 /// others ///
 extern void xassert(char* msg, bool exp);
 
@@ -4727,62 +3939,6 @@ string string_from_wchar_t(wchar_t* wstr, char* default_value)
     if(wcstombs(result, wstr, len) < 0) 
     {
         xstrncpy(result, default_value, len);
-    }
-
-    result
-}
-
-string operator+(char* left, char* right)
-{
-    int len1 = strlen(left);
-    int len2 = strlen(right);
-
-    string result = new char[len1 + len2 + 1];
-
-    strcpy(result, left);
-    strcat(result, right);
-
-    result
-}
-
-string operator*(char* left, int num)
-{
-    int len = strlen(left);
-
-    string result = new char[len * num + 1];
-
-    result[0] = '\0';
-
-    for(int i=0; i<num; i++) {
-        strcat(result, left);
-    }
-
-    result
-}
-
-string operator+(string& left, string& right)
-{
-    int len1 = strlen(left);
-    int len2 = strlen(right);
-
-    string result = new char[len1 + len2 + 1];
-
-    strcpy(result, left);
-    strcat(result, right);
-
-    result
-}
-
-string operator*(string& left, int num)
-{
-    int len = strlen(left);
-
-    string result = new char[len * num + 1];
-
-    result[0] = '\0';
-
-    for(int i=0; i<num; i++) {
-        strcat(result, left);
     }
 
     result
@@ -5030,49 +4186,6 @@ wstring operator+(wchar_t* left, wchar_t* right)
 
     wcscpy(result, left);
     wcscat(result, right);
-
-    result
-}
-
-wstring operator*(wchar_t* left, int num)
-{
-    int len = wcslen(left);
-
-    wstring result = new wchar_t[len * num + 1];
-
-    result[0] = '\0';
-
-    for(int i=0; i<num; i++) {
-        wcscat(result, left);
-    }
-
-    result
-}
-
-wstring operator+(wstring& left, wstring& right)
-{
-    int len1 = wcslen(left);
-    int len2 = wcslen(right);
-
-    wstring result = new wchar_t[len1 + len2 + 1];
-
-    wcscpy(result, left);
-    wcscat(result, right);
-
-    result
-}
-
-wstring operator*(wstring& left, int num)
-{
-    int len = wcslen(left);
-
-    wstring result = new wchar_t[len * num + 1];
-
-    result[0] = '\0';
-
-    for(int i=0; i<num; i++) {
-        wcscat(result, left);
-    }
 
     result
 }
@@ -5369,26 +4482,6 @@ impl wstring
     }
 }
 
-char* xstrncpy(char* des, char* src, int size)
-{
-    char* result;
-
-    result = strncpy(des, src, size-1);
-    des[size-1] = 0;
-
-    return result;
-}
-
-char* xstrncat(char* des, char* str, int size)
-{
-    char* result;
-
-    result = strncat(des, str, size-1);
-    des[size-1] = 0;
-
-    return result;
-}
-
 nregex regex(char* str, bool ignore_case, bool multiline, bool global, bool extended, bool dotall, bool anchored, bool dollar_endonly, bool ungreedy)
 {
     var result = new regex_struct;
@@ -5413,5 +4506,130 @@ nregex regex(char* str, bool ignore_case, bool multiline, bool global, bool exte
     result.options = options;
 
     return result;
+}
+*/
+/*
+    list<T>*% merge_list2(list<T>* left, list<T>* right, int (*compare)(T&,T&)) {
+        var result = new list<T>.initialize();
+
+        list_item<T>*? it = left.head;
+        list_item<T>*? it2= right.head;
+
+        while(true) {
+            if(it && it2) {
+                if(it.item == null) {
+                    it = it.next;
+                }
+                else if(it2.item == null) {
+                    it2 = it2.next;
+                }
+                else if(compare(it.item, it2.item) <= 0) 
+                {
+                    if(isheap(T)) {
+                        result.push_back(clone it.item);
+                    }
+                    else {
+                        result.push_back(dummy_heap it.item);
+                    }
+
+                    it = it.next;
+                }
+                else {
+                    if(isheap(T)) {
+                        result.push_back(clone it2.item);
+                    }
+                    else {
+                        result.push_back(dummy_heap it2.item);
+                    }
+
+
+                    it2 = it2.next;
+                }
+            }
+
+            if(it == null) {
+                if(it2 != null) {
+                    while(it2 != null) {
+                        if(isheap(T)) {
+                            result.push_back(clone it2.item);
+                        }
+                        else {
+                            result.push_back(dummy_heap it2.item);
+                        }
+
+                        it2 = it2.next;
+                    }
+                }
+                break;
+            }
+            else if(it2 == null) {
+                if(it != null) {
+                    while(it != null) {
+                        if(isheap(T)) {
+                            result.push_back(clone it.item);
+                        }
+                        else {
+                            result.push_back(dummy_heap it.item);
+                        }
+
+                        it = it.next;
+                    }
+                }
+                break;
+            }
+        }
+
+        return result;
+    }
+    list<T>*% merge_sort2(list<T>* self, int (*compare)(T&,T&)) {
+        if(self.head == null) {
+            return clone self;
+        }
+        if(self.head.next == null) {
+            return clone self;
+        }
+
+        var list1 = new list<T>.initialize();
+        var list2 = new list<T>.initialize();
+
+        list_item<T>* it = self.head;
+
+        while(true) {
+            if(isheap(T)) {
+                list1.push_back(clone it.item);
+            }
+            else {
+                list1.push_back(dummy_heap it.item);
+            }
+
+            if(isheap(T)) {
+                list2.push_back(clone it.next.item);
+            }
+            else {
+                list2.push_back(dummy_heap it.next.item);
+            }
+
+            if(it.next.next == null) {
+                break;
+            }
+
+            it = it.next.next;
+
+            if(it.next == null) {
+                if(isheap(T)) {
+                    list1.push_back(clone it.item);
+                }
+                else {
+                    list1.push_back(dummy_heap it.item);
+                }
+                break;
+            }
+        }
+
+        return list1.merge_sort2(compare).merge_list2( list2.merge_sort2(compare), compare);
+    }
+    list<T>*% sort_block(list<T>* self, int (*compare)(T&,T&)) {
+        return self.merge_sort2(compare);
+    }
 }
 */

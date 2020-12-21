@@ -1166,8 +1166,15 @@ generics_types: type {
         char type_name[VAR_NAME_MAX];
         get_typedef($2, type_name);
 
-        xstrncpy($$, ",", VAR_NAME_MAX);
-        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncat($$, ",", VAR_NAME_MAX);
+        xstrncat($$, type_name, VAR_NAME_MAX);
+    }
+    | generics_types ',' type {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($3, type_name);
+
+        xstrncat($$, ",", VAR_NAME_MAX);
+        xstrncat($$, type_name, VAR_NAME_MAX);
     }
     ;
 
@@ -1733,6 +1740,16 @@ struct_generics_types: {
     }
     | struct_generics_types IDENTIFIER {
         xstrncpy(struct_generics_types[num_struct_generics_types], $2, VAR_NAME_MAX);
+
+        num_struct_generics_types++;
+
+        if(num_struct_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow method generics types number\n");
+            exit(2);
+        }
+    }
+    | struct_generics_types ',' IDENTIFIER {
+        xstrncpy(struct_generics_types[num_struct_generics_types], $3, VAR_NAME_MAX);
 
         num_struct_generics_types++;
 
@@ -3116,6 +3133,21 @@ function_generics_types: {
     | function_generics_types type {
         char type_name[VAR_NAME_MAX];
         get_typedef($2, type_name);
+
+        xstrncpy($$, ",", VAR_NAME_MAX);
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+
+        xstrncpy(function_generics_types[num_function_generics_types], type_name, VAR_NAME_MAX);
+        num_function_generics_types++;
+
+        if(num_function_generics_types >= GENERICS_TYPES_MAX) {
+            fprintf(stderr, "overflow generics type number\n");
+            exit(2);
+        }
+    }
+    | function_generics_types ',' type {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($3, type_name);
 
         xstrncpy($$, ",", VAR_NAME_MAX);
         xstrncpy($$, type_name, VAR_NAME_MAX);
