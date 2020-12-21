@@ -918,7 +918,7 @@ int main()
     t1.v3 = string("ABC");
     t1.v4 = "DEF";
 
-   xassert("tuple test1", t1.v1 == 123 && t1.v2 == 234 && t1.v3.equals(string("ABC")) && t1.v4.equals("DEF"));
+    xassert("tuple test1", t1.v1 == 123 && t1.v2 == 234 && t1.v3.equals(string("ABC")) && t1.v4.equals("DEF"));
 
     return 0;
 }

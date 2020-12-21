@@ -13166,6 +13166,7 @@ static BOOL compile_managed(unsigned int node, sCompileInfo* info)
 
     var->mType->mHeap = FALSE;
     var->mType->mManaged = TRUE;
+
     info->type = create_node_type_with_class_name("void"); // dummy
 
     return TRUE;
