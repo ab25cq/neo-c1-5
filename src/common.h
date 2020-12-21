@@ -132,6 +132,7 @@ struct sNodeTypeStruct {
     BOOL mVolatile;
     BOOL mStatic;
     int mSizeNum;
+    BOOL mManaged;
 
     struct sNodeTypeStruct* mParamTypes[PARAMS_MAX];
     struct sNodeTypeStruct* mResultType;

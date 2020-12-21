@@ -1525,6 +1525,44 @@ bool vector!<T>::equals(vector!<T>* left, vector!<T>* right)
     return true;
 }
 
+bool vector!<T>::replace(vector!<T>* self, int index, T value) 
+{
+    managed value;
+
+    if(index < 0) {
+        index += self.len;
+    }
+
+    if(index >= 0 && index < self.len)
+    {
+        if(isheap(T)) {
+            delete self.items[index];
+        }
+
+        self.items[index] = value;
+
+        return true;
+    }
+
+    return false;
+}
+
+list!<T>*% vector!<T>::to_list(vector!<T>* self) {
+    list!<T>*% result = new list!<T>.initialize();
+    
+    self.each(void lambda(T it, int it2, bool* it3) {
+        if(isheap(T)) {
+            result.push_back(clone it);
+        }
+        else {
+            result.push_back(dummy_heap it);
+        }
+    });
+    
+    return result;
+}
+
+
 /*
     vector<T>%* initialize_with_values(vector<T>%* self, int len, T& value) 
     {
@@ -1560,41 +1598,6 @@ bool vector!<T>::equals(vector!<T>* left, vector!<T>* right)
         }
 
         return dummy_heap default_value;
-    }
-
-    bool replace(vector<T>* self, int index, T value) 
-    {
-        if(index < 0) {
-            index += self.len;
-        }
-
-        if(index >= 0 && index < self.len)
-        {
-            if(isheap(T)) {
-                delete self.items[index];
-            }
-
-            self.items[index] = value;
-
-            return true;
-        }
-
-        return false;
-    }
-    
-    list<T>*% to_list(vector<T>* self) {
-        var result = new vector<T>.initialize();
-        
-        self.each {
-            if(isheap(T)) {
-                result.push_back(clone it);
-            }
-            else {
-                result.push_back(dummy_heap it);
-            }
-        }
-        
-        return result;
     }
 
 /*

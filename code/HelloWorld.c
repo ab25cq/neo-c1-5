@@ -759,13 +759,13 @@ int main()
 
     xassert("list test11", li12.item(0, -1).equals("AAA") && li12.item(1,-1).equals("BBB") && li12.item(2, -1).equals("CCC"));
 
-    list!<string>*% li12 = new list!<string>.initialize();
+    list!<string>*% li99 = new list!<string>.initialize();
 
-    li12.push_back(string("1"));
-    li12.push_back(string("2"));
-    li12.push_back(string("3"));
+    li99.push_back(string("1"));
+    li99.push_back(string("2"));
+    li99.push_back(string("3"));
 
-    list!<int>*% li13 = li12.map(
+    list!<int>*% li13 = li99.map(
         int lambda(char* item) { return atoi(item); }
     );
 
@@ -789,32 +789,32 @@ int main()
 
     xassert("list test13", li15.item(0, -1) == 1 && li15.item(1, -1) == 2 && li15.item(2, -1) == 3);
 
-    list!<int>*% li15 = new list!<int>.initialize();
+    list!<int>*% li100 = new list!<int>.initialize();
 
-    li15.push_back(1);
-    li15.push_back(1);
-    li15.push_back(2);
-    li15.push_back(2);
-    li15.push_back(5);
-    li15.push_back(3);
+    li100.push_back(1);
+    li100.push_back(1);
+    li100.push_back(2);
+    li100.push_back(2);
+    li100.push_back(5);
+    li100.push_back(3);
 
-    printf("%d\n", li15.find(5, -1));
+    printf("%d\n", li100.find(5, -1));
 
-    xassert("list test14", li15.find(5, -1) == 4);
+    xassert("list test14", li100.find(5, -1) == 4);
 
-    list!<int>*% li16 = new list!<int>.initialize();
+    list!<int>*% li116 = new list!<int>.initialize();
 
-    li16.push_back(1);
-    li16.push_back(2);
-    li16.push_back(3);
+    li116.push_back(1);
+    li116.push_back(2);
+    li116.push_back(3);
 
-    list!<int>*% li17 = new list!<int>.initialize();
+    list!<int>*% li117 = new list!<int>.initialize();
 
-    li17.push_back(1);
-    li17.push_back(2);
-    li17.push_back(3);
+    li117.push_back(1);
+    li117.push_back(2);
+    li117.push_back(3);
 
-    xassert("list test15", li16.equals(li17));
+    xassert("list test15", li116.equals(li117));
 
     list!<int>*% li18 = new list!<int>.initialize();
 
@@ -889,6 +889,19 @@ int main()
 
     xassert("vector test7", v8.item(0, null).equals(string("aaa")));
 
+   list!<string>*% li20 = v8.to_list();
+
+    xassert("list test17", li20.item(0, null).equals(string("aaa")) && li20.item(1, null).equals(string("bbb")) && li20.item(2, null).equals(string("ccc")));
+
+    vector!<string>*% v9 = new vector!<string>.initialize();
+
+    v9.push_back(string("aaa"));
+    v9.push_back(string("bbb"));
+    v9.push_back(string("ccc"));
+
+    v9.replace(0, string("DDD"));
+
+    xassert("vector test7", v9.item(0, null).equals(string("DDD")) && v9.item(1, null).equals(string("bbb")) && v9.item(2,null).equals(string("ccc")) && v9.length() == 3);
 
     return 0;
 }

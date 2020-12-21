@@ -100,7 +100,7 @@ test: neo-c2.h code/HelloWorld.c
 	@echo "Compile to test code..."
 	./neo-c2 -I . code/HelloWorld.c
 	clang -o code/HelloWorld code/HelloWorld.c.ll
-	./code/HelloWorld
+	valgrind ./code/HelloWorld
 
 #########################################
 # uninstall

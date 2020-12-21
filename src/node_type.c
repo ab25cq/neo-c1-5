@@ -92,6 +92,7 @@ sNodeType* clone_node_type(sNodeType* node_type)
     node_type2->mDynamicArrayNum = node_type->mDynamicArrayNum;
     node_type2->mArrayInitializeNum = node_type->mArrayInitializeNum;
     node_type2->mTypeOfExpression = node_type->mTypeOfExpression;
+    node_type2->mManaged = node_type->mManaged;
 
     if(node_type->mResultType) {
         node_type2->mResultType = clone_node_type(node_type->mResultType);
@@ -800,6 +801,8 @@ BOOL solve_generics(sNodeType** node_type, sNodeType* generics_type, BOOL* succe
 
             BOOL no_heap = (*node_type)->mNoHeap;
 
+            BOOL managed = (*node_type)->mManaged;
+
             *node_type = clone_node_type(generics_type->mGenericsTypes[generics_number]);
 
             if(heap) {
@@ -810,6 +813,9 @@ BOOL solve_generics(sNodeType** node_type, sNodeType* generics_type, BOOL* succe
             }
             if(nullable) {
                 (*node_type)->mNullable = nullable;
+            }
+            if(managed) {
+                (*node_type)->mHeap = FALSE;
             }
             if(array_dimetion_num > 0) {
                 (*node_type)->mArrayDimentionNum = array_dimetion_num;
@@ -894,6 +900,7 @@ BOOL solve_method_generics(sNodeType** node_type, int num_method_generics_types,
             BOOL nullable = (*node_type)->mNullable;
             int pointer_num = (*node_type)->mPointerNum;
             BOOL heap = (*node_type)->mHeap;
+            BOOL managed = (*node_type)->mManaged;
 
             BOOL no_heap = (*node_type)->mNoHeap;
 
@@ -907,6 +914,9 @@ BOOL solve_method_generics(sNodeType** node_type, int num_method_generics_types,
             }
             if(nullable) {
                 (*node_type)->mNullable = nullable;
+            }
+            if(managed) {
+                (*node_type)->mHeap = FALSE;
             }
             if(array_dimetion_num > 0) {
                 (*node_type)->mArrayDimentionNum = array_dimetion_num;
