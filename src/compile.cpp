@@ -6054,9 +6054,6 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         sNodeType* param_types[PARAMS_MAX];
         LVALUE param_values[PARAMS_MAX];
 
-printf("%s %d: %s\n", gSName, yylineno, fun_name);
-if(info->generics_type)show_node_type(info->generics_type);
-
         for(i=0; i<num_params; i++) {
             if(!compile(params[i], info)) {
                 return FALSE;
@@ -10905,6 +10902,7 @@ BOOL compile_store_element(unsigned int node, sCompileInfo* info)
                 element_address = Builder.CreateGEP(element_address, mvalue[i].value, "element_addressD");
             }
 
+
             int alignment = get_llvm_alignment_from_node_type(var_type);
 
             //BOOL alloc = FALSE;
@@ -12436,15 +12434,12 @@ BOOL compile_cast(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-show_node_type(right_type);
-
     if(info->generics_type) {
         BOOL success_solve;
         (void)solve_generics(&right_type, info->generics_type, &success_solve);
 
         solve_method_generics2(&right_type, info->method_generics_types);
     }
-show_node_type(right_type);
 
     int left_node = gNodes[node].mLeft;
     if(!compile(left_node, info)) {
