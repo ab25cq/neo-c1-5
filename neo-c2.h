@@ -1685,316 +1685,278 @@ bool tuple4!<T,T2,T3,T4>::equals(tuple4!<T, T2, T3, T4>* left, tuple4!<T, T2, T3
     return true;
 }
 
-/*
-struct map<T, T2>
-{
-    T&* keys;
-    bool* item_existance;
-    T2&* items;
-    int size;
-    int len;
-}
-
 #define MAP_TABLE_DEFAULT_SIZE 128
 
-impl map <T, T2>
+struct map!<T, T2>
 {
-    initialize() {
-        self.keys = borrow new T[MAP_TABLE_DEFAULT_SIZE];
-        self.items = borrow new T2[MAP_TABLE_DEFAULT_SIZE];
-        self.item_existance = borrow new bool[MAP_TABLE_DEFAULT_SIZE];
+    T*& keys;
+    bool* item_existance;
+    T2*& items;
+    int size;
+    int len;
+};
 
-        for(int i=0; i<MAP_TABLE_DEFAULT_SIZE; i++)
-        {
-            self.item_existance[i] = false;
-        }
+map!<T,T2>*% map!<T,T2>::initialize(map!<T,T2>*% self) 
+{
+    self.keys = borrow new T[MAP_TABLE_DEFAULT_SIZE];
+    self.items = borrow new T2[MAP_TABLE_DEFAULT_SIZE];
+    self.item_existance = borrow new bool[MAP_TABLE_DEFAULT_SIZE];
 
-        self.size = MAP_TABLE_DEFAULT_SIZE;
-        self.len = 0;
-    }
-
-    finalize() {
-        for(int i=0; i<self.size; i++) {
-            if(self.item_existance[i]) {
-                if(isheap(T2)) {
-                    delete self.items[i];
-                }
-            }
-        }
-        delete self.items;
-
-        for(int i=0; i<self.size; i++) {
-            if(self.item_existance[i]) {
-                if(isheap(T)) {
-                    delete self.keys[i];
-                }
-            }
-        }
-        delete self.keys;
-
-        delete self.item_existance;
-    }
-
-    map<T, T2>*% clone(map<T, T2>* self)
+    for(int i=0; i<MAP_TABLE_DEFAULT_SIZE; i++)
     {
-        var result = new map<T,T2>.initialize();
+        self.item_existance[i] = false;
+    }
 
-        self.each {
+    self.size = MAP_TABLE_DEFAULT_SIZE;
+    self.len = 0;
+
+    return self;
+}
+
+void map!<T,T2>::finalize(map!<T,T2>* self) 
+{
+    for(int i=0; i<self.size; i++) {
+        if(self.item_existance[i]) {
+            if(isheap(T2)) {
+                delete self.items[i];
+            }
+        }
+    }
+    delete self.items;
+
+    for(int i=0; i<self.size; i++) {
+        if(self.item_existance[i]) {
             if(isheap(T)) {
-                if(isheap(T2)) {
-                    result.insert(clone it, clone it2);
-                }
-                else {
-                    result.insert(clone it, dummy_heap it2);
-                }
-            }
-            else {
-                if(isheap(T2)) {
-                    result.insert(dummy_heap it, clone it2);
-                }
-                else {
-                    result.insert(dummy_heap it, dummy_heap it2);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    void each(map<T, T2>* self, void (*block_)(T&,T2&,bool*)) 
-    {
-        for(int i_=0; i_<self.size; i_++) {
-            if(self.item_existance[i_]) {
-                bool end_flag_ = false;
-                block_(self.keys[i_], self.items[i_], &end_flag_);
-                if(end_flag_ == true) {
-                    break;
-                }
+                delete self.keys[i];
             }
         }
     }
+    delete self.keys;
 
-    void rehash(map<T,T2>* self) {
-        int size = self.size * 3;
-        T&* keys = borrow new T[size];
-        T2&* items = borrow new T2[size];
-        bool* item_existance = borrow new bool[size];
+    delete self.item_existance;
+}
 
-        int len = 0;
-
-        self.each {
-            int hash = ((T)it).get_hash_key() % size;
-            int n = hash;
-
-            while(true) {
-                if(item_existance[n])
-                {
-                    n++;
-
-                    if(n >= size) {
-                        n = 0;
-                    }
-                    else if(n == hash) {
-                        fprintf(stderr, "unexpected error in map.rehash(1)\n");
-                        exit(2);
-                    }
-                }
-                else {
-                    item_existance[n] = true;
-                    keys[n] = it;
-                    items[n] = it2;
-
-                    len++;
-                    break;
-                }
-            }
-        }
-
-        delete self.items;
-        delete self.item_existance;
-        delete self.keys;
-
-        self.keys = keys;
-        self.items = items;
-        self.item_existance = item_existance;
-
-        self.size = size;
-        self.len = len;
-    }
-
-    bool find(map<T, T2>* self, T& key) {
-        int hash = ((T)key).get_hash_key() % self.size;
-        int it = hash;
-
-        while(true) {
-            if(self.item_existance[it])
-            {
-                if(self.keys[it].equals(key))
-                {
-                    return true;
-                }
-
-                it++;
-
-                if(it >= self.size) {
-                    it = 0;
-                }
-                else if(it == hash) {
-                    return false;
-                }
-            }
-            else {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    T2& at(map<T, T2>* self, T& key, T2& default_value) 
-    {
-        int hash = ((T)key).get_hash_key() % self.size;
-        int it = hash;
-
-        while(true) {
-            if(self.item_existance[it])
-            {
-                if(self.keys[it].equals(key))
-                {
-                    return self.items[it];
-                }
-
-                it++;
-
-                if(it >= self.size) {
-                    it = 0;
-                }
-                else if(it == hash) {
-                    return default_value;
-                }
-            }
-            else {
-                return default_value;
-            }
-        }
-
-        return default_value;
-    }
-
-    T2 at_clone(map<T, T2>* self, T& key, T2& default_value) 
-    {
-        int hash = ((T)key).get_hash_key() % self.size;
-        int it = hash;
-
-        while(true) {
-            if(self.item_existance[it])
-            {
-                if(self.keys[it].equals(key))
-                {
-                    if(isheap(T)) {
-                        return clone self.items[it];
-                    }
-                    else {
-                        return dummy_heap self.items[it];
-                    }
-                }
-
-                it++;
-
-                if(it >= self.size) {
-                    it = 0;
-                }
-                else if(it == hash) {
-                    return dummy_heap default_value;
-                }
-            }
-            else {
-                return dummy_heap default_value;
-            }
-        }
-
-        return dummy_heap default_value;
-    }
-
-    void insert(map<T,T2>* self, T key, T2 item) 
-    {
-        managed key;
-        managed item;
-
-        if(self.len*2 >= self.size) {
-            self.rehash();
-        }
-
-        int hash = ((T)key).get_hash_key() % self.size;
-        int it = hash;
-
-        while(true) {
-            if(self.item_existance[it])
-            {
-                if(self.keys[it].equals(key)) 
-                {
-                    if(isheap(T)) {
-                        delete dummy_heap self.keys[it];
-                    }
-                    if(isheap(T2)) {
-                        delete dummy_heap self.items[it];
-                    }
-                    self.keys[it] = key;
-                    self.items[it] = item;
-
-                    break;
-                }
-
-                it++;
-
-                if(it >= self.size) {
-                    it = 0;
-                }
-                else if(it == hash) {
-                    fprintf(stderr, "unexpected error in map.insert\n");
-                    exit(2);
-                }
-            }
-            else {
-                self.item_existance[it] = true;
-                self.keys[it] = key;
-                self.items[it] = item;
-
-                self.len++;
-
+void map!<T,T2>::each(map!<T, T2>* self, void (*block_)(T&,T2&,bool*)) 
+{
+    for(int i_=0; i_<self.size; i_++) {
+        if(self.item_existance[i_]) {
+            bool end_flag_ = false;
+            block_(self.keys[i_], self.items[i_], &end_flag_);
+            if(end_flag_ == true) {
                 break;
             }
         }
     }
+}
 
-    bool equals(map<T, T2>* left, map<T, T2>* right)
-    {
-        if(left.len != right.len) {
-            return false;
+map!<T, T2>*% map!<T,T2>::clone(map!<T, T2>* self)
+{
+    map!<T,T2>*% result = new map!<T,T2>.initialize();
+
+    self.each (void lambda(T& it, T2& it2, bool it3) {
+        if(isheap(T)) {
+            if(isheap(T2)) {
+                result.insert(clone it, clone it2);
+            }
+            else {
+                result.insert(clone it, dummy_heap it2);
+            }
         }
+        else {
+            if(isheap(T2)) {
+                result.insert(dummy_heap it, clone it2);
+            }
+            else {
+                result.insert(dummy_heap it, dummy_heap it2);
+            }
+        }
+    });
 
-        bool result = true;
-        left.each {
-            if(right.find(it)) {
-                T2& default_value;
-                T2 item = right.at(it, default_value);
-                if(!it2.equals(item)) {
-                    result = false;
+    return result;
+}
+
+void map!<T,T2>::rehash(map!<T,T2>* self) 
+{
+    int size = self.size * 3;
+    T*& keys = borrow new T[size];
+    T2*& items = borrow new T2[size];
+    bool* item_existance = borrow new bool[size];
+
+    int len = 0;
+
+    self.each (void lambda(T& it, T2& it2, bool* it3) {
+        int hash = it.get_hash_key() % size;
+        int n = hash;
+
+        while(true) {
+            if(item_existance[n]) {
+                n++;
+
+                if(n >= size) {
+                    n = 0;
+                }
+                else if(n == hash) {
+                    fprintf(stderr, "unexpected error in map.rehash(1)\n");
+                    exit(2);
                 }
             }
             else {
-                result = false;
+                item_existance[n] = true;
+                keys[n] = it;
+                items[n] = it2;
+
+                len++;
+                break;
             }
         }
+    });
 
-        return result;
+    delete self.items;
+    delete self.item_existance;
+    delete self.keys;
+
+    self.keys = keys;
+    self.items = items;
+    self.item_existance = item_existance;
+
+    self.size = size;
+    self.len = len;
+}
+
+bool map!<T,T2>::find(map!<T, T2>* self, T& key) 
+{
+    int hash = ((T)key).get_hash_key() % self.size;
+    int it = hash;
+
+    while(true) {
+        if(self.item_existance[it]) {
+            if(self.keys[it].equals(key)) {
+                return true;
+            }
+
+            it++;
+
+            if(it >= self.size) {
+                it = 0;
+            }
+            else if(it == hash) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
     }
 
-    int length(map<T, T2>* self) {
-        return self.len;
+    return false;
+}
+
+T2& map!<T,T2>::at(map!<T, T2>* self, T& key, T2& default_value) 
+{
+    int hash = ((T)key).get_hash_key() % self.size;
+    int it = hash;
+
+    while(true) {
+        if(self.item_existance[it]) {
+            if(self.keys[it].equals(key)) {
+                return self.items[it];
+            }
+
+            it++;
+
+            if(it >= self.size) {
+                it = 0;
+            }
+            else if(it == hash) {
+                return default_value;
+            }
+        }
+        else {
+            return default_value;
+        }
+    }
+
+    return default_value;
+}
+
+void map!<T,T2>::insert(map!<T,T2>* self, T key, T2 item) 
+{
+    managed key;
+    managed item;
+
+    if(self.len*2 >= self.size) {
+        self.rehash();
+    }
+
+    int hash = ((T)key).get_hash_key() % self.size;
+    int it = hash;
+
+    while(true) {
+        if(self.item_existance[it]) {
+            if(self.keys[it].equals(key)) {
+                if(isheap(T)) {
+                    delete dummy_heap self.keys[it];
+                }
+                if(isheap(T2)) {
+                    delete dummy_heap self.items[it];
+                }
+                self.keys[it] = key;
+                self.items[it] = item;
+
+                break;
+            }
+
+            it++;
+
+            if(it >= self.size) {
+                it = 0;
+            }
+            else if(it == hash) {
+                fprintf(stderr, "unexpected error in map.insert\n");
+                exit(2);
+            }
+        }
+        else {
+            self.item_existance[it] = true;
+            self.keys[it] = key;
+            self.items[it] = item;
+
+            self.len++;
+
+            break;
+        }
     }
 }
 
+bool map!<T,T2>::equals(map!<T, T2>* left, map!<T, T2>* right)
+{
+    if(left.len != right.len) {
+        return false;
+    }
+
+    bool result = true;
+    left.each (void lambda(T& it, T2& it2, bool* it3) {
+        if(right.find(it)) {
+            T2& default_value;
+            T2 item = right.at(it, default_value);
+            if(!it2.equals(item)) {
+                result = false;
+            }
+        }
+        else {
+            result = false;
+        }
+    });
+
+    return result;
+}
+
+int map!<T,T2>::length(map!<T, T2>* self) 
+{
+    return self.len;
+}
+
+/*
 impl char*
 {
     inline bool equals(char* left, char* right)

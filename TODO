@@ -1,26 +1,6 @@
-field automatically free will be prohibited
-
-
-vector
-
-
-
-clone
-
-cast
+map invalid read
 
 convert struct name wchat_, wchar_t*
-
-clone
-
-output to the debug code when creating generics functions.
-
-check automatically free especially right value heap free and break and return
-
-array 
-global variable 
-char* aaa[3] = { "ABC", "A", "C" };
-char* aaa[2][2] = { "AA", "BB", "CC", "DD" };
 
 -----
 finalize

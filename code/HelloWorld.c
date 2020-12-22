@@ -920,6 +920,13 @@ int main()
 
     xassert("tuple test1", t1.v1 == 123 && t1.v2 == 234 && t1.v3.equals(string("ABC")) && t1.v4.equals("DEF"));
 
+    map!<string, int>*% m1 = new map!<string,int>.initialize();
+
+    m1.insert(string("ABC"), 1);
+    m1.insert(string("DEF"), 2);
+
+    xassert("map test1", m1.at(string("ABC"), -1) == 1 && m1.at(string("DEF"), -1) == 2);
+
     return 0;
 }
 
