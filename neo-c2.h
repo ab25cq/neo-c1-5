@@ -58,8 +58,6 @@ inline void*% nccalloc(long long num, long long nsize, char* type_name)
 {
     void* result = calloc(num, nsize);
 
-printf("calloc %p num %d nsize %d\n", result, num, nsize);
-
     if(result == NULL) {
         fprintf(stderr, "can't get heap memory. nccalloc num %d nsize %d\n", num, nsize);
 
@@ -1701,7 +1699,6 @@ struct map!<T, T2>
 map!<T,T2>*% map!<T,T2>::initialize(map!<T,T2>*% self) 
 {
     self.keys = borrow new T[MAP_TABLE_DEFAULT_SIZE];
-printf("map::initialize keys %p\n", self.keys);
     self.items = borrow new T2[MAP_TABLE_DEFAULT_SIZE];
     self.item_existance = borrow new bool[MAP_TABLE_DEFAULT_SIZE];
 
@@ -1887,8 +1884,6 @@ void map!<T,T2>::insert(map!<T,T2>* self, T key, T2 item)
     managed key;
     managed item;
 
-puts("1");
-
     if(self.len*2 >= self.size) {
         self.rehash();
     }
@@ -1898,7 +1893,6 @@ puts("1");
 
     while(true) {
         if(self.item_existance[it]) {
-puts("2");
             if(self.keys[it].equals(key)) {
                 if(isheap(T)) {
                     delete dummy_heap self.keys[it];
@@ -1923,14 +1917,9 @@ puts("2");
             }
         }
         else {
-puts("3");
             self.item_existance[it] = true;
-puts("4");
-printf("self.keys %p it %d %d\n", self.keys, it);
             self.keys[it] = key;
-puts("5");
             self.items[it] = item;
-puts("6");
 
             self.len++;
 

@@ -887,7 +887,12 @@ BOOL get_size_from_node_type(uint64_t* result, sNodeType* node_type, sNodeType* 
         *result = node_type2->mSizeNum;
     }
     else if(node_type2->mPointerNum > 0) {
-        *result = 4;
+        if(sizeof(size_t) == 4) {
+            *result = 4;
+        }
+        else {
+            *result = 8;
+        }
     }
     else {
         Type* llvm_type;
@@ -5494,7 +5499,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
     BOOL method_generics = gNodes[node].uValue.sFunction.mMethodGenerics;
     BOOL inherit_ = gNodes[node].uValue.sFunction.mInherit;
     BOOL external = gNodes[node].uValue.sFunction.mExternal;
-    
+
     char* result_type_name = gNodes[node].uValue.sFunction.mResultTypeName;
 
     unsigned int node_block = gNodes[node].uValue.sFunction.mNodeBlock;
