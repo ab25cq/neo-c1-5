@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <wchar.h>
+#include <limits.h>
 #include "neo-c2.h"
 
 struct sData;
@@ -926,6 +928,49 @@ int main()
     m1.insert(string("DEF"), 2);
 
     xassert("map test1", m1.at(string("ABC"), -1) == 1 && m1.at(string("DEF"), -1) == 2);
+
+    map!<string, int>*% m2 = new map!<string,int>.initialize();
+
+    m2.insert(string("ABC"), 1);
+    m2.insert(string("DEF"), 2);
+
+    xassert("map test2", m1.equals(m2));
+
+    xassert("map test3", m1.find(string("ABC")));
+
+    tuple3!<string, string, int>*% t2 = new tuple3!<string, string, int>;
+
+    t2.v1 = string("ABC");
+    t2.v2 = string("DEF");
+    t2.v3 = 123;
+
+    tuple3!<string, string, int>*% t3 = new tuple3!<string, string, int>;
+
+    t3.v1 = string("ABC");
+    t3.v2 = string("DEF");
+    t3.v3 = 123;
+
+    xassert("tuple test2", t2.equals(t3));
+
+    xassert("char* test1", "ABC".equals("ABC"));
+
+    xassert("char* test2", "ABC".length() == 3);
+
+    xassert("char* test3", "ABC".to_string().equals("ABC"));
+
+    xassert("char* test4", "ABC".compare("DEF") < 0);
+
+/*
+    wchar_t wstr[128];
+    
+    wstr[0] = 'a';
+    wstr[1] = 'b';
+    wstr[2] = 'c';
+    wstr[3] = '\0';
+
+    xassert("wchar_t* test1", wstr.to_wstring().equals(wstring("abc")));
+*/
+
 
     return 0;
 }

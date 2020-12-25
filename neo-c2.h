@@ -1957,109 +1957,92 @@ int map!<T,T2>::length(map!<T, T2>* self)
 }
 
 /*
-impl char*
+/// wchar_t ////
+inline bool wchar_t::equals(wchar_t left, wchar_t right)
 {
-    inline bool equals(char* left, char* right)
-    {
-        return strcmp(left, right) == 0;
-    }
-
-    inline int length(char* str)
-    {
-        return strlen(str);
-    }
-
-    inline int get_hash_key(char* value)
-    {
-        int result = 0;
-        char* p = value;
-        while(*p) {
-            result += (*p);
-            p++;
-        }
-        return result;
-    }
-
-    inline string to_string(char* value) {
-        return string(value);
-    }
-
-    inline int compare(char* left, char* right) {
-        return strcmp(left, right);
-    }
-    
-    inline wstring to_wstring(char* value) {
-        return wstring(value);
-    }
+    return left == right;
 }
 
-/// wchar_t ///
-extern wstring operator+(wchar_t* left, wchar_t* right);
-extern wstring operator*(wchar_t* left, int num);
-
-impl wchar_t
+inline int wchar_t::get_hash_key(wchar_t value)
 {
-    inline bool equals(wchar_t left, wchar_t right)
-    {
-        return left == right;
-    }
-
-    inline int get_hash_key(wchar_t value)
-    {
-        return value;
-    }
-
-    inline string to_string(wchar_t value) {
-        return xasprintf("%lc", value);
-    }
-
-    inline int compare(wchar_t left, wchar_t right) {
-        if(left < right) {
-            return -1;
-        }
-        else if(left > right) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
+    return value;
 }
 
-impl wchar_t*
+inline string wchar_t::to_string(wchar_t value) 
 {
-    inline bool equals(wchar_t* left, wchar_t* right)
+    return xsprintf("%lc", value);
+}
+
+inline int wchar_t::compare(wchar_t left, wchar_t right) 
+{
+    if(left < right) {
+        return -1;
+    }
+    else if(left > right) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+*/
+
+/*
+/// wchar_t* ///
+inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
+{
+    return wcscmp(left, right) == 0;
+}
+
+inline int wchar_t*::length(wchar_t* str)
+{
+    return wcslen(str);
+}
+
+inline int wchar_t*::get_hash_key(wchar_t* value)
+{
+    int result = 0;
+    wchar_t* p = value;
+    while(*p) {
+        result += (*p);
+        p++;
+    }
+    return result;
+}
+
+inline string wchar_t*::to_string(wchar_t* wstr, char* default_value) 
+{
+    size_t len = wcslen(wstr) + 1;
+    int len2 = MB_LEN_MAX * len;
+
+    string result = new char[len2];
+
+    if(wcstombs(result, wstr, len2) < 0) 
     {
-        return wcscmp(left, right) == 0;
+        xstrncpy(result, default_value, len2);
     }
 
-    inline int length(wchar_t* str)
-    {
-        return wcslen(str);
-    }
+    return result;
+}
 
-    inline int get_hash_key(wchar_t* value)
-    {
-        int result = 0;
-        wchar_t* p = value;
-        while(*p) {
-            result += (*p);
-            p++;
-        }
-        return result;
-    }
+inline wstring wchar_t*::to_wstring(wchar_t* str) 
+{
+    int len = wcslen(str);
 
-    inline string to_string(wchar_t* str, char* default_value) {
-        return string_from_wchar_t(str, default_value);
-    }
+    wstring wstr = new wchar_t[len + 1];
 
-    inline wstring to_wstring(wchar_t* str) {
-        return wstring_from_wchar_t(str);
-    }
+    wcscpy(wstr, str);
 
-    inline int compare(wstring& left, wstring& right) {
-        return wcscmp(left, right);
-    }
+    return wstr;
+}
+
+inline int compare(wstring& left, wstring& right) 
+{
+    return wcscmp(left, right);
+}
+*/
+
+/*
 }
 
 /// buffer ///
@@ -3892,19 +3875,6 @@ string string(char* str)
     result
 }
 
-string string_from_wchar_t(wchar_t* wstr, char* default_value)
-{
-    int len = MB_LEN_MAX*(wcslen(wstr)+1);
-
-    string result = new char[len];
-
-    if(wcstombs(result, wstr, len) < 0) 
-    {
-        xstrncpy(result, default_value, len);
-    }
-
-    result
-}
 
 impl string
 {
@@ -4130,13 +4100,6 @@ wstring a = new wchar_t[1];
 
 wstring wstring_from_wchar_t(wchar_t* str)
 {
-    int len = wcslen(str);
-
-    wstring wstr = new wchar_t[len + 1];
-
-    wcscpy(wstr, str);
-
-    return wstr;
 }
 
 wstring operator+(wchar_t* left, wchar_t* right)

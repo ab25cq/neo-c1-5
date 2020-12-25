@@ -3758,31 +3758,6 @@ node: source_point_macro exp {
 
             $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
         }
-        | pointer IDENTIFIER '=' comma_exp { 
-            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
-
-            int i;
-            for(i=0; i<strlen($1)-1; i++) {
-                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
-            }
-
-            unsigned int right_node = $4;
-
-            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
-        }
-
-        | pointer '(' exp ')' '=' comma_exp  { 
-            $$ = $3;
-
-            int i;
-            for(i=0; i<strlen($1)-1; i++) {
-                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
-            }
-
-            unsigned int right_node = $6;
-
-            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
-        }
 
         | IDENTIFIER '(' ')' {
             BOOL existance = function_existance($1);
@@ -3963,6 +3938,31 @@ node: source_point_macro exp {
             for(i=0; i<strlen($1); i++) {
                 $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
             }
+        }
+        | pointer IDENTIFIER '=' comma_exp { 
+            $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
+
+            int i;
+            for(i=0; i<strlen($1)-1; i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+            }
+
+            unsigned int right_node = $4;
+
+            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
+        }
+
+        | pointer '(' exp ')' '=' comma_exp  { 
+            $$ = $3;
+
+            int i;
+            for(i=0; i<strlen($1)-1; i++) {
+                $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+            }
+
+            unsigned int right_node = $6;
+
+            $$ = sNodeTree_create_store_value_to_address($$, right_node, gSName, yylineno);
         }
         | IDENTIFIER PLUS_PLUS { 
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
