@@ -408,11 +408,11 @@ int main()
     int data4 = 123;
     int* p_data4 = &data4;
 
-    xassert("pointer", *p_data4 == 123);
+    xassert("pointer test1", *p_data4 == 123);
 
     int** pp_data4 = &p_data4;
 
-    xassert("pointer2", **pp_data4 == 123);
+    xassert("pointer test2", **pp_data4 == 123);
 
     char*% str2 = new char[128];
     strcpy(str2, "ABC");
@@ -596,7 +596,7 @@ int main()
     char ccc = 'A';
     char* p = &ccc;
 
-    xassert("pointer test", *p == 'A');
+    xassert("pointer test3", *p == 'A');
 
     int lenX = 1, lenX2 = 2;
 
@@ -970,7 +970,6 @@ int main()
 
     xassert("wchar_t* test1", wstr.to_wstring().equals(wstring("abc")));
 */
-
 
     return 0;
 }

@@ -1987,7 +1987,6 @@ inline int wchar_t::compare(wchar_t left, wchar_t right)
 }
 */
 
-/*
 /// wchar_t* ///
 inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
 {
@@ -2025,6 +2024,7 @@ inline string wchar_t*::to_string(wchar_t* wstr, char* default_value)
     return result;
 }
 
+/*
 inline wstring wchar_t*::to_wstring(wchar_t* str) 
 {
     int len = wcslen(str);
