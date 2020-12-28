@@ -167,7 +167,143 @@ BOOL is_type_name(char* name)
 [ \t]+ {
 }
 
-\n {
+\n+ {
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
 }
 
 == {

@@ -53,6 +53,8 @@ int main(int argc, char** argv)
 
     char cpp_commandline[1024*2];
 
+    BOOL no_cpp = FALSE;
+
     cpp_commandline[0] = '\0';
 
     int i;
@@ -60,6 +62,9 @@ int main(int argc, char** argv)
         /// options ///
         if(argv[i][0] == '-') {
             if(strcmp(argv[i], "-g") == 0) {
+                gNCDebug = TRUE;
+            }
+            else if(strcmp(argv[i], "-g") == 0) {
                 gNCDebug = TRUE;
             }
             else if(strcmp(argv[i], "-I") == 0) {
@@ -79,9 +84,19 @@ int main(int argc, char** argv)
         }
         else {
             if(sname[0] == '\0') {
-                xstrncpy(sname, argv[i], PATH_MAX);
-                xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
-                snprintf(gSName, PATH_MAX, "%s.pp", argv[i]);
+                if(strstr(argv[i], ".i") == argv[i] + strlen(argv[i]) - 2) {
+                    printf("no c preprocesser\n");
+                    no_cpp = TRUE;
+                    xstrncpy(sname, argv[i], PATH_MAX);
+                    xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
+                    xstrncpy(gSName, argv[i], PATH_MAX);
+                }
+                else {
+                    no_cpp = FALSE;
+                    xstrncpy(sname, argv[i], PATH_MAX);
+                    xstrncpy(gSNameOriginal, argv[i], PATH_MAX);
+                    snprintf(gSName, PATH_MAX, "%s.i", argv[i]);
+                }
             }
             else {
                 xstrncat(cpp_commandline, argv[i], 1024*2);
@@ -90,30 +105,32 @@ int main(int argc, char** argv)
         }
     }
 
-    char* cflags = getenv("CFLAGS");
-    char cmd[1024];
+    if(!no_cpp) {
+        char* cflags = getenv("CFLAGS");
+        char cmd[1024];
 #ifdef __DARWIN__
-    if(cflags) {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -E %s -I/opt/local/include %s > %s", cpp_commandline, cflags, sname, gSName);
-    }
-    else {
-        snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -I/opt/local/include %s > %s", cpp_commandline sname, gSName);
-    }
+        if(cflags) {
+            snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -E %s -I/opt/local/include %s > %s", cpp_commandline, cflags, sname, gSName);
+        }
+        else {
+            snprintf(cmd, 1024, "clang -D_GNU_SOURCE -U__GNUC__ %s -I/opt/local/include %s > %s", cpp_commandline sname, gSName);
+        }
 #else
-    if(cflags) {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s %s -C %s > %s", cpp_commandline, cflags, sname, gSName);
-    }
-    else {
-        snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s -C %s > %s", cpp_commandline, sname, gSName);
-    }
+        if(cflags) {
+            snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s %s -C %s > %s", cpp_commandline, cflags, sname, gSName);
+        }
+        else {
+            snprintf(cmd, 1024, "cpp -D_GNU_SOURCE -U__GNUC__ %s -C %s > %s", cpp_commandline, sname, gSName);
+        }
 #endif
 
-    puts(cmd);
-    int rc = system(cmd);
+        puts(cmd);
+        int rc = system(cmd);
 
-    if(rc != 0) {
-        fprintf(stderr, "failed to cpp(1)\n");
-        exit(2);
+        if(rc != 0) {
+            fprintf(stderr, "failed to cpp(1)\n");
+            exit(2);
+        }
     }
 
     compiler_init();

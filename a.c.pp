@@ -5118,12 +5118,862 @@ extern int getloadavg (double __loadavg[], int __nelem)
 
 
 # 3 "a.c" 2
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 1 3 4
+/* Copyright (C) 1992-2018 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+/* This administrivia gets added to the beginning of limits.h
+   if the system has its own version of limits.h.  */
+
+/* We use _GCC_LIMITS_H_ because we want this not to match
+   any macros that the system's limits.h uses for its own purposes.  */
 
 
 
-# 5 "a.c"
+
+/* Use "..." so that we find syslimits.h only in this same directory.  */
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/syslimits.h" 1 3 4
+/* syslimits.h stands for the system's own limits.h file.
+   If we can use it ok unmodified, then we install this text.
+   If fixincludes fixes it, then the fixed version is installed
+   instead of this text.  */
+
+
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 1 3 4
+/* Copyright (C) 1992-2018 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+/* This administrivia gets added to the beginning of limits.h
+   if the system has its own version of limits.h.  */
+
+/* We use _GCC_LIMITS_H_ because we want this not to match
+   any macros that the system's limits.h uses for its own purposes.  */
+# 194 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 3 4
+# 1 "/usr/include/limits.h" 1 3 4
+/* Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/*
+ *	ISO C99 Standard: 7.10/5.2.4.2.1 Sizes of integer types	<limits.h>
+ */
+
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 1 3 4
+/* Handle feature test macros at the start of a header.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This header is internal to glibc and should not be included outside
+   of glibc headers.  Headers including it must define
+   __GLIBC_INTERNAL_STARTING_HEADER_IMPLEMENTATION first.  This header
+   cannot have multiple include guards because ISO C feature test
+   macros depend on the definition of the macro when an affected
+   header is included, not when the first system header is
+   included.  */
+
+
+
+
+
+
+
+# 1 "/usr/include/features.h" 1 3 4
+/* Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+# 34 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 2 3 4
+
+/* ISO/IEC TR 24731-2:2010 defines the __STDC_WANT_LIB_EXT2__
+   macro.  */
+# 45 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 3 4
+/* ISO/IEC TS 18661-1:2014 defines the __STDC_WANT_IEC_60559_BFP_EXT__
+   macro.  */
+
+
+
+
+
+
+
+/* ISO/IEC TS 18661-4:2015 defines the
+   __STDC_WANT_IEC_60559_FUNCS_EXT__ macro.  */
+
+
+
+
+
+
+
+/* ISO/IEC TS 18661-3:2015 defines the
+   __STDC_WANT_IEC_60559_TYPES_EXT__ macro.  */
+# 27 "/usr/include/limits.h" 2 3 4
+
+
+/* Maximum length of any multibyte character in any locale.
+   We define this value here since the gcc header does not define
+   the correct value.  */
+
+
+
+/* If we are not using GNU CC we have to define all the symbols ourself.
+   Otherwise use gcc's definitions (see below).  */
+
+
+/* We only protect from multiple inclusion here, because all the other
+   #include's protect themselves, and in GCC 2 we may #include_next through
+   multiple copies of this file before we get to GCC's.  */
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+/* Determine the wordsize from the preprocessor defines.  */
+# 13 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 3 4
+/* Both x86-64 and x32 use the 64-bit system call interface.  */
+# 46 "/usr/include/limits.h" 2 3 4
+
+/* We don't have #include_next.
+   Define ANSI <limits.h> for standard 32-bit words.  */
+
+/* These assume 8-bit `char's, 16-bit `short int's,
+   and 32-bit `int's and `long int's.  */
+
+/* Number of bits in a `char'.	*/
+
+
+/* Minimum and maximum values a `signed char' can hold.  */
+
+
+
+/* Maximum value an `unsigned char' can hold.  (Minimum is 0.)  */
+
+
+/* Minimum and maximum values a `char' can hold.  */
+# 72 "/usr/include/limits.h" 3 4
+/* Minimum and maximum values a `signed short int' can hold.  */
+
+
+
+/* Maximum value an `unsigned short int' can hold.  (Minimum is 0.)  */
+
+
+/* Minimum and maximum values a `signed int' can hold.  */
+
+
+
+/* Maximum value an `unsigned int' can hold.  (Minimum is 0.)  */
+
+
+/* Minimum and maximum values a `signed long int' can hold.  */
+
+
+
+
+
+
+
+/* Maximum value an `unsigned long int' can hold.  (Minimum is 0.)  */
+# 103 "/usr/include/limits.h" 3 4
+/* Minimum and maximum values a `signed long long int' can hold.  */
+
+
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
+# 117 "/usr/include/limits.h" 3 4
+ /* Get the compiler's limits.h, which defines almost all the ISO constants.
+
+    We put this #include_next outside the double inclusion check because
+    it should be possible to include this file more than once and still get
+    the definitions from gcc's header.  */
+
+
+
+
+
+/* The <limits.h> files in some gcc versions don't define LLONG_MIN,
+   LLONG_MAX, and ULLONG_MAX.  Instead only the values gcc defined for
+   ages are available.  */
+# 142 "/usr/include/limits.h" 3 4
+/* The integer width macros are not defined by GCC's <limits.h> before
+   GCC 7, or if _GNU_SOURCE rather than
+   __STDC_WANT_IEC_60559_BFP_EXT__ is used to enable this feature.  */
+# 182 "/usr/include/limits.h" 3 4
+/* POSIX adds things to <limits.h>.  */
+# 1 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 1 3 4
+/* Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/*
+ *	POSIX Standard: 2.9.2 Minimum Values	Added to <limits.h>
+ *
+ *	Never include this file directly; use <limits.h> instead.
+ */
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
+/* Determine the wordsize from the preprocessor defines.  */
+# 13 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 3 4
+/* Both x86-64 and x32 use the 64-bit system call interface.  */
+# 28 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 2 3 4
+
+/* These are the standard-mandated minimum values.  */
+
+/* Minimum number of operations in one list I/O call.  */
+
+
+/* Minimal number of outstanding asynchronous I/O operations.  */
+
+
+/* Maximum length of arguments to `execve', including environment.  */
+
+
+/* Maximum simultaneous processes per real user ID.  */
+
+
+
+
+
+
+/* Minimal number of timer expiration overruns.  */
+
+
+/* Maximum length of a host name (not including the terminating null)
+   as returned from the GETHOSTNAME function.  */
+
+
+/* Maximum link count of a file.  */
+
+
+/* Maximum length of login name.  */
+
+
+/* Number of bytes in a terminal canonical input queue.  */
+
+
+/* Number of bytes for which space will be
+   available in a terminal input queue.  */
+
+
+/* Maximum number of message queues open for a process.  */
+
+
+/* Maximum number of supported message priorities.  */
+
+
+/* Number of bytes in a filename.  */
+
+
+/* Number of simultaneous supplementary group IDs per process.  */
+
+
+
+
+
+
+/* Number of files one process can have open at once.  */
+
+
+
+
+
+
+
+/* Number of descriptors that a process may examine with `pselect' or
+   `select'.  */
+
+
+
+/* Number of bytes in a pathname.  */
+
+
+/* Number of bytes than can be written atomically to a pipe.  */
+
+
+/* The number of repeated occurrences of a BRE permitted by the
+   REGEXEC and REGCOMP functions when using the interval notation.  */
+
+
+/* Minimal number of realtime signals reserved for the application.  */
+
+
+/* Number of semaphores a process can have.  */
+
+
+/* Maximal value of a semaphore.  */
+
+
+/* Number of pending realtime signals.  */
+
+
+/* Largest value of a `ssize_t'.  */
+
+
+/* Number of streams a process can have open at once.  */
+
+
+/* The number of bytes in a symbolic link.  */
+
+
+/* The number of symbolic links that can be traversed in the
+   resolution of a pathname in the absence of a loop.  */
+
+
+/* Number of timer for a process.  */
+
+
+/* Maximum number of characters in a tty name.  */
+
+
+/* Maximum length of a timezone name (element of `tzname').  */
+
+
+
+
+
+
+
+/* Maximum number of connections that can be queued on a socket.  */
+
+
+/* Maximum number of bytes that can be buffered on a socket for send
+   or receive.  */
+
+
+/* Maximum number of elements in an `iovec' array.  */
+
+
+
+/* Maximum clock resolution in nanoseconds.  */
+
+
+
+/* Get the implementation-specific values for the above.  */
+# 1 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 1 3 4
+/* Minimum guaranteed maximum values for system limits.  Linux version.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; see the file COPYING.LIB.  If
+   not, see <http://www.gnu.org/licenses/>.  */
+
+/* The kernel header pollutes the namespace with the NR_OPEN symbol
+   and defines LINK_MAX although filesystems have different maxima.  A
+   similar thing is true for OPEN_MAX: the limit can be changed at
+   runtime and therefore the macro must not be defined.  Remove this
+   after including the header if necessary.  */
+# 37 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 3 4
+/* The kernel sources contain a file with all the needed information.  */
+# 1 "/usr/include/linux/limits.h" 1 3 4
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+# 39 "/usr/include/x86_64-linux-gnu/bits/local_lim.h" 2 3 4
+
+/* Have to remove NR_OPEN?  */
+
+
+
+
+/* Have to remove LINK_MAX?  */
+
+
+
+
+/* Have to remove OPEN_MAX?  */
+
+
+
+
+/* Have to remove ARG_MAX?  */
+
+
+
+
+
+/* The number of data keys per process.  */
+
+/* This is the value this implementation supports.  */
+
+
+/* Controlling the iterations of destructors for thread-specific data.  */
+
+/* Number of iterations this implementation does.  */
+
+
+/* The number of threads per process.  */
+
+/* We have no predefined limit on the number of threads.  */
+
+
+/* Maximum amount by which a process can descrease its asynchronous I/O
+   priority level.  */
+
+
+/* Minimum size for a thread.  We are free to choose a reasonable value.  */
+
+
+/* Maximum number of timer expiration overruns.  */
+
+
+/* Maximum tty name length.  */
+
+
+/* Maximum login name length.  This is arbitrary.  */
+
+
+/* Maximum host name length.  */
+
+
+/* Maximum message queue priority level.  */
+
+
+/* Maximum value the semaphore can have.  */
+# 162 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 2 3 4
+
+
+
+/* ssize_t is not formally required to be the signed type
+   corresponding to size_t, but it is for all configurations supported
+   by glibc.  */
+# 176 "/usr/include/x86_64-linux-gnu/bits/posix1_lim.h" 3 4
+/* This value is a guaranteed minimum maximum.
+   The current maximum can be got from `sysconf'.  */
+# 184 "/usr/include/limits.h" 2 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/posix2_lim.h" 1 3 4
+/* Copyright (C) 1991-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/*
+ * Never include this file directly; include <limits.h> instead.
+ */
+
+
+
+
+
+/* The maximum `ibase' and `obase' values allowed by the `bc' utility.  */
+
+
+/* The maximum number of elements allowed in an array by the `bc' utility.  */
+
+
+/* The maximum `scale' value allowed by the `bc' utility.  */
+
+
+/* The maximum length of a string constant accepted by the `bc' utility.  */
+
+
+/* The maximum number of weights that can be assigned to an entry of
+   the LC_COLLATE `order' keyword in the locale definition file.  */
+
+
+/* The maximum number of expressions that can be nested
+   within parentheses by the `expr' utility.  */
+
+
+/* The maximum length, in bytes, of an input line.  */
+
+
+/* The maximum number of repeated occurrences of a regular expression
+   permitted when using the interval notation `\{M,N\}'.  */
+
+
+/* The maximum number of bytes in a character class name.  We have no
+   fixed limit, 2048 is a high number.  */
+
+
+
+/* These values are implementation-specific,
+   and may vary within the implementation.
+   Their precise values can be obtained from sysconf.  */
+# 87 "/usr/include/x86_64-linux-gnu/bits/posix2_lim.h" 3 4
+/* This value is defined like this in regex.h.  */
+# 188 "/usr/include/limits.h" 2 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/xopen_lim.h" 1 3 4
+/* Copyright (C) 1996-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+/*
+ * Never include this file directly; use <limits.h> instead.
+ */
+
+/* Additional definitions from X/Open Portability Guide, Issue 4, Version 2
+   System Interfaces and Headers, 4.16 <limits.h>
+
+   Please note only the values which are not greater than the minimum
+   stated in the standard document are listed.  The `sysconf' functions
+   should be used to obtain the actual value.  */
+
+
+
+
+/* We do not provide fixed values for
+
+   ARG_MAX	Maximum length of argument to the `exec' function
+		including environment data.
+
+   ATEXIT_MAX	Maximum number of functions that may be registered
+		with `atexit'.
+
+   CHILD_MAX	Maximum number of simultaneous processes per real
+		user ID.
+
+   OPEN_MAX	Maximum number of files that one process can have open
+		at anyone time.
+
+   PAGESIZE
+   PAGE_SIZE	Size of bytes of a page.
+
+   PASS_MAX	Maximum number of significant bytes in a password.
+
+   We only provide a fixed limit for
+
+   IOV_MAX	Maximum number of `iovec' structures that one process has
+		available for use with `readv' or writev'.
+
+   if this is indeed fixed by the underlying system.
+*/
+
+
+/* Maximum number of `iovec' structures that may be used in a single call
+   to `readv', `writev', etc.  */
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/uio_lim.h" 1 3 4
+/* Implementation limits related to sys/uio.h - Linux version.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+
+
+
+/* Maximum length of the 'struct iovec' array in a single call to
+   readv or writev.
+
+   This macro has different values in different kernel versions.  The
+   latest versions of the kernel use 1024 and this is good choice.  Since
+   the C library implementation of readv/writev is able to emulate the
+   functionality even if the currently running kernel does not support
+   this large value the readv/writev call will not fail because of this.  */
+# 65 "/usr/include/x86_64-linux-gnu/bits/xopen_lim.h" 2 3 4
+
+
+
+
+
+
+/* Maximum value of `digit' in calls to the `printf' and `scanf'
+   functions.  We have no limit, so return a reasonable value.  */
+
+
+/* Maximum number of bytes in a `LANG' name.  We have no limit.  */
+
+
+/* Maximum message number.  We have no limit.  */
+
+
+/* Maximum number of bytes in N-to-1 collation mapping.  We have no
+   limit.  */
+
+
+
+
+/* Maximum set number.  We have no limit.  */
+
+
+/* Maximum number of bytes in a message.  We have no limit.  */
+
+
+/* Default process priority.  */
+
+
+
+/* Number of bits in a word of type `int'.  */
+# 124 "/usr/include/x86_64-linux-gnu/bits/xopen_lim.h" 3 4
+/* Number of bits in a word of type `long int'.  */
+
+
+
+
+/* Safe assumption.  */
+# 192 "/usr/include/limits.h" 2 3 4
+# 195 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 2 3 4
+# 8 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/syslimits.h" 2 3 4
+# 35 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 2 3 4
+
+/* Copyright (C) 1991-2018 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+
+
+
+/* Number of bits in a `char'.  */
+
+
+
+/* Maximum length of a multibyte character.  */
+
+
+
+
+/* Minimum and maximum values a `signed char' can hold.  */
+
+
+
+
+
+/* Maximum value an `unsigned char' can hold.  (Minimum is 0).  */
+
+
+
+
+
+
+
+/* Minimum and maximum values a `char' can hold.  */
+# 102 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 3 4
+/* Minimum and maximum values a `signed short int' can hold.  */
+
+
+
+
+
+/* Maximum value an `unsigned short int' can hold.  (Minimum is 0).  */
+
+
+
+
+
+
+
+/* Minimum and maximum values a `signed int' can hold.  */
+
+
+
+
+
+/* Maximum value an `unsigned int' can hold.  (Minimum is 0).  */
+
+
+
+/* Minimum and maximum values a `signed long int' can hold.
+   (Same as `int').  */
+
+
+
+
+
+/* Maximum value an `unsigned long int' can hold.  (Minimum is 0).  */
+
+
+
+
+/* Minimum and maximum values a `signed long long int' can hold.  */
+
+
+
+
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0).  */
+
+
+
+
+
+/* Minimum and maximum values a `signed long long int' can hold.  */
+
+
+
+
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0).  */
+# 188 "/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed/limits.h" 3 4
+/* This administrivia gets added to the end of limits.h
+   if the system has its own version of limits.h.  */
+# 4 "a.c" 2
+
+
+
+# 6 "a.c"
 int main()
 {
+/*
     int a = 123;
     int* b = &a;
 
@@ -5139,6 +5989,15 @@ int main()
     int** e = &d;
 
     printf("%d\n", **e);
+*/
+
+    int len = 123;
+# 27 "a.c" 3 4
+   
+# 27 "a.c" 3 4
+  16
+//# 27 "a.c"
+              * len;
 
     return 0;
 }

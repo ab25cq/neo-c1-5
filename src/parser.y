@@ -52,6 +52,7 @@ unsigned int multiple_nodes[128];
 int num_multiple_node = 0;
 char recent_type_name[VAR_NAME_MAX];
 char struct_name_now[VAR_NAME_MAX];
+
 %}
 
 %union {
@@ -175,7 +176,7 @@ char struct_name_now[VAR_NAME_MAX];
 %type <cval> name
 %type <cval> struct_name
 %type <cval> struct_name2
-%type <node> program function block block_no_lv_table function_block block_end statment node assign_node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment end_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init source_point_macro typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields none_elif_statment;
+%type <node> program function block function_block block_end statment node assign_node function_params function_params2 function_params3 function_params_end exp comma_exp params elif_statment prepare_elif_statment end_elif_statment struct_ fields union_ method_generics_types global_variable enum_ enum_fields array_index array_value switch_block case_statment after_return_case_statment cstring_array_value2 sub_array sub_array_init typedef_ function_attribute pre_function_attribute function_attribute_core restrict typedef_attribute typedef_attribute_core conditional_exp type_attribute2 type_attribute2_core free_right_value_objects some_variable_names global_some_variable_names local_some_variable_names define_struct_before_fields none_elif_statment;
 
 %left '[' ']' '='
 %left '?' ':'
@@ -195,27 +196,7 @@ char struct_name_now[VAR_NAME_MAX];
 
 %%
 
-source_point_macro: '#' INTNUM CSTRING {
-        xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
-        }
-        | '#' INTNUM CSTRING INTNUM {
-        xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
-        }
-        | '#' INTNUM CSTRING INTNUM INTNUM INTNUM {
-        xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
-        }
-        | '#' INTNUM CSTRING INTNUM INTNUM {
-        xstrncpy(gSName, $3, PATH_MAX);
-        yylineno = $2;
-        }
-        ;
-
 program:
-        source_point_macro {
-        }
         | ERROR {
             fprintf(stderr, "%s\n", $1);
             exit(2);
@@ -243,8 +224,6 @@ program:
         | program ERROR {
             fprintf(stderr, "%s\n", $2);
             exit(2);
-        }
-        | program source_point_macro {
         }
         | program function {
             $$ = compile($2, &cinfo);
@@ -1497,10 +1476,6 @@ local_some_variable_names:
         multiple_init_values[num_multiple_variable_names-1] = $3;
     }
 
-
-
-
-
     | IDENTIFIER const_array_type '=' '{' cstring_array_value2 '}' { 
         num_multiple_variable_names  = 0;
 
@@ -1958,10 +1933,6 @@ fields:  {
 
             $$ = fields[num_fields-1]; 
             append_field_to_fields(fields[num_fields-1], var_name, type_name); 
-        }
-        | source_point_macro {
-        }
-        | fields source_point_macro {
         }
         | UNION '{' fields '}' ';' {
                 static int anonyomous_union_num = 0;
@@ -3163,7 +3134,8 @@ function_generics_types: {
     ;
 
 
-block:  statment                  { 
+block:  
+        | statment                  { 
             prev_block[num_prev_block] = block;
             num_prev_block++;
 
@@ -3198,42 +3170,8 @@ block:  statment                  {
         }
         ;
 
-block_no_lv_table:  statment                  { 
-            prev_block[num_prev_block] = block;
-            num_prev_block++;
-
-            if(num_prev_block >= BLOCK_NEST_MAX) {
-                fprintf(stderr, "overflow nest block\n");
-                exit(2);
-            }
-
-            BOOL create_lv_table = FALSE;
-
-            block = sNodeTree_create_block(create_lv_table, gSName, yylineno); 
-            append_node_to_node_block(block, $1); 
-
-            $$ = block; 
-
-            int i=0;
-            for(i=0; i< num_multiple_node; i++) {
-                append_node_to_node_block(block, multiple_nodes[i]); 
-            }
-            num_multiple_node = 0;
-        } 
-        | block statment          { 
-            $$ = block; 
-
-            append_node_to_node_block(block, $2); 
-
-            int i=0;
-            for(i=0; i< num_multiple_node; i++) {
-                append_node_to_node_block(block, multiple_nodes[i]); 
-            }
-            num_multiple_node = 0;
-        }
-        ;
-
-function_block:  statment                  { 
+function_block:  
+        | statment                  { 
             prev_block[num_prev_block] = block;
             num_prev_block++;
 
@@ -3636,7 +3574,41 @@ elif_statment:
     ;
 
 exp: 
-    pointer IDENTIFIER '=' pointer node {
+    | node {
+        $$ = $1;
+    }
+    | assign_node {
+        $$ = $1;
+    }
+    | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, yylineno); }
+    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, gSName, yylineno); }
+    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, yylineno); }
+    | exp '*' exp   { $$ = sNodeTree_create_mult($1, $3,  gSName, yylineno); }
+    | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, yylineno); }
+    | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
+    | exp NOT_EQ exp   { $$ = sNodeTree_create_not_equals($1, $3, gSName, yylineno); }
+    | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, yylineno); }
+    | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, yylineno); }
+    | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, yylineno); }
+    | exp LTEQ exp   { $$ = sNodeTree_create_le($1, $3, gSName, yylineno); }
+    | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, yylineno); }
+    | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, yylineno); }
+    | exp LSHIFT exp { $$ = sNodeTree_create_lshift($1, $3, gSName, yylineno); }
+    | exp RSHIFT exp { $$ = sNodeTree_create_rshift($1, $3, gSName, yylineno); }
+    | exp '|' exp    { $$ = sNodeTree_create_or($1, $3, gSName, yylineno); }
+    | exp '^' exp    { $$ = sNodeTree_create_xor($1, $3, gSName, yylineno); }
+    | exp '&' exp    { $$ = sNodeTree_create_and($1, $3, gSName, yylineno); }
+    | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, yylineno); }
+    | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, yylineno); }
+    | '&' node       { $$ = sNodeTree_create_refference($2, gSName, yylineno); }
+    | exp '?' exp ':' exp {
+        unsigned int conditional = $1;
+        unsigned int value1 = $3;
+        unsigned int value2 = $5;
+        
+        $$ = sNodeTree_create_conditional(conditional, value1, value2, gSName, yylineno);
+    }
+    | pointer IDENTIFIER '=' pointer node {
         unsigned int right_node = $5;
 
         int i;
@@ -3668,40 +3640,6 @@ exp:
             $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
         }
     }
-    | node {
-        $$ = $1;
-    }
-    | assign_node {
-        $$ = $1;
-    }
-    | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, yylineno); }
-    | exp '-' exp    { $$ = sNodeTree_create_sub($1, $3, gSName, yylineno); }
-    | exp '*' exp   { $$ = sNodeTree_create_mult($1, $3,  gSName, yylineno); }
-    | exp '/' exp    { $$ = sNodeTree_create_div($1, $3, gSName, yylineno); }
-    | exp '%' exp    { $$ = sNodeTree_create_mod($1, $3, gSName, yylineno); }
-    | exp EQEQ exp   { $$ = sNodeTree_create_equals($1, $3, gSName, yylineno); }
-    | exp NOT_EQ exp   { $$ = sNodeTree_create_not_equals($1, $3, gSName, yylineno); }
-    | exp '>' exp    { $$ = sNodeTree_create_gt($1, $3, gSName, yylineno); }
-    | exp '<' exp    { $$ = sNodeTree_create_lt($1, $3, gSName, yylineno); }
-    | exp GTEQ exp   { $$ = sNodeTree_create_ge($1, $3, gSName, yylineno); }
-    | exp LTEQ exp   { $$ = sNodeTree_create_le($1, $3, gSName, yylineno); }
-    | exp ANDAND exp { $$ = sNodeTree_create_and_and($1, $3, gSName, yylineno); }
-    | exp OROR exp   { $$ = sNodeTree_create_or_or($1, $3, gSName, yylineno); }
-    | exp LSHIFT exp { $$ = sNodeTree_create_lshift($1, $3, gSName, yylineno); }
-    | exp RSHIFT exp { $$ = sNodeTree_create_rshift($1, $3, gSName, yylineno); }
-    | exp '|' exp    { $$ = sNodeTree_create_or($1, $3, gSName, yylineno); }
-    | exp '^' exp    { $$ = sNodeTree_create_xor($1, $3, gSName, yylineno); }
-    | exp '&' exp    { $$ = sNodeTree_create_and($1, $3, gSName, yylineno); }
-    | '!' exp        { $$ = sNodeTree_create_logical_denial($2, gSName, yylineno); }
-    | '~' exp        { $$ = sNodeTree_create_complement($2, gSName, yylineno); }
-    | '&' node       { $$ = sNodeTree_create_refference($2, gSName, yylineno); }
-    | exp '?' exp ':' exp {
-        unsigned int conditional = $1;
-        unsigned int value1 = $3;
-        unsigned int value2 = $5;
-        
-        $$ = sNodeTree_create_conditional(conditional, value1, value2, gSName, yylineno);
-    }
     ;
 
 comma_exp: exp {
@@ -3726,7 +3664,7 @@ cstring_array_value2: CSTRING {
     };
 
 assign_node:
-    IDENTIFIER '=' comma_exp { 
+    | IDENTIFIER '=' comma_exp { 
         BOOL alloc = FALSE;
         BOOL global = FALSE;
 
@@ -3795,9 +3733,7 @@ assign_node:
     }
     ;
 
-node: source_point_macro exp {
-            $$ = $2;
-            }
+node: 
         | '(' comma_exp ')'    { $$ = $2; }
         | DUMMY_HEAP exp {
             unsigned int object_node = $2;
@@ -3807,9 +3743,6 @@ node: source_point_macro exp {
             char* var_name = $2;
             $$ = sNodeTree_create_managed(var_name, gSName, yylineno);
         }
-        | exp source_point_macro {
-            $$ = $1;
-            }
         | INTNUM                { $$ = it = sNodeTree_create_int_value($1, gSName, yylineno); }
         | '-' INTNUM                { $$ = it = sNodeTree_create_int_value(-$2, gSName, yylineno); }
         | CHARNUM                { $$ = it = sNodeTree_create_char_value($1, gSName, yylineno); }
@@ -4459,24 +4392,8 @@ params: {
         params = sNodeTree_create_params(gSName, yylineno); 
         $$ = params; 
     }
-    | source_point_macro {
-        params = sNodeTree_create_params(gSName, yylineno); 
-        $$ = params; 
-    }
     | exp { 
         params = sNodeTree_create_params(gSName, yylineno); 
-        append_param_to_params(params, $1); 
-        $$ = params; 
-    }
-    | exp ',' source_point_macro params { 
-        append_param_to_params(params, $1); 
-        $$ = params; 
-    }
-    | exp source_point_macro ',' params { 
-        append_param_to_params(params, $1); 
-        $$ = params; 
-    }
-    | exp source_point_macro ',' source_point_macro params { 
         append_param_to_params(params, $1); 
         $$ = params; 
     }

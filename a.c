@@ -1,6 +1,6 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 
 int main()
 {
@@ -19,6 +19,10 @@ int main()
     int** e = &d;
 
     printf("%d\n", **e);
+
+    int len = MB_LEN_MAX * 2;
+
+    printf("len %d\n", len);
 
     return 0;
 }
