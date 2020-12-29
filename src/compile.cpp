@@ -1581,6 +1581,9 @@ static void convert_type_to_struct_name(sNodeType* node_type, char* type_name2)
             for(i=0; i<node_type->mPointerNum; i++) {
                 xstrncat(type_name2, "p", VAR_NAME_MAX);
             }
+            for(i=0; i<node_type->mArrayDimentionNum; i++) {
+                xstrncat(type_name2, "p", VAR_NAME_MAX);
+            }
         }
     }
 }

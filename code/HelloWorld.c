@@ -967,7 +967,7 @@ int main()
     wstr1[2] = 'c';
     wstr1[3] = '\0';
 
-    xassert("wchar_t* test1", ((wchar_t*)wstr1).to_wstring().equals(wstring("abc")));
+    xassert("wchar_t* test1", wstr1.to_wstring().equals(wstring("abc")));
 
     return 0;
 }
