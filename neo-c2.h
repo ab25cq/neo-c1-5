@@ -1605,6 +1605,9 @@ vector!<T>*% vector!<T>::initialize_with_values(vector!<T>*% self, int len, T& v
     return self;
 }
 
+//////////////////////////////
+// tuple
+//////////////////////////////
 struct tuple1!<T>
 {
     T v1;
@@ -1684,6 +1687,10 @@ bool tuple4!<T,T2,T3,T4>::equals(tuple4!<T, T2, T3, T4>* left, tuple4!<T, T2, T3
 
     return true;
 }
+
+//////////////////////////////
+// map
+//////////////////////////////
 
 #define MAP_TABLE_DEFAULT_SIZE 128
 
@@ -1987,7 +1994,9 @@ inline int wchar_t::compare(wchar_t left, wchar_t right)
 }
 */
 
-/// wchar_t* ///
+//////////////////////////////
+// wchar_t
+//////////////////////////////
 inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
 {
     return wcscmp(left, right) == 0;
@@ -2024,7 +2033,6 @@ inline string wchar_t*::to_string(wchar_t* wstr, char* default_value)
     return result;
 }
 
-/*
 inline wstring wchar_t*::to_wstring(wchar_t* str) 
 {
     int len = wcslen(str);
@@ -2039,6 +2047,74 @@ inline wstring wchar_t*::to_wstring(wchar_t* str)
 inline int compare(wstring& left, wstring& right) 
 {
     return wcscmp(left, right);
+}
+
+//////////////////////////////
+// wstring
+//////////////////////////////
+inline bool wstring::equals(wstring& left, wstring& right)
+{
+    return wcscmp(left, right) == 0;
+}
+
+inline int wstring::length(wstring& str)
+{
+    return wcslen(str);
+}
+
+inline int wstring::get_hash_key(wstring& value)
+{
+    int result = 0;
+    wchar_t* p = value;
+    while(*p) {
+        result += (*p);
+        p++;
+    }
+    return result;
+}
+
+inline string wstring::to_string(wstring& wstr, char* default_value) 
+{
+    size_t len = wcslen(wstr) + 1;
+    int len2 = MB_LEN_MAX * len;
+
+    string result = new char[len2];
+
+    if(wcstombs(result, wstr, len2) < 0) 
+    {
+        xstrncpy(result, default_value, len2);
+    }
+
+    return result;
+}
+
+inline int wstring::compare(wstring& left, wstring& right) 
+{
+    return wcscmp(left, right);
+}
+
+/*
+impl wstring
+{
+    extern bool equals(wstring& left, wstring& right);
+    extern int length(wstring& str);
+    extern int get_hash_key(wstring& value);
+    wstring reverse(wstring& str);
+    extern wstring substring(wstring& str, int head, int tail);
+    extern int index(wstring& str, wchar_t* search_str, int default_value);
+    extern int rindex(wstring& str, wchar_t* search_str, int default_value);
+    extern wstring& delete(wstring& str, int position);
+    extern wstring& delete_range(wstring& str, int head, int tail);
+
+    extern string to_string(wstring& self, char* default_value);
+    extern wstring printable(wstring& str);
+
+    inline int compare(wstring& left, wstring& right) {
+        return wcscmp(left, right);
+    }
+    
+    extern void replace(wstring& self, int index, wchar_t c);
+    extern wchar_t item(wstring& self, int index, wchar_t default_value);
 }
 */
 

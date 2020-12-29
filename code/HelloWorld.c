@@ -960,16 +960,14 @@ int main()
 
     xassert("char* test4", "ABC".compare("DEF") < 0);
 
-/*
-    wchar_t wstr[128];
+    wchar_t wstr1[128];
     
-    wstr[0] = 'a';
-    wstr[1] = 'b';
-    wstr[2] = 'c';
-    wstr[3] = '\0';
+    wstr1[0] = 'a';
+    wstr1[1] = 'b';
+    wstr1[2] = 'c';
+    wstr1[3] = '\0';
 
-    xassert("wchar_t* test1", wstr.to_wstring().equals(wstring("abc")));
-*/
+    xassert("wchar_t* test1", ((wchar_t*)wstr1).to_wstring().equals(wstring("abc")));
 
     return 0;
 }
