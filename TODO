@@ -1,8 +1,8 @@
-map invalid read
-
-convert struct name wchat_, wchar_t*
+同名のstructの多重定義エラーとする。
+同名の変数の多重定義エラーとする。
 
 -----
+map invalid read
 finalize
 a++
 +=
@@ -71,3 +71,5 @@ include stdio.h
 preprocesser
 
 __ASM_NAME__ など
+
+convert struct name wchat_, wchar_t*
