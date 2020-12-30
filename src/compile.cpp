@@ -856,7 +856,6 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
         }
     
         *result_type = FunctionType::get(llvm_result_type, llvm_param_types, false);
-
     }
 
     int i;

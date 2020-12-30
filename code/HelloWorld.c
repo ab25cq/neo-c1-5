@@ -969,6 +969,13 @@ int main()
 
     xassert("wchar_t* test1", wstr1.to_wstring().equals(wstring("abc")));
 
+    buffer*% b1 = new buffer.initialize();
+
+    b1.append_str("ABC");
+    b1.append_str("DEF");
+
+    xassert("buffer test1", b1.to_string().equals("ABCDEF"));
+
     return 0;
 }
 
