@@ -376,6 +376,11 @@ __format__ {
     return(__FORMAT__); 
 }
 
+strftime {
+    strncpy(yylval.cval, yytext, 128);
+    return(STRFTIME); 
+}
+
 deprecated {
     strncpy(yylval.cval, yytext, 128);
     return(DEPRECATED); 

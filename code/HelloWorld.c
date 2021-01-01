@@ -960,6 +960,7 @@ int main()
 
     xassert("char* test4", "ABC".compare("DEF") < 0);
 
+/*
     wchar_t wstr1[128];
     
     wstr1[0] = 'a';
@@ -968,6 +969,7 @@ int main()
     wstr1[3] = '\0';
 
     xassert("wchar_t* test1", wstr1.to_wstring().equals(wstring("abc")));
+*/
 
     buffer*% b1 = new buffer.initialize();
 

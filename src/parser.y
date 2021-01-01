@@ -139,6 +139,7 @@ char struct_name_now[VAR_NAME_MAX];
 %token <cval> __PRINTF__
 %token <cval> __SCANF__
 %token <cval> __RESTRICT
+%token <cval> STRFTIME
 %token <cval> __ASM__
 %token <cval> __NONNULL__
 %token <cval> __PURE__
@@ -1308,6 +1309,131 @@ type_and_variable_name:
 
         multiple_init_values[num_multiple_variable_names-1] = 0;
     }
+    | type TYPE_NAME type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+
+        num_multiple_variable_names = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type TYPE_NAME '[' ']' type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, "*", VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type TYPE_NAME array_type type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, $3, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type TYPE_NAME const_array_type type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, $3, VAR_NAME_MAX);
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type TYPE_NAME ':' INTNUM type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, ":", VAR_NAME_MAX);
+
+        char buf[128];
+        snprintf(buf, 128, "%d", $4);
+
+        xstrncat(type_name, buf, VAR_NAME_MAX);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], $2, VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type '(' '*' TYPE_NAME ')' '(' type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $7, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $4, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type '(' '*' TYPE_NAME ')' '(' function_pointer_type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $7, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $4, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type '(' '*' VOLATILE TYPE_NAME ')' '(' type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $8, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $5, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | type '(' '*' VOLATILE TYPE_NAME ')' '(' function_pointer_type_params ')' type_attribute2 {
+        xstrncpy($$, $1, VAR_NAME_MAX);
+        xstrncat($$, " lambda(", VAR_NAME_MAX);
+        xstrncat($$, $8, VAR_NAME_MAX);
+        xstrncat($$, ")", VAR_NAME_MAX);
+
+        xstrncpy(variable_names[num_variable_names++], $5, VAR_NAME_MAX);
+
+        xstrncpy(type_params, "", VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
     ;
 
 some_variable_names: 
@@ -1320,6 +1446,20 @@ some_variable_names:
         multiple_init_values[num_multiple_variable_names-1] = 0;
     }
     | some_variable_names ',' IDENTIFIER {
+        xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
+        num_multiple_variable_names ++;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | TYPE_NAME {
+        num_multiple_variable_names  = 0;
+
+        xstrncpy(variable_names[num_variable_names++], $1, VAR_NAME_MAX);
+        num_multiple_variable_names ++;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
+    | some_variable_names ',' TYPE_NAME {
         xstrncpy(variable_names[num_variable_names++], $3, VAR_NAME_MAX);
         num_multiple_variable_names ++;
 
@@ -2316,6 +2456,9 @@ name:
     | __PRINTF__ {
         xstrncpy($$, "printf", VAR_NAME_MAX);
     }
+    | STRFTIME {
+        xstrncpy($$, "strftime", VAR_NAME_MAX);
+    }
     | __SCANF__ {
         xstrncpy($$, "scanf", VAR_NAME_MAX);
     }
@@ -2839,6 +2982,7 @@ function_attribute_core:
     | __MALLOC__ { }
     | __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
     | __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    | __FORMAT__ '(' STRFTIME ',' INTNUM ',' INTNUM ')'
     | __PURE__ { }
     | __NONNULL__ '(' INTNUM ')' { }
     | __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
@@ -2861,6 +3005,7 @@ function_attribute_core:
     | function_attribute_core ',' __MALLOC__ { }
     | function_attribute_core ',' __FORMAT__ '(' __PRINTF__ ',' INTNUM ',' INTNUM ')'
     | function_attribute_core ',' __FORMAT__ '(' __SCANF__ ',' INTNUM ',' INTNUM ')'
+    | function_attribute_core ',' __FORMAT__ '(' STRFTIME ',' INTNUM ',' INTNUM ')'
     | function_attribute_core ',' __PURE__ { }
     | function_attribute_core __NONNULL__ '(' INTNUM ')' { }
     | function_attribute_core __NONNULL__ '(' INTNUM ',' INTNUM ')' { }
