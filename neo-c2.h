@@ -1966,6 +1966,7 @@ int map!<T,T2>::length(map!<T, T2>* self)
 //////////////////////////////
 // wchar_t
 //////////////////////////////
+/*
 inline bool wchar_t*::equals(wchar_t* left, wchar_t* right)
 {
     return wcscmp(left, right) == 0;
@@ -2013,10 +2014,11 @@ inline wstring wchar_t*::to_wstring(wchar_t* str)
     return wstr;
 }
 
-inline int compare(wstring& left, wstring& right) 
+inline int wchar_t*::compare(wstring& left, wstring& right) 
 {
     return wcscmp(left, right);
 }
+*/
 
 //////////////////////////////
 // wstring
@@ -2102,10 +2104,14 @@ inline string string::reverse(string& str)
     string result = new char[len + 1];
 
     for(int i=0; i<len; i++) {
+printf("%c\n", str[len-i-1]);
         result[i] = str[len-i-1];
+printf("(%c)\n", result[i]);
     }
 
     result[len] = '\0';
+
+printf("reverse %s\n", result);
 
     return result;
 }
