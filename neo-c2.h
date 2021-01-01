@@ -410,13 +410,14 @@ inline wstring string::to_wstring(string& value)
 //////////////////////////////
 /// buffer
 //////////////////////////////
-struct buffer {
+struct buffer 
+{
     char* buf;
     int len;
     int size;
 };
 
-buffer*% buffer::initialize(buffer*% self)
+inline buffer*% buffer::initialize(buffer*% self)
 {
     self.size = 128;
     self.buf = malloc(self.size);
@@ -426,17 +427,17 @@ buffer*% buffer::initialize(buffer*% self)
     return self;
 }
 
-void buffer::finalize(buffer* self) 
+inline void buffer::finalize(buffer* self) 
 {
     free(self.buf);
 }
 
-int buffer::length(buffer* self) 
+inline int buffer::length(buffer* self) 
 {
     return self.len;
 }
 
-void buffer::append(buffer* self, char* mem, size_t size)
+inline void buffer::append(buffer* self, char* mem, size_t size)
 {
     if(self.len + size + 1 + 1 >= self.size) {
         int new_size = (self.size + size + 1) * 2;
@@ -450,7 +451,7 @@ void buffer::append(buffer* self, char* mem, size_t size)
     self.buf[self.len] = '\0';
 }
 
-void buffer::append_char(buffer* self, char c)
+inline void buffer::append_char(buffer* self, char c)
 {
     if(self.len + 1 + 1 + 1 >= self.size) {
         int new_size = (self.size + 10 + 1) * 2;
@@ -464,22 +465,21 @@ void buffer::append_char(buffer* self, char c)
     self.buf[self.len] = '\0';
 }
 
-void buffer::append_str(buffer* self, char* str)
+inline void buffer::append_str(buffer* self, char* str)
 {
     self.append(str, strlen(str));
 }
 
-void buffer::append_nullterminated_str(buffer* self, char* str)
+inline void buffer::append_nullterminated_str(buffer* self, char* str)
 {
     self.append(str, strlen(str));
     self.append_char('\0');
 }
 
-string buffer::to_string(buffer* self)
+inline string buffer::to_string(buffer* self)
 {
     return (string(self.buf));
 }
-
 
 //////////////////////////////
 /// list
@@ -2093,7 +2093,266 @@ inline int wchar_t::compare(wchar_t left, wchar_t right)
 }
 */
 
+//////////////////////////////
+// string core
+//////////////////////////////
+inline string string::reverse(string& str) 
+{
+    int len = strlen(str);
+    string result = new char[len + 1];
+
+    for(int i=0; i<len; i++) {
+        result[i] = str[len-i-1];
+    }
+
+    result[len] = '\0';
+
+    return result;
+}
+
+inline string string::substring(string& str, int head, int tail)
+{
+    if(str == null) {
+        return string("");
+    }
+
+    int len = strlen(str);
+
+    if(head < 0) {
+        head += len;
+    }
+    if(tail < 0) {
+        tail += len + 1;
+    }
+
+    if(head > tail) {
+        return string(str).substring(tail, head).reverse();
+    }
+
+    if(head < 0) {
+        head = 0;
+    }
+
+    if(tail >= len) {
+        tail = len;
+    }
+
+    if(head == tail) {
+        return string("");
+    }
+
+    if(tail-head+1 < 1) {
+        return string("");
+    }
+
+    string result = new char[tail-head+1];
+
+    memcpy(result, str + head, tail-head);
+    result[tail-head] = '\0';
+
+    return result;
+}
+
+inline int string::index(string& str, char* search_str, int default_value)
+{
+    char* head = strstr(str, search_str);
+
+    if(head == null) {
+        return default_value;
+    }
+
+    return head - str;
+}
+
+inline int string::rindex(string& str, char* search_str, int default_value)
+{
+    int len = strlen(search_str);
+    char* p = str + strlen(str) - len;
+
+    while(p >= str) {
+        if(strncmp(p, search_str, len) == 0) {
+            return p - str;
+        }
+
+        p--;
+    }
+
+    return default_value;
+}
+
+inline string& string::delete(string& str, int position) 
+{
+    int len = strlen(str);
+    
+    if(position < 0) {
+        position += len;
+    }
+
+    if(position < 0) {
+        position = 0;
+    }
+
+    if(position >= len) {
+        position = len -1;
+
+        if(position < 0) {
+            return str;
+        }
+    }
+    
+    string sub_str = string(str).substring(position+1, -1);
+
+    memcpy(str + position, sub_str, sub_str.length()+1);
+
+    return str;
+}
+
+inline string& string::delete_range(string& str, int head, int tail) 
+{
+    int len = strlen(str);
+
+    if(strcmp(str, "") == 0) {
+        return str;
+    }
+    
+    if(head < 0) {
+       head += len;
+    }
+    
+    if(tail < 0) {
+       tail += len + 1;
+    }
+
+    if(head < 0) {
+        head = 0;
+    }
+
+    if(tail < 0) {
+        return str;
+    }
+
+    if(tail >= len) {
+        tail = len;
+    }
+    
+    string sub_str = string(str).substring(tail, -1);
+
+    memcpy(str + head, sub_str, sub_str.length()+1);
+
+    return str;
+}
+
+inline string string::printable(string& str)
+{
+    int len = str.length();
+    string result = new char[len*2+1];
+
+    int n = 0;
+    for(int i=0; i<len; i++) {
+        char c = str[i];
+
+        if((c >= 0 && c < ' ') 
+            || c == 127)
+        {
+            result[n++] = '^';
+            result[n++] = c + 'A' - 1;
+        }
+        else {
+            result[n++] = c;
+        }
+    }
+
+    result[n] = '\0';
+
+    return result;
+}
+
+inline buffer*% string::to_buffer(string& self) 
+{
+    buffer*% result = new buffer.initialize();
+
+    result.append_str(self);
+
+    return result;
+}
+
+inline list!<string>*% string::split_char(string& self, char c) 
+{
+    list!<string>*% result = new list!<string>.initialize();
+
+    buffer*% str = new buffer.initialize();
+
+    for(int i=0; i<self.length(); i++) {
+        if(self[i] == c) {
+            result.push_back(string(str.buf));
+            str = new buffer.initialize();
+        }
+        else {
+            str.append_char(self[i]);
+        }
+    }
+    if(str.length() != 0) {
+        result.push_back(string(str.buf));
+    }
+
+    return result;
+}
+
+inline char string::item(string& self, int index, char default_value)
+{
+    int len = strlen(self);
+
+    if(strcmp(self, "") == 0) {
+        return default_value;
+    }
+    
+    if(index < 0) {
+       index += len;
+    }
+
+    if(index < 0 || index >= len) {
+        return default_value;
+    }
+    
+    return self[index];
+}
+
+inline void string::replace(string& self, int index, char c) 
+{
+    int len = strlen(self);
+
+    if(strcmp(self, "") == 0) {
+        return;
+    }
+    
+    if(index < 0) {
+       index += len;
+    }
+
+    if(index >= len) {
+        index = len-1;
+    }
+
+    if(index < 0) {
+        index = 0;
+    }
+    
+    self[index] = c;
+}
+
 /*
+impl string
+{
+    extern int index_regex(string& str, nregex reg, int default_value);
+    extern int rindex_regex(string& str, nregex reg, int default_value);
+    extern string sub(string& self, nregex reg, char* replace, list<string>?* group_strings);
+    extern bool match(string& self, nregex reg, list<string>?* group_strings);
+    list<string>*% scan(string& self, nregex reg);
+    list<string>*% split(string& self, nregex reg);
+    
+    extern nregex to_regex(string& self);
+}
+
 struct regex_struct {
     string str;
     pcre* regex;
@@ -2130,38 +2389,6 @@ impl wstring
     extern wchar_t item(wstring& self, int index, wchar_t default_value);
 }
 
-impl string
-{
-    extern bool equals(string& left, string& right);
-    extern int length(string& str);
-    extern int get_hash_key(string& value);
-    extern string substring(string& str, int head, int tail);
-    extern int index(string& str, char* search_str, int default_value);
-    extern int rindex(string& str, char* search_str, int default_value);
-    extern int index_regex(string& str, nregex reg, int default_value);
-    extern int rindex_regex(string& str, nregex reg, int default_value);
-    extern string&delete(string& str, int position);
-    extern string& delete_range(string& str, int head, int tail);
-    extern string printable(string& str);
-    extern string sub(string& self, nregex reg, char* replace, list<string>?* group_strings);
-    extern bool match(string& self, nregex reg, list<string>?* group_strings);
-    list<string>*% scan(string& self, nregex reg);
-    extern wstring to_wstring(string& self);
-    string reverse(string& str);
-    list<string>*% split_char(string& self, char c);
-    list<string>*% split(string& self, nregex reg);
-
-    inline int compare(string& left, string& right) {
-        return strcmp(left, right);
-    }
-    
-    extern void replace(string& self, int index, char c);
-    extern char item(string& self, int index, char default_value);
-    extern string reverse(string& self);
-    
-    extern nregex to_regex(string& self);
-    buffer*% to_buffer(string& self);
-}
 */
 
 /*
