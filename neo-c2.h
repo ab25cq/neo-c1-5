@@ -2104,14 +2104,10 @@ inline string string::reverse(string& str)
     string result = new char[len + 1];
 
     for(int i=0; i<len; i++) {
-printf("%c\n", str[len-i-1]);
         result[i] = str[len-i-1];
-printf("(%c)\n", result[i]);
     }
 
     result[len] = '\0';
-
-printf("reverse %s\n", result);
 
     return result;
 }

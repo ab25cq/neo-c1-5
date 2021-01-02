@@ -40,8 +40,9 @@ BOOL inline_ = FALSE;
 BOOL static_ = FALSE;
 BOOL inherit_ = FALSE;
 int enum_number = 0;
-int array_index_num_dimention = 0;
-unsigned int array_index_index_node[ARRAY_DIMENTION_MAX];
+int array_index_num_dimention[128];
+unsigned int array_index_index_node[128][ARRAY_DIMENTION_MAX];
+int array_index_num = 0;
 int num_array_value;
 unsigned int array_values[INIT_ARRAY_MAX];
 unsigned int num_switch_expression;
@@ -3829,8 +3830,10 @@ assign_node:
     | IDENTIFIER array_index '=' comma_exp {
         unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
 
-        unsigned int* index_node = array_index_index_node;
-        int num_dimention = array_index_num_dimention;
+        unsigned int* index_node = array_index_index_node[array_index_num];
+        int num_dimention = array_index_num_dimention[array_index_num];
+
+        array_index_num--;
 
         unsigned int right_node = $4;
 
@@ -3845,8 +3848,10 @@ assign_node:
     | exp '.' name array_index '=' comma_exp {
         unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
 
-        unsigned int* index_node = array_index_index_node;
-        int num_dimention = array_index_num_dimention;
+        unsigned int* index_node = array_index_index_node[array_index_num];
+        int num_dimention = array_index_num_dimention[array_index_num];
+
+        array_index_num--;
 
         unsigned int right_node = $6;
 
@@ -3909,8 +3914,10 @@ node:
         | IDENTIFIER array_index {
             unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
 
-            unsigned int* index_node = array_index_index_node;
-            int num_dimention = array_index_num_dimention;
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
 
             $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, yylineno);
         }
@@ -4016,8 +4023,10 @@ node:
         | exp '.' name array_index {
             unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
 
-            unsigned int* index_node = array_index_index_node;
-            int num_dimention = array_index_num_dimention;
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
 
             $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, yylineno);
         }
@@ -4513,20 +4522,21 @@ node:
         ;
 
 array_index: '[' exp ']' {
-        array_index_num_dimention = 0;
-        array_index_index_node[array_index_num_dimention] = $2;
-        array_index_num_dimention++;
+        array_index_num++;
+        array_index_num_dimention[array_index_num] = 0;
+        array_index_index_node[array_index_num][array_index_num_dimention[array_index_num]] = $2;
+        array_index_num_dimention[array_index_num]++;
 
-        if(array_index_num_dimention >= ARRAY_DIMENTION_MAX) {
+        if(array_index_num_dimention[array_index_num] >= ARRAY_DIMENTION_MAX) {
             fprintf(stderr, "overflow array dimention number\n");
             exit(2);
         }
     }
     | '[' exp ']' array_index {
-        array_index_index_node[array_index_num_dimention] = $2;
-        array_index_num_dimention++;
+        array_index_index_node[array_index_num][array_index_num_dimention[array_index_num]] = $2;
+        array_index_num_dimention[array_index_num]++;
 
-        if(array_index_num_dimention >= ARRAY_DIMENTION_MAX) {
+        if(array_index_num_dimention[array_index_num] >= ARRAY_DIMENTION_MAX) {
             fprintf(stderr, "overflow array dimention number\n");
             exit(2);
         }

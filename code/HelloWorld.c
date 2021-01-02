@@ -304,7 +304,6 @@ printf("sCloneTest4::clone %d %d\n", self.a, self.b);
 
 int main() 
 {
-/*
     puts("HELLO WORLD");
 
     char*% start_str = string("AAA");
@@ -968,32 +967,12 @@ int main()
     b1.append_str("DEF");
 
     xassert("buffer test1", b1.to_string().equals("ABCDEF"));
-*/
-
-    string sx = string("ABC");
-
-    int len = strlen(sx);
-    string sx2 = new char[4];
-
-    int i;
-    for(i=0; i<len; i++) {
-printf("i %d len\n", i, len);
-        sx2[i] = sx[len-i-1];
-printf("%c %c\n", sx2[i], sx[len-i-1]);
-    }
-
-    sx2[len] = '\0';
-
-    printf("sx2 %s\n", sx2);
-
-/*
 
     string str3 = string("ABC");
 
     printf("reverse %s\n", str3.reverse());
 
     xassert("string test", str3.reverse().equals("CBA"));
-*/
 
     return 0;
 }
