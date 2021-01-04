@@ -970,7 +970,7 @@ int main()
 
     string str3 = string("ABC");
 
-    printf("reverse %s\n", str3.reverse());
+    printf("str %s\n", str3.reverse());
 
     xassert("string test", str3.reverse().equals("CBA"));
 

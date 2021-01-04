@@ -6538,6 +6538,10 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
         llvm_value.load_field = FALSE;
 
         push_value_to_stack_ptr(&llvm_value, info);
+
+        if(llvm_value.type->mHeap) {
+            append_heap_object_to_right_value(&llvm_value, info);
+        }
     }
 
     info->type = clone_node_type(result_type);
