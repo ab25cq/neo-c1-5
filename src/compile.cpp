@@ -3215,6 +3215,7 @@ BOOL pre_compile_block(unsigned int node_block, sCompileInfo* info)
         sVarTable* block_lv_table = init_var_table();
         block_lv_table->mParent = info->lv_table;
         gNodes[node_block].uValue.sBlock.mLVTable = block_lv_table;
+        info->lv_table = block_lv_table;
     }
     else {
         gNodes[node_block].uValue.sBlock.mLVTable = info->lv_table;
@@ -6834,6 +6835,8 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
     LVALUE conditional_value = *get_value_from_stack(-1);
     dec_stack_ptr(1, info);
 
+    free_right_value_objects(info);
+
     sNodeType* bool_type = create_node_type_with_class_name("bool");
 
     if(auto_cast_posibility(bool_type, conditional_type)) {
@@ -6928,6 +6931,8 @@ static BOOL compile_if(unsigned int node, sCompileInfo* info)
 
             LVALUE conditional_value = *get_value_from_stack(-1);
             dec_stack_ptr(1, info);
+
+            free_right_value_objects(info);
 
             sNodeType* bool_type = create_node_type_with_class_name("bool");
 
@@ -7553,6 +7558,8 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             const_index_value = dyn_cast<ConstantInt>(llvm_value.value);
             var_type->mArrayNum[0] = const_index_value->getSExtValue();
             var_type->mArrayDimentionNum = 1;
+
+            var->mType = clone_node_type(var_type);
         }
         else {
             sNodeType* index_type = info->type;
@@ -7572,6 +7579,8 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
             index_value = llvm_value.value;
             const_index_value = NULL;
             var_type->mPointerNum++;
+
+            var->mType = clone_node_type(var_type);
         }
 
         if(global) {
@@ -10284,7 +10293,7 @@ static BOOL compile_load_element(unsigned int node, sCompileInfo* info)
 
     sVar* var = lvalue.var;
 
-    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0) 
+    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0)
     {
         compile_err_msg(info, "neo-c can't get an element from this type.");
         info->err_num++;
@@ -10666,7 +10675,7 @@ BOOL compile_store_element(unsigned int node, sCompileInfo* info)
 
     LVALUE lvalue = *get_value_from_stack(-1);
 
-    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0) 
+    if(left_type->mArrayDimentionNum == 0 && left_type->mPointerNum == 0)
     {
         compile_err_msg(info, "neo-c can't get an element from this type.");
         info->err_num++;
@@ -11675,7 +11684,7 @@ static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
     Function* llvm_function = fun->mLLVMFunction;
     BasicBlock* loop_top_block = BasicBlock::Create(TheContext, "loop_top_block", llvm_function);
 
-    //free_right_value_objects(info);
+    free_right_value_objects(info);
     Builder.CreateBr(loop_top_block);
 
     BasicBlock* current_block_before;
@@ -11691,6 +11700,8 @@ static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
 
     LVALUE conditional_value = *get_value_from_stack(-1);
     dec_stack_ptr(1, info);
+
+    free_right_value_objects(info);
 
     sNodeType* bool_type = create_node_type_with_class_name("bool");
 
@@ -11743,7 +11754,7 @@ static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-    //free_right_value_objects(info);
+    free_right_value_objects(info);
     Builder.CreateCondBr(conditional_value.value, cond_then_block, cond_end_block);
 
     BasicBlock* current_block_before2;
@@ -11770,6 +11781,8 @@ static BOOL compile_for_statment(unsigned int node, sCompileInfo* info)
     if(!compile(expression_node3, info)) {
         return FALSE;
     }
+
+    free_right_value_objects(info);
 
     if(!last_expression_is_return) {
         Builder.CreateBr(loop_top_block);
@@ -11856,6 +11869,8 @@ static BOOL compile_while_statment(unsigned int node, sCompileInfo* info)
 
     LVALUE conditional_value = *get_value_from_stack(-1);
     dec_stack_ptr(1, info);
+
+    free_right_value_objects(info);
 
     sNodeType* bool_type = create_node_type_with_class_name("bool");
 
@@ -12036,6 +12051,8 @@ static BOOL compile_do_while_statment(unsigned int node, sCompileInfo* info)
     LVALUE conditional_value = *get_value_from_stack(-1);
     dec_stack_ptr(1, info);
 
+    free_right_value_objects(info);
+
 //    free_right_value_objects(info);
     Builder.CreateCondBr(conditional_value.value, loop_top_block, cond_end_block);
 
@@ -12126,6 +12143,8 @@ BOOL compile_switch_statment(unsigned int node, sCompileInfo* info)
     sNodeType* switch_expression_type_before = info->switch_expression_type;
     info->switch_expression_type = clone_node_type(get_value_from_stack(-1)->type);
     dec_stack_ptr(1, info);
+
+    free_right_value_objects(info);
 
     info->case_else_block = nullptr;
 

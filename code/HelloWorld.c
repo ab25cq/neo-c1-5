@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <wchar.h>
 #include <limits.h>
+#include <pcre.h>
 #include "neo-c2.h"
 
 struct sData;
@@ -1020,6 +1021,33 @@ int main()
     wchar_t wc = wstring("ABC").item(0, -1);
 
     xassert("wstring test8", wc == (wchar_t)'A');
+
+    int n = 16;
+    int array9[n];
+
+    array9[1] = 123;
+
+    xassert("array test", array9[1] == 123);
+
+    wstring wstr = wstring("ABC");
+
+    while(wstr.equals(wstring("ABC"))) {
+        wstr.replace(1, (wchar_t)'G');
+    }
+
+    wstring wstr2 = wstring("DEF");
+
+    do {
+        1+1;
+    } while(wstr.equals(wstring("GHI")));
+
+    int iiiiiii = 1;
+
+    for(wstr2.equals(wstring("DEF")); iiiiiii < 2; wstr2.equals(wstring("DEF"))) {
+        wstr2.replace(1, (wchar_t)'G');
+
+        iiiiiii++;
+    }
 
     return 0;
 }

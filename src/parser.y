@@ -362,35 +362,71 @@ type:
         else if(strcmp($1, "unsigned long ") == 0) {
             xstrncpy($$, "unsigned long", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const unsigned long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "signed long ") == 0) {
             xstrncpy($$, "signed long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed long ") == 0) {
+            xstrncpy($$, "const signed long", VAR_NAME_MAX);
         }
         else if(strcmp($1, "long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "static long ") == 0) {
             xstrncpy($$, "static long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static const long ") == 0) {
+            xstrncpy($$, "static const long", VAR_NAME_MAX);
         }
         else if(strcmp($1, "signed long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const signed long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "unsigned long long ") == 0) {
             xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned long long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
         }
         else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const short ") == 0) {
+            xstrncpy($$, "const short", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "unsigned short ") == 0) {
             xstrncpy($$, "unsigned short", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
         }
         else if(strcmp($1, "signed short ") == 0) {
             xstrncpy($$, "signed short", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const signed short ") == 0) {
+            xstrncpy($$, "const signed short", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const unsigned ") == 0) {
+            xstrncpy($$, "const unsigned int", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "singed ") == 0) {
             xstrncpy($$, "singed int", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const singed ") == 0) {
+            xstrncpy($$, "const singed int", VAR_NAME_MAX);
         }
         else {
             fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
@@ -408,23 +444,92 @@ type:
             xstrncpy($$, "unsigned long", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const unsigned long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed long ") == 0) {
+            xstrncpy($$, "signed long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed long ") == 0) {
+            xstrncpy($$, "const signed long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
         else if(strcmp($1, "long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static long ") == 0) {
+            xstrncpy($$, "static long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static const long ") == 0) {
+            xstrncpy($$, "static const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed long long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned long long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned long long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
         else if(strcmp($1, "short ") == 0) {
             xstrncpy($$, "short", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const short ") == 0) {
+            xstrncpy($$, "const short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
         else if(strcmp($1, "unsigned short ") == 0) {
             xstrncpy($$, "unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed short ") == 0) {
+            xstrncpy($$, "signed short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed short ") == 0) {
+            xstrncpy($$, "const signed short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
         }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const unsigned ") == 0) {
+            xstrncpy($$, "const unsigned int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
         else if(strcmp($1, "singed ") == 0) {
             xstrncpy($$, "singed int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const singed ") == 0) {
+            xstrncpy($$, "const singed int", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
         }
         else {
@@ -440,13 +545,63 @@ type:
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "unsigned long ") == 0) {
+            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed long ") == 0) {
+            xstrncpy($$, "signed long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed long ") == 0) {
+            xstrncpy($$, "const signed long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "long long ") == 0) {
             xstrncpy($$, "long", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
-        else if(strcmp($1, "unsigned long ") == 0) {
+        else if(strcmp($1, "const long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static long ") == 0) {
+            xstrncpy($$, "static long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "static const long ") == 0) {
+            xstrncpy($$, "static const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed long long ") == 0) {
+            xstrncpy($$, "long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed long long ") == 0) {
+            xstrncpy($$, "const long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned long long ") == 0) {
             xstrncpy($$, "unsigned long", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned long long ") == 0) {
+            xstrncpy($$, "const unsigned long", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
@@ -455,13 +610,53 @@ type:
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const short ") == 0) {
+            xstrncpy($$, "const short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "unsigned short ") == 0) {
+            xstrncpy($$, "unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const unsigned short ") == 0) {
+            xstrncpy($$, "const unsigned short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "signed short ") == 0) {
+            xstrncpy($$, "signed short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const signed short ") == 0) {
+            xstrncpy($$, "const signed short", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "unsigned ") == 0) {
             xstrncpy($$, "unsigned int", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
+        else if(strcmp($1, "const unsigned ") == 0) {
+            xstrncpy($$, "const unsigned int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
         else if(strcmp($1, "singed ") == 0) {
             xstrncpy($$, "singed int", VAR_NAME_MAX);
+            xstrncat($$, $3, VAR_NAME_MAX);
+            xstrncat($$, "%", VAR_NAME_MAX);
+        }
+        else if(strcmp($1, "const singed ") == 0) {
+            xstrncpy($$, "const singed int", VAR_NAME_MAX);
             xstrncat($$, $3, VAR_NAME_MAX);
             xstrncat($$, "%", VAR_NAME_MAX);
         }
@@ -472,47 +667,6 @@ type:
 
         xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
     }
-/*
-    | type_attribute restrict pointer restrict '&' {
-        if(strcmp($1, "long ") == 0) {
-            xstrncpy($$, "long", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else if(strcmp($1, "long long ") == 0) {
-            xstrncpy($$, "long", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else if(strcmp($1, "unsigned long ") == 0) {
-            xstrncpy($$, "unsigned long", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else if(strcmp($1, "short ") == 0) {
-            xstrncpy($$, "short", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else if(strcmp($1, "unsigned ") == 0) {
-            xstrncpy($$, "unsigned int", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else if(strcmp($1, "singed ") == 0) {
-            xstrncpy($$, "singed int", VAR_NAME_MAX);
-            xstrncat($$, $3, VAR_NAME_MAX);
-            xstrncat($$, "&", VAR_NAME_MAX);
-        }
-        else {
-            fprintf(stderr, "%s %d: invalid type name (%s)\n", gSName, yylineno, $1);
-            exit(1);
-        }
-
-        xstrncpy(recent_type_name, $$, VAR_NAME_MAX);
-        xstrncat(recent_type_name, "&" VAR_NAME_MAX);
-    }
-*/
     | type_attribute restrict type_name {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, $3, VAR_NAME_MAX);
