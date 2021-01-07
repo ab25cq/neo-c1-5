@@ -168,6 +168,31 @@ wstring a = new wchar_t[1];
     return wstr;
 }
 
+inline string string_from_wchar_t(wchar_t* wstr, char* default_value)
+{
+    int len = MB_LEN_MAX*(wcslen(wstr)+1);
+
+    string result = new char[len];
+
+    if(wcstombs(result, wstr, len) < 0) 
+    {
+        xstrncpy(result, default_value, len);
+    }
+
+    return result;
+}
+
+inline wstring wstring_from_wchar_t(wchar_t* str)
+{
+    int len = wcslen(str);
+
+    wstring wstr = new wchar_t[len + 1];
+
+    wcscpy(wstr, str);
+
+    return wstr;
+}
+
 inline string xbasename(char* path)
 {
     char* p = path + strlen(path);
@@ -2319,12 +2344,12 @@ inline char string::item(string& self, int index, char default_value)
     return self[index];
 }
 
-inline void string::replace(string& self, int index, char c) 
+inline string& string::replace(string& self, int index, char c) 
 {
     int len = strlen(self);
 
     if(strcmp(self, "") == 0) {
-        return;
+        return self;
     }
     
     if(index < 0) {
@@ -2340,6 +2365,227 @@ inline void string::replace(string& self, int index, char c)
     }
     
     self[index] = c;
+
+    return self;
+}
+
+//////////////////////////////
+// wstring
+//////////////////////////////
+inline wstring wstring::reverse(wstring& str) 
+{
+    int len = wcslen(str);
+    wstring result = new wchar_t[len + 1];
+
+    for(int i=0; i<len; i++) {
+        result[i] = str[len-i-1];
+    }
+
+    result[len] = '\0';
+
+    return result;
+}
+
+inline wstring wstring::substring(wstring& str, int head, int tail)
+{
+    if(str == null) {
+        return wstring("");
+    }
+
+    int len = wcslen(str);
+
+    if(head < 0) {
+        head += len;
+    }
+    if(tail < 0) {
+        tail += len + 1;
+    }
+
+    if(head > tail) {
+        return wstring_from_wchar_t(str).substring(tail, head).reverse();
+    }
+
+    if(head < 0) {
+        head = 0;
+    }
+
+    if(tail >= len) {
+        tail = len;
+    }
+
+    if(head == tail) {
+        return wstring("");
+    }
+
+    if(tail-head+1 < 1) {
+        return wstring("");
+    }
+
+    wstring result = new wchar_t[tail-head+1];
+
+    memcpy(result, str + head, sizeof(wchar_t)*(tail-head));
+    result[tail-head] = '\0';
+
+    return result;
+}
+
+inline int wstring::index(wstring& str, wchar_t* search_str, int default_value)
+{
+    wchar_t* head = wcsstr(str, search_str);
+
+    if(head == null) {
+        return default_value;
+    }
+
+    return ((head - str) / sizeof(wchar_t));
+}
+
+inline int wstring::rindex(wstring& str, wchar_t* search_str, int default_value)
+{
+    int len = wcslen(search_str);
+
+    wchar_t* p = str + wcslen(str) - len;
+
+    while(p >= str) {
+        if(wcsncmp(p, search_str, len) == 0) {
+            return ((p - str) / sizeof(wchar_t));
+        }
+
+        p--;
+    }
+
+    return default_value;
+}
+
+inline wstring& wstring::delete(wstring& str, int position) 
+{
+    int len = wcslen(str);
+    
+    if(position < 0) {
+        position += len;
+    }
+
+    if(position < 0) {
+        position = 0;
+    }
+
+    if(position >= len) {
+        position = len -1;
+
+        if(position < 0) {
+            return str;
+        }
+    }
+
+    wstring sub_str = wstring_from_wchar_t(str).substring(position+1, -1);
+
+    memcpy(str + position, sub_str, sizeof(wchar_t)*(sub_str.length()+1));
+    
+    return str;
+}
+
+inline wstring& wstring::delete_range(wstring& str, int head, int tail) 
+{
+    int len = wcslen(str);
+
+    if(len == 0) {
+        return str;
+    }
+    
+    if(head < 0) {
+       head += len;
+    }
+    
+    if(tail < 0) {
+       tail += len + 1;
+    }
+
+    if(head < 0) {
+        head = 0;
+    }
+
+    if(tail < 0) {
+        return str;
+    }
+
+    if(tail >= len) {
+        tail = len;
+    }
+    
+    wstring sub_str = wstring_from_wchar_t(str).substring(tail, -1);
+
+    memcpy(str + head, sub_str, sizeof(wchar_t)*(sub_str.length()+1));
+
+    return str;
+}
+
+inline wstring wstring::printable(wstring& str)
+{
+    int len = wstring_from_wchar_t(str).length();
+    wstring result = new wchar_t[len*2+1];
+
+    int n = 0;
+    for(int i=0; i<len; i++) {
+        wchar_t c = str[i];
+
+        if((c >= 0 && c < ' ') 
+            || c == 127)
+        {
+            result[n++] = '^';
+            result[n++] = c + 'A' - 1;
+        }
+        else {
+            result[n++] = c;
+        }
+    }
+
+    result[n] = '\0';
+
+    return result;
+}
+
+inline wstring& wstring::replace(wstring& self, int index, wchar_t c) 
+{
+    int len = wcslen(self);
+
+    if(wcscmp(self, wstring("")) == 0) {
+        return self;
+    }
+    
+    if(index < 0) {
+       index += len;
+    }
+
+    if(index >= len) {
+        index = len-1;
+    }
+
+    if(index < 0) {
+        index = 0;
+    }
+    
+    self[index] = c;
+
+    return self;
+}
+
+inline wchar_t wstring::item(wstring& self, int index, wchar_t default_value)
+{
+    int len = wcslen(self);
+
+    if(wcscmp(self, wstring("")) == 0) {
+        return default_value;
+    }
+    
+    if(index < 0) {
+       index += len;
+    }
+
+    if(index < 0 || index >= len) {
+        return default_value;
+    }
+    
+    return self[index];
 }
 
 /*
@@ -2374,23 +2620,6 @@ struct regex_struct {
 typedef regex_struct*% nregex;
 
 extern nregex regex(char* str, bool ignore_case, bool multiline, bool global, bool extended, bool dotall, bool anchored, bool dollar_endonly, bool ungreedy);
-
-impl wstring
-{
-    wstring reverse(wstring& str);
-    extern wstring substring(wstring& str, int head, int tail);
-    extern int index(wstring& str, wchar_t* search_str, int default_value);
-    extern int rindex(wstring& str, wchar_t* search_str, int default_value);
-    extern wstring& delete(wstring& str, int position);
-    extern wstring& delete_range(wstring& str, int head, int tail);
-
-    extern string to_string(wstring& self, char* default_value);
-    extern wstring printable(wstring& str);
-
-    extern void replace(wstring& self, int index, wchar_t c);
-    extern wchar_t item(wstring& self, int index, wchar_t default_value);
-}
-
 */
 
 /*

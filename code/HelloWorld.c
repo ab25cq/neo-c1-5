@@ -974,6 +974,53 @@ int main()
 
     xassert("string test", str3.reverse().equals("CBA"));
 
+    list!<string>*% li22 = new list!<string>.initialize();
+
+    li22.push_back(string("aaa"));
+    li22.push_back(string("bbb"));
+    li22.push_back(string("ccc"));
+
+    xassert("string tsst2", li22.join(",").equals("aaa,bbb,ccc"));
+
+    xassert("string tsst3", string("ABC").substring(1,3).equals("BC"));
+
+    xassert("string tsst4", string("ABCDEF").index("C", -1) == 2);
+    xassert("string test5", string("ABCDEFABC").rindex("C", -1) == 8);
+
+    xassert("string test6", string("ABC").delete(1).equals("AC"));
+
+    xassert("string test7", string("ABCDEFG").delete_range(1,3).equals("ADEFG"));
+
+    buffer*% buf2 = string("ABC").to_buffer();
+
+    buf2.append_str("DEF");
+
+    xassert("string test8", buf2.to_string().equals("ABCDEF"));
+
+    list!<string>*% li23 = string("ABC,DEF,GHI").split_char(',');
+
+    xassert("string test8", li23.item(0, null).equals("ABC") && li23.item(1, null).equals("DEF") && li23.item(2, null).equals("GHI"));
+    xassert("string test9", string("ABC").item(1, -1) == 'B');
+
+    xassert("string test10", string("ABC").replace(1, 'D').equals("ADC"));
+
+    xassert("wstring test1", wstring("ABC").reverse().equals(wstring("CBA")));
+
+    xassert("wstring test2", wstring("ABC").substring(0,2).equals(wstring("AB")));
+
+    xassert("wstring test3", wstring("ABC").index(wstring("B"), -1) == 1);
+
+    xassert("wstring test4", wstring("ABCABC").rindex(wstring("B"), -1) == 4);
+
+    xassert("wstring test5", wstring_from_wchar_t(wstring("ABC").delete(1)).equals(wstring("AC")));
+
+    xassert("wstring test6", wstring_from_wchar_t(wstring("ABC").delete_range(0,1)).equals(wstring("BC")));
+
+    xassert("wstring test7", wstring_from_wchar_t(wstring("ABC").replace(0, (wchar_t)'D')).equals(wstring("DBC")));
+    wchar_t wc = wstring("ABC").item(0, -1);
+
+    xassert("wstring test8", wc == (wchar_t)'A');
+
     return 0;
 }
 
