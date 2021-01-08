@@ -1,4 +1,4 @@
-#define USE_REGEX 0
+#define USE_REGEX 1
 
 inline void xassert(char* msg, bool exp) 
 {
@@ -2826,8 +2826,7 @@ inline string string::sub(string& self, nregex reg, char* replace, list!<string>
     return result.to_string();
 }
 
-/*
-inline bool string::match(string& self, nregex reg, list<string>?* group_strings)
+inline bool string::match(string& self, nregex reg, list!<string>* group_strings)
 {
     int offset = 0;
 
@@ -2865,7 +2864,7 @@ inline bool string::match(string& self, nregex reg, list<string>?* group_strings
         else if(regex_result > 1) {
             group_strings.reset();
             for(int i = 1; i<regex_result; i++) {
-                string match_string = self.substring(start[i], end[i]);
+                string match_string = string(self).substring(start[i], end[i]);
                 group_strings.push_back(match_string);
             }
 
@@ -2881,9 +2880,9 @@ inline bool string::match(string& self, nregex reg, list<string>?* group_strings
     return false;
 }
 
-inline list<string>*% string::scan(string& self, nregex reg)
+inline list!<string>*% string::scan(string& self, nregex reg)
 {
-    var result = new list<string>.initialize();
+    list!<string>*% result = new list!<string>.initialize();
 
     int offset = 0;
 
@@ -2915,7 +2914,7 @@ inline list<string>*% string::scan(string& self, nregex reg)
         /// match and no group strings ///
         if(regex_result == 1)
         {
-            string str = self.substring(start[0], end[0]);
+            string str = string(self).substring(start[0], end[0]);
             result.push_back(str);
 
             if(offset == end[0]) {
@@ -2927,7 +2926,7 @@ inline list<string>*% string::scan(string& self, nregex reg)
         }
         /// group strings ///
         else if(regex_result > 1) {
-            string str = self.substring(start[0], end[0]);
+            string str = string(self).substring(start[0], end[0]);
             result.push_back(str);
 
             if(offset == end[0]) {
@@ -2938,7 +2937,7 @@ inline list<string>*% string::scan(string& self, nregex reg)
             }
 
             for(int i= 1; i<regex_result; i++) {
-                string match_string = self.substring(start[i], end[i]);
+                string match_string = string(self).substring(start[i], end[i]);
                 result.push_back(match_string);
             }
         }
@@ -2952,7 +2951,7 @@ inline list<string>*% string::scan(string& self, nregex reg)
     return result;
 }
 
-inline list<string>*% string::split(string& self, nregex reg)
+inline list!<string>*% string::split(string& self, nregex reg)
 {
     const char* err;
     int erro_ofs;
@@ -2962,7 +2961,7 @@ inline list<string>*% string::split(string& self, nregex reg)
 
     pcre* re = pcre_compile(str, options, &err, &erro_ofs, NULL);
 
-    var result = new list<string>.initialize();
+    list!<string>*% result = new list!<string>.initialize();
 
     int offset = 0;
 
@@ -2987,7 +2986,7 @@ inline list<string>*% string::split(string& self, nregex reg)
         /// match and no group strings ///
         if(regex_result == 1)
         {
-            string str = self.substring(offset, start[0]);
+            string str = string(self).substring(offset, start[0]);
             result.push_back(str);
 
             if(offset == end[0]) {
@@ -2999,7 +2998,7 @@ inline list<string>*% string::split(string& self, nregex reg)
         }
         /// group strings ///
         else if(regex_result > 1) {
-            string str = self.substring(offset, start[0]);
+            string str = string(self).substring(offset, start[0]);
             result.push_back(str);
 
             if(offset == end[0]) {
@@ -3010,7 +3009,7 @@ inline list<string>*% string::split(string& self, nregex reg)
             }
 
             for(int i=1; i<regex_result; i++) {
-                string match_str = self.substring(start[i], end[i]);
+                string match_str = string(self).substring(start[i], end[i]);
                 result.push_back(match_str);
             }
         }
@@ -3022,13 +3021,12 @@ inline list<string>*% string::split(string& self, nregex reg)
     }
 
     if(offset < self.length()) {
-        string str = self.substring(offset, -1);
+        string str = string(self).substring(offset, -1);
         result.push_back(str);
     }
 
     return result;
 }
-*/
 
 inline nregex string::to_regex(string& self) 
 {
