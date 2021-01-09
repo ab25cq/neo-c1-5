@@ -1893,7 +1893,8 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
     /// free ///
     if((force_delete || node_type->mHeap ) && node_type->mPointerNum > 0 && !info->no_output) 
     {
-        Function* fun = TheModule->getFunction("ncfree");
+        Function* fun = TheModule->getFunction("free");
+        //Function* fun = TheModule->getFunction("ncfree");
 
         if(fun == nullptr) {
             fprintf(stderr, "require free\n");
@@ -1904,8 +1905,10 @@ static void free_right_value_object(sNodeType* node_type, void* obj, BOOL force_
         Value* param = Builder.CreateCast(Instruction::BitCast, obj2, PointerType::get(IntegerType::get(TheContext, 8), 0));
         params2.push_back(param);
 
+/*
         Value* param2 = llvm_create_string(node_type->mClass->mName);
         params2.push_back(param2);
+*/
 
         Builder.CreateCall(fun, params2);
     }
@@ -7158,7 +7161,8 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
         return TRUE;
     }
 
-    Function* fun = TheModule->getFunction("nccalloc");
+    Function* fun = TheModule->getFunction("calloc");
+    //Function* fun = TheModule->getFunction("nccalloc");
 
     if(fun == nullptr) {
         fprintf(stderr, "require calloc\n");
@@ -7180,10 +7184,12 @@ static BOOL compile_create_object(unsigned int node, sCompileInfo* info)
 
     params2.push_back(param2);
 
+/*
     Value* param3;
     param3 = llvm_create_string(type_name);
 
     params2.push_back(param3);
+*/
 
     Value* address = Builder.CreateCall(fun, params2);
 
