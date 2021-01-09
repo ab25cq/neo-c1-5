@@ -2043,7 +2043,7 @@ void append_heap_object_to_right_value(LVALUE* llvm_value, sCompileInfo* info)
     }
 }
 
-void free_objects(sVarTable* table, Value* inhibit_free_object_address, sCompileInfo* info)
+void free_objects(sVarTable* table, Value* inhibit_free_object_address, BOOL delete_llvm_value, sCompileInfo* info)
 {
     if(info->no_output) {
         return;
@@ -2061,7 +2061,9 @@ void free_objects(sVarTable* table, Value* inhibit_free_object_address, sCompile
                 if(p->mLLVMValue && p->mLLVMValue != inhibit_free_object_address)
                 {
                     free_object(p->mType, p->mLLVMValue, FALSE, info);
-                    p->mLLVMValue = NULL;
+                    if(delete_llvm_value) {
+                        p->mLLVMValue = NULL;
+                    }
                 }
             }
         }
@@ -2084,7 +2086,7 @@ void free_objects_with_parents(Value* inhibit_free_object_address, sCompileInfo*
 
     while(it != NULL) 
     {
-        free_objects(it, inhibit_free_object_address, info);
+        free_objects(it, inhibit_free_object_address, FALSE, info);
 
         if(it->mCoroutineTop) {
             break;
@@ -2108,7 +2110,7 @@ void free_objects_until_loop_top(Value* inhibit_free_object_address, sCompileInf
             break;
         }
 
-        free_objects(it, inhibit_free_object_address, info);
+        free_objects(it, inhibit_free_object_address, FALSE, info);
 
         it = it->mParent;
     }
@@ -3186,7 +3188,7 @@ BOOL compile_block(unsigned int node_block, sCompileInfo* info, BOOL* last_expre
     }
 
     if(!*last_expression_is_return) {
-        free_objects(info->lv_table, nullptr, info);
+        free_objects(info->lv_table, nullptr, TRUE, info);
     }
 
     if(info->err_num > 0) {

@@ -114,6 +114,8 @@ inline void ncfree(void* mem, char* type_name)
 
 inline void*% ncmemdup(void*% block)
 {
+    managed block;
+
 #ifdef __DARWIN__
     long long size = malloc_size(block);
 #else
@@ -2682,6 +2684,8 @@ inline int string::index_regex(string& self, nregex reg, int default_value)
         }
     }
 
+    free(re);
+
     return result;
 }
 
@@ -2730,6 +2734,8 @@ inline int string::rindex_regex(string& self, nregex reg, int default_value)
             break;
         }
     }
+
+    free(re);
 
     return result;
 }
@@ -2823,6 +2829,8 @@ inline string string::sub(string& self, nregex reg, char* replace, list!<string>
         }
     }
 
+    free(re);
+
     return result.to_string();
 }
 
@@ -2858,6 +2866,7 @@ inline bool string::match(string& self, nregex reg, list!<string>* group_strings
         /// match and no group strings ///
         if(regex_result == 1 || (group_strings == null && regex_result > 0)) 
         {
+            free(re);
             return true;
         }
         /// group strings ///
@@ -2868,14 +2877,18 @@ inline bool string::match(string& self, nregex reg, list!<string>* group_strings
                 group_strings.push_back(match_string);
             }
 
+            free(re);
             return true;
         }
         else
         /// no match ///
         {
+            free(re);
             return false;
         }
     }
+
+    free(re);
 
     return false;
 }
@@ -2947,6 +2960,8 @@ inline list!<string>*% string::scan(string& self, nregex reg)
             break;
         }
     }
+
+    free(re);
 
     return result;
 }
@@ -3024,6 +3039,8 @@ inline list!<string>*% string::split(string& self, nregex reg)
         string str = string(self).substring(offset, -1);
         result.push_back(str);
     }
+
+    free(re);
 
     return result;
 }

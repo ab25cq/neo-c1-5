@@ -1049,6 +1049,20 @@ int main()
         iiiiiii++;
     }
 
+    xassert("string regex test1", string("ABC1DEF").index_regex(REGEX("[0-1]", false), -1) == 3);
+    xassert("string regex test2", string("ABC1DEF").rindex_regex(REGEX("[0-1]", false), -1) == 3);
+    xassert("string regex test3", string("ABC1DEF").sub(REGEX("[0-1]", false), "X", null).equals("ABCXDEF"));
+    xassert("string regex test4", string("ABC1DEF").match(REGEX("[A-Z0-9]+", false), null));
+    xassert("string regex test5", string("ABC1DEF").match(REGEX("^[A-Z]+$", false), null) == false);
+
+    list!<string>*% li16 = string("ABC,123,DEF,GHI,567").scan(REGEX("\\d+", false));
+
+    xassert("string regex test6", li16.item(0, null).equals("123") && li16.item(1, null).equals("567"));
+
+    list!<string>*% li17 = string("ABC,DEF,GHI").split(REGEX(",", false));
+
+    xassert("string regex test7", li17.item(0, null).equals("ABC") && li17.item(1, null).equals("DEF") && li17.item(2,null).equals("GHI"));
+
     return 0;
 }
 
