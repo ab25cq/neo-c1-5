@@ -696,7 +696,7 @@ void MyStruct::show(MyStruct* self) {
     self.field2.each (
         void lambda(string& it, int it2, bool* it3) {
             puts(it);
-        {
+        }
     );
 }
 
