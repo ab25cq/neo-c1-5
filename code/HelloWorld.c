@@ -1063,6 +1063,12 @@ int main()
 
     xassert("string regex test7", li17.item(0, null).equals("ABC") && li17.item(1, null).equals("DEF") && li17.item(2,null).equals("GHI"));
 
+    string("123,456,789").split(REGEX(",", false)).each (
+        void lambda(string& it, int it2, bool* it3) {
+            puts(it);
+        }
+    );
+
     return 0;
 }
 
