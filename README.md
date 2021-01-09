@@ -727,11 +727,11 @@ MyStruct*% MyStruct::initialize(MyStruct*% self) {
     return self;
 }
 
-void finalize(MyStruct* self) {
+void MyStruct::finalize(MyStruct* self) {
     puts("MyStruct was freed");
 }
 
-void show(MyStruct* self) {
+void MyStruct::show(MyStruct* self) {
     puts(self.field1);
 
     self.field2.each (
@@ -803,7 +803,7 @@ void MyStruct::finalize(MyStruct* self) {
     delete self.field2;
 }
 
-MyStruct%* clone(MyStruct* self) {
+MyStruct%* MyStruct::clone(MyStruct* self) {
     MyStruct*% result = new MyStruct;
 
     result.field1 = borrow clone self.field1;
