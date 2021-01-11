@@ -3372,7 +3372,7 @@ static BOOL create_llvm_function(sFunction* fun, sVarTable* fun_lv_table, sCompi
             void* llvm_value = NULL;
             if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
             {
-                compile_err_msg(info, "overflow variable table");
+                compile_err_msg(info, "overflow variable table1");
                 return FALSE;
             }
         }
@@ -4993,7 +4993,7 @@ static BOOL compile_store_variable(unsigned int node, sCompileInfo* info)
         if(global) {
             if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
             {
-                fprintf(stderr, "overflow variable table");
+                fprintf(stderr, "overflow variable table2");
                 exit(2);
             }
         }
@@ -5317,7 +5317,7 @@ BOOL pre_compile_store_variable(unsigned int node, sCompileInfo* info)
         void* llvm_value = NULL;
         if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
         {
-            fprintf(stderr, "overflow variable table");
+            fprintf(stderr, "overflow variable table3");
             exit(2);
         }
     }
@@ -6515,9 +6515,39 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
             }
 
             for(i=0; i<num_params; i++) {
+                sNodeType* left_type = create_node_type_with_class_name(fun.mParamTypes[i]);
+                sNodeType* right_type = param_types[num_params-i-1];
+
+                LVALUE rvalue = param_values[num_params-i-1];
+
+                if(i<fun.mNumParams) {
+                    BOOL success_solve;
+                    (void)solve_generics(&left_type, info->generics_type, &success_solve);
+
+                    solve_method_generics2(&left_type, info->method_generics_types);
+
+                    if(auto_cast_posibility(left_type, right_type)) {
+                        if(!cast_right_type_to_left_type(left_type, &right_type, &rvalue, info))
+                        {
+                            compile_err_msg(info, "Cast failed");
+                            info->err_num++;
+
+                            info->type = create_node_type_with_class_name("int"); // dummy
+
+                            return TRUE;
+                        }
+                    }
+                }
+
+                llvm_params.push_back(rvalue.value);
+            }
+
+/*
+            for(i=0; i<num_params; i++) {
                 LVALUE rvalue = param_values[num_params-i-1];
                 llvm_params.push_back(rvalue.value);
             }
+*/
         }
 
         result_type = create_node_type_with_class_name(fun.mResultTypeName);
@@ -7509,7 +7539,7 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
     if(global) {
         if(!add_variable_to_table(info->gv_table, var_name, var_type, llvm_value,  index, global, constant))
         {
-            fprintf(stderr, "overflow variable table");
+            fprintf(stderr, "overflow variable table4");
             return FALSE;
         }
     }
@@ -7825,7 +7855,7 @@ static BOOL pre_compile_define_variable(unsigned int node, sCompileInfo* info)
 
     if(!add_variable_to_table(info->lv_table, var_name, var_type, llvm_value,  index, global, constant))
     {
-        fprintf(stderr, "overflow variable table");
+        fprintf(stderr, "overflow variable table5");
         return FALSE;
     }
 

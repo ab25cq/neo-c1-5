@@ -257,6 +257,13 @@ restrict: {
 
 enum_: ENUM '{' enum_fields '}' ';' {
     }
+    | ENUM IDENTIFIER '{' enum_fields '}' ';' {
+        char* name = $2;
+        char* type_name = "int";
+        unsigned int node = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+
+        compile(node, &cinfo);
+    }
     ;
 
 enum_fields: {
@@ -986,6 +993,35 @@ type_name:
 
         xstrncpy($$, type_name, VAR_NAME_MAX);
     }
+    | ENUM TYPE_NAME {
+        char type_name[VAR_NAME_MAX];
+        get_typedef($2, type_name);
+
+        int i;
+        for(i=0; i<num_function_generics_types; i++) {
+            if(strcmp(type_name, function_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_struct_generics_types; i++) {
+            if(strcmp(type_name, struct_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "generics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+        for(i=0; i<num_method_generics_types; i++) {
+            if(strcmp(type_name, method_generics_types[i]) == 0) {
+                char buf[VAR_NAME_MAX];
+                snprintf(buf, VAR_NAME_MAX, "mgenerics%d", i);
+                xstrncpy(type_name, buf, VAR_NAME_MAX);
+            }
+        }
+
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+    }
     | TYPE_NAME {
         char type_name[VAR_NAME_MAX];
         get_typedef($1, type_name);
@@ -1214,6 +1250,24 @@ typedef_:
 
             char* name = buf;
             char* type_name = $3;
+
+            $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
+    }
+    | TYPEDEF STRUCT IDENTIFIER IDENTIFIER  typedef_attribute ';' {
+            char buf[VAR_NAME_MAX];
+            xstrncpy(buf, $3, VAR_NAME_MAX);
+
+            char* struct_name = buf;
+            unsigned int fields = 0;
+            BOOL anonymous = FALSE;
+            BOOL generics = FALSE;
+
+            unsigned int node = sNodeTree_create_struct(struct_name, fields, generics, anonymous, gSName, yylineno);
+
+            compile(node, &cinfo);
+
+            char* name = $4;
+            char* type_name = buf;
 
             $$ = sNodeTree_create_typedef(name, type_name, gSName, yylineno);
     }
@@ -2055,6 +2109,46 @@ fields:  {
             append_field_to_fields(fields[num_fields-1], var_name, type_name); 
         }
 
+        | STRUCT TYPE_NAME IDENTIFIER const_array_type ';' {
+            char* var_name = $3;
+            char type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, $2, VAR_NAME_MAX);
+            xstrncat(type_name, $4, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | fields STRUCT TYPE_NAME IDENTIFIER const_array_type ';' {
+            char* var_name = $4;
+            char type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, $3, VAR_NAME_MAX);
+            xstrncat(type_name, $5, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | STRUCT TYPE_NAME pointer IDENTIFIER ';' {
+            char* var_name = $3;
+            char type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, $2, VAR_NAME_MAX);
+            xstrncat(type_name, $3, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
+        | fields STRUCT TYPE_NAME pointer IDENTIFIER';' {
+            char* var_name = $4;
+            char type_name[VAR_NAME_MAX];
+
+            xstrncpy(type_name, $3, VAR_NAME_MAX);
+            xstrncat(type_name, $4, VAR_NAME_MAX);
+
+            $$ = fields[num_fields-1]; 
+            append_field_to_fields(fields[num_fields-1], var_name, type_name); 
+        }
         | STRUCT '{' fields '}' IDENTIFIER ';' {
             static int anonyomous_struct_num = 0;
             char buf[VAR_NAME_MAX];
@@ -2638,6 +2732,86 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
+        | type function_struct_type_name METHOD_MARK name '(' function_params ')' function_attribute ';'
+        {
+            char* result_type = $1;
+
+            char fun_name[VAR_NAME_MAX];
+
+            char* struct_name = $2;
+
+            char struct_name2[VAR_NAME_MAX];
+
+            char* p = strstr(struct_name, "<");
+
+            if(p) {
+                memcpy(struct_name2, struct_name, p - struct_name);
+                struct_name2[p-struct_name] = '\0';
+            }
+            else {
+                xstrncpy(struct_name2, struct_name, VAR_NAME_MAX);
+            }
+
+            xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
+            xstrncat(fun_name, "_", VAR_NAME_MAX);
+            xstrncat(fun_name, $4, VAR_NAME_MAX);
+
+            char fun_base_name[VAR_NAME_MAX];
+
+            xstrncpy(fun_base_name, $4, VAR_NAME_MAX);
+
+            unsigned int function_params = $6;
+            BOOL generics = num_function_generics_types > 0;
+            BOOL method_generics = num_method_generics_types > 0;
+
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
+        | EXTERN type function_struct_type_name METHOD_MARK name '(' function_params ')' function_attribute ';'
+        {
+            char* result_type = $2;
+
+            char fun_name[VAR_NAME_MAX];
+
+            char* struct_name = $3;
+
+            char struct_name2[VAR_NAME_MAX];
+
+            char* p = strstr(struct_name, "<");
+
+            if(p) {
+                memcpy(struct_name2, struct_name, p - struct_name);
+                struct_name2[p-struct_name] = '\0';
+            }
+            else {
+                xstrncpy(struct_name2, struct_name, VAR_NAME_MAX);
+            }
+
+            xstrncpy(fun_name, struct_name2, VAR_NAME_MAX);
+            xstrncat(fun_name, "_", VAR_NAME_MAX);
+            xstrncat(fun_name, $5, VAR_NAME_MAX);
+
+            char fun_base_name[VAR_NAME_MAX];
+
+            xstrncpy(fun_base_name, $5, VAR_NAME_MAX);
+
+            unsigned int function_params = $7;
+            BOOL generics = num_function_generics_types > 0;
+            BOOL method_generics = num_method_generics_types > 0;
+
+            $$ = it = sNodeTree_create_external_function(fun_name, function_params, result_type, var_arg, inherit_, gSName, yylineno);
+
+            num_function_generics_types = 0;
+            num_method_generics_types = 0;
+            inline_ = FALSE;
+            static_ = FALSE;
+            inherit_ = FALSE;
+        }
         | EXTERN type name '(' function_params ')' function_attribute ';' {
             char* result_type = $2;
             char* fun_name = $3;
@@ -2797,6 +2971,10 @@ function:
             static_ = FALSE;
             inherit_ = FALSE;
         }
+
+
+
+
         | type name '(' function_params ')' function_params_end '{' function_block '}' block_end {
             char* result_type = $1;
             char* fun_name = $2;

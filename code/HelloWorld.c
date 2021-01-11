@@ -6,6 +6,7 @@
 #include <wchar.h>
 #include <limits.h>
 #include <pcre.h>
+//#include <dirent.h>
 #include "neo-c2.h"
 
 struct sData;
@@ -302,6 +303,51 @@ printf("sCloneTest4::clone %d %d\n", self.a, self.b);
 
     return result;
 }
+
+enum __pid_type
+  {
+    F_OWNER_TID = 0,		/* Kernel thread.  */
+    F_OWNER_PID,		/* Process.  */
+    F_OWNER_PGRP,		/* Process group.  */
+    F_OWNER_GID = F_OWNER_PGRP	/* Alternative, obsolete name.  */
+  };
+
+struct sVarTable {
+    int mVarNum;
+    int mMaxBlockVarNum;
+
+    int mBlockLevel;
+    
+    struct sVarTable* mParent;
+};
+
+struct sVar 
+{
+    int a;
+    int b;
+};
+
+extern sVar*% sVar::initialize(sVar*% self);
+
+extern int sNodeTree_create_lambda();
+
+struct _fpstate
+{
+  struct sVar st[8];
+  struct sVar xmm[16];
+};
+
+struct sigcontext
+{
+  //__extension__ union
+  union
+    {
+      struct sVar * fpstate;
+      long long int __fpstate_word;
+    };
+};
+
+typedef struct XXXX AAAAAAAAAAAAAAAA;
 
 int main() 
 {
@@ -1068,6 +1114,11 @@ int main()
             puts(it);
         }
     );
+
+    char path[PATH_MAX];
+
+    char* system_path = "LLLL";
+    snprintf(path, PATH_MAX, "%s/share/sevenstars/sevenstars.ss", system_path);
 
     return 0;
 }

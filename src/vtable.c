@@ -55,7 +55,7 @@ sVarTable* clone_var_table(sVarTable* lv_table)
         if(p->mName[0] != 0) {
             if(!add_variable_to_table(result, p->mName, p->mType, p->mLLVMValue, p->mIndex, p->mGlobal, p->mConstant))
             {
-                fprintf(stderr, "overflow variable table\n");
+                fprintf(stderr, "overflow variable table11\n");
                 exit(2);
             }
         }

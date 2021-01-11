@@ -1,28 +1,11 @@
-#include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 int main()
 {
-    int a = 123;
-    int* b = &a;
+    char path[123];
 
-    int c = 234;
-    int* d = &c;
-
-    *b = *d;
-
-    if(*d == 234) {
-        puts("OK");
-    }
-
-    int** e = &d;
-
-    printf("%d\n", **e);
-
-    int len = MB_LEN_MAX * 2;
-
-    printf("len %d\n", len);
+    char* system_path = "LLLL";
+    snprintf(path, 123, "%s/share/sevenstars/sevenstars.ss", system_path);
 
     return 0;
 }

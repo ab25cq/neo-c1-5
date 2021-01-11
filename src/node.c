@@ -288,7 +288,7 @@ unsigned int sNodeTree_pre_create_function(unsigned int function_params, char* s
         void* llvm_value = NULL;
         if(!add_variable_to_table(lv_table, var_name, var_type, llvm_value,  index, global, constant))
         {
-            fprintf(stderr, "overflow variable table");
+            fprintf(stderr, "overflow variable table10");
             return FALSE;
         }
     }

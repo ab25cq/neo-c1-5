@@ -164,166 +164,9 @@ BOOL is_type_name(char* name)
 <comment2>[^\n]*
 <comment2>\n { BEGIN(INITIAL); }
 
-[ \t]+ {
-}
-
-\n+ {
-}
-
-[#][ \t]+[0-9]+[ \t]+[\"].+[\"][\n]+ {
-    char* p = yytext;
-
-    while(*p == ' ' || *p == '#') {
-        p++;
-    }
-
-    int n = 0;
-    while(*p >= '0' && *p <= '9') {
-        n = n * 10 + *p - '0';
-        p++;
-    }
-
-    while(*p == ' ') {
-        p++;
-    }
-
-    char buf[PATH_MAX];
-
-    char* p2 = buf;
-
-    p++;
-
-    while(*p != ' ' && *p != '\0' && *p != '"') {
-        *p2++ = *p++;
-    }
-    *p2 = '\0';
-
-    p++;
-
-    xstrncpy(gSName, buf, PATH_MAX);
-    yylineno = n + 1;
-}
-
-[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[\n]+ {
-    char* p = yytext;
-
-    while(*p == ' ' || *p == '#') {
-        p++;
-    }
-
-    int n = 0;
-    while(*p >= '0' && *p <= '9') {
-        n = n * 10 + *p - '0';
-        p++;
-    }
-
-    while(*p == ' ') {
-        p++;
-    }
-
-    char buf[PATH_MAX];
-
-    char* p2 = buf;
-
-    p++;
-
-    while(*p != ' ' && *p != '\0' && *p != '"') {
-        *p2++ = *p++;
-    }
-    *p2 = '\0';
-
-    p++;
-
-    xstrncpy(gSName, buf, PATH_MAX);
-    yylineno = n + 1;
-}
-
-[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
-    char* p = yytext;
-
-    while(*p == ' ' || *p == '#') {
-        p++;
-    }
-
-    int n = 0;
-    while(*p >= '0' && *p <= '9') {
-        n = n * 10 + *p - '0';
-        p++;
-    }
-
-    while(*p == ' ') {
-        p++;
-    }
-
-    char buf[PATH_MAX];
-
-    char* p2 = buf;
-
-    p++;
-
-    while(*p != ' ' && *p != '\0' && *p != '"') {
-        *p2++ = *p++;
-    }
-    *p2 = '\0';
-
-    p++;
-
-    xstrncpy(gSName, buf, PATH_MAX);
-    yylineno = n + 1;
-}
-
-[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
-    char* p = yytext;
-
-    while(*p == ' ' || *p == '#') {
-        p++;
-    }
-
-    int n = 0;
-    while(*p >= '0' && *p <= '9') {
-        n = n * 10 + *p - '0';
-        p++;
-    }
-
-    while(*p == ' ') {
-        p++;
-    }
-
-    char buf[PATH_MAX];
-
-    char* p2 = buf;
-
-    p++;
-
-    while(*p != ' ' && *p != '\0' && *p != '"') {
-        *p2++ = *p++;
-    }
-    *p2 = '\0';
-
-    p++;
-
-    xstrncpy(gSName, buf, PATH_MAX);
-    yylineno = n + 1;
-}
-
-== {
+[^_^a-z^A-Z^0-9]lambda {
     strncpy(yylval.cval, yytext, 128);
-    return(EQEQ); 
-}
-
-!= {
-    strncpy(yylval.cval, yytext, 128);
-    return(NOT_EQ); 
-}
-
-"&&" {
-    strncpy(yylval.cval, yytext, 128);
-    return(ANDAND); 
-}
-
-"||" {
-    strncpy(yylval.cval, yytext, 128);
-    return(OROR); 
+    return(LAMBDA); 
 }
 
 __attribute__ {
@@ -432,237 +275,6 @@ __sentinel__ {
     return(__SENTINEL__); 
 }
 
-">=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(GTEQ); 
-}
-
-"<=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(LTEQ); 
-}
-
-"::" {
-    strncpy(yylval.cval, yytext, 128);
-    return(METHOD_MARK); 
-}
-
-"<<" {
-    strncpy(yylval.cval, yytext, 128);
-    return(LSHIFT); 
-}
-
-">>" {
-    strncpy(yylval.cval, yytext, 128);
-    return(RSHIFT); 
-}
-
-"++" {
-    strncpy(yylval.cval, yytext, 128);
-    return(PLUS_PLUS); 
-}
-
-"+=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(PLUS_EQ); 
-}
-
-"--" {
-    strncpy(yylval.cval, yytext, 128);
-    return(MINUS_MINUS); 
-}
-
-"-=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(MINUS_EQ); 
-}
-
-"*=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(MULT_EQ); 
-}
-
-"/=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(DIV_EQ); 
-}
-
-"%=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(MOD_EQ); 
-}
-
-"&=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(AND_EQ); 
-}
-
-"^=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(XOR_EQ); 
-}
-
-"|=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(OR_EQ); 
-}
-
-"<<=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(LSHIFT_EQ); 
-}
-
-">>=" {
-    strncpy(yylval.cval, yytext, 128);
-    return(LSHIFT_EQ); 
-}
-
-#[ \t]*error.* {
-    strncpy(yylval.cval, yytext, 128);
-
-    return(ERROR);
-}
-
-[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#\?] { 
-    return(yytext[0]); 
-}
-
-
-0[0-9]+ {
-    long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0[0-9]+u {
-    unsigned long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0[0-9]+l {
-    long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0[0-9]+ll {
-    long long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0[0-9]+ull {
-    unsigned long long value = strtol(yytext, NULL, 8);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0x[0-9abcdefABCDEF]+ {
-    long value = strtol(yytext, NULL, 16);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0x[0-9abcdefABCDEF]+u {
-    unsigned long value = strtol(yytext, NULL, 16);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0x[0-9abcdefABCDEF]+l {
-    long value = strtol(yytext, NULL, 16);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0x[0-9abcdefABCDEF]+ll {
-    long long value = strtol(yytext, NULL, 16);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-0x[0-9abcdefABCDEF]+ull {
-    unsigned long long value = strtol(yytext, NULL, 16);
-    yylval.ival = value;
-    return(INTNUM);
-}
-
-[0-9]* { 
-    sscanf(yytext, "%ld", &yylval.ival);
-    return(INTNUM); 
-}
-
-[0-9]*u { 
-    sscanf(yytext, "%lu", &yylval.ival);
-    return(INTNUM); 
-}
-
-[0-9]*l { 
-    sscanf(yytext, "%ld", &yylval.ival);
-    return(INTNUM); 
-}
-
-[0-9]*ll { 
-    sscanf(yytext, "%ld", &yylval.ival);
-    return(INTNUM); 
-}
-
-[0-9]*ull { 
-    sscanf(yytext, "%lu", &yylval.ival);
-    return(INTNUM); 
-}
-
-\'.\' {
-    sscanf(yytext, "'%c'", &yylval.char_val);
-    return(CHARNUM); 
-}
-
-\'\\\\' {
-    yylval.char_val = '\\';
-    return(CHARNUM); 
-}
-
-\'\\0' {
-    yylval.char_val = 0;
-    return(CHARNUM); 
-}
-
-\'\\n\' {
-    yylval.char_val = '\n';
-    return(CHARNUM); 
-}
-
-\'\\t\' {
-    yylval.char_val = '\t';
-    return(CHARNUM); 
-}
-
-\'\\r\' {
-    yylval.char_val = '\r';
-    return(CHARNUM); 
-}
-
-\'\\b\' {
-    yylval.char_val = '\b';
-    return(CHARNUM); 
-}
-
-\'\\f\' {
-    yylval.char_val = '\f';
-    return(CHARNUM); 
-}
-
-void {
-    strncpy(yylval.cval, yytext, 128);
-    return(VOID); 
-}
-
-inherit {
-    strncpy(yylval.cval, yytext, 128);
-    return(INHERIT); 
-}
-
 template {
     strncpy(yylval.cval, yytext, 128);
     return(TEMPLATE); 
@@ -681,11 +293,6 @@ if {
 else {
     strncpy(yylval.cval, yytext, 128);
     return(ELSE); 
-}
-
-lambda {
-    strncpy(yylval.cval, yytext, 128);
-    return(LAMBDA); 
 }
 
 true {
@@ -937,6 +544,399 @@ __alloc_size__ {
 __malloc__ {
     strncpy(yylval.cval, yytext, 128);
     return(__MALLOC__);
+}
+
+[ \t]+ {
+}
+
+\n+ {
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+[#][ \t]+[0-9]+[ \t]+[\"].+[\"][ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+[\n]+ {
+    char* p = yytext;
+
+    while(*p == ' ' || *p == '#') {
+        p++;
+    }
+
+    int n = 0;
+    while(*p >= '0' && *p <= '9') {
+        n = n * 10 + *p - '0';
+        p++;
+    }
+
+    while(*p == ' ') {
+        p++;
+    }
+
+    char buf[PATH_MAX];
+
+    char* p2 = buf;
+
+    p++;
+
+    while(*p != ' ' && *p != '\0' && *p != '"') {
+        *p2++ = *p++;
+    }
+    *p2 = '\0';
+
+    p++;
+
+    xstrncpy(gSName, buf, PATH_MAX);
+    yylineno = n + 1;
+}
+
+== {
+    strncpy(yylval.cval, yytext, 128);
+    return(EQEQ); 
+}
+
+!= {
+    strncpy(yylval.cval, yytext, 128);
+    return(NOT_EQ); 
+}
+
+"&&" {
+    strncpy(yylval.cval, yytext, 128);
+    return(ANDAND); 
+}
+
+"||" {
+    strncpy(yylval.cval, yytext, 128);
+    return(OROR); 
+}
+
+">=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(GTEQ); 
+}
+
+"<=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LTEQ); 
+}
+
+"::" {
+    strncpy(yylval.cval, yytext, 128);
+    return(METHOD_MARK); 
+}
+
+"<<" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT); 
+}
+
+">>" {
+    strncpy(yylval.cval, yytext, 128);
+    return(RSHIFT); 
+}
+
+"++" {
+    strncpy(yylval.cval, yytext, 128);
+    return(PLUS_PLUS); 
+}
+
+"+=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(PLUS_EQ); 
+}
+
+"--" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MINUS_MINUS); 
+}
+
+"-=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MINUS_EQ); 
+}
+
+"*=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MULT_EQ); 
+}
+
+"/=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(DIV_EQ); 
+}
+
+"%=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(MOD_EQ); 
+}
+
+"&=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(AND_EQ); 
+}
+
+"^=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(XOR_EQ); 
+}
+
+"|=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(OR_EQ); 
+}
+
+"<<=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT_EQ); 
+}
+
+">>=" {
+    strncpy(yylval.cval, yytext, 128);
+    return(LSHIFT_EQ); 
+}
+
+#[ \t]*error.* {
+    strncpy(yylval.cval, yytext, 128);
+
+    return(ERROR);
+}
+
+[=+\-\*\/;\(\)\{\},\.:%\[\]\!<>\&\^\|\~\#\?] { 
+    return(yytext[0]); 
+}
+
+
+0[0-9]+ {
+    long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+u {
+    unsigned long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+l {
+    long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+ll {
+    long long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0[0-9]+ull {
+    unsigned long long value = strtol(yytext, NULL, 8);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ {
+    long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+u {
+    unsigned long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+l {
+    long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ll {
+    long long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+0x[0-9abcdefABCDEF]+ull {
+    unsigned long long value = strtol(yytext, NULL, 16);
+    yylval.ival = value;
+    return(INTNUM);
+}
+
+[0-9]* { 
+    sscanf(yytext, "%ld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*u { 
+    sscanf(yytext, "%lu", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*l { 
+    sscanf(yytext, "%ld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*ll { 
+    sscanf(yytext, "%ld", &yylval.ival);
+    return(INTNUM); 
+}
+
+[0-9]*ull { 
+    sscanf(yytext, "%lu", &yylval.ival);
+    return(INTNUM); 
+}
+
+\'.\' {
+    sscanf(yytext, "'%c'", &yylval.char_val);
+    return(CHARNUM); 
+}
+
+\'\\\\' {
+    yylval.char_val = '\\';
+    return(CHARNUM); 
+}
+
+\'\\0' {
+    yylval.char_val = 0;
+    return(CHARNUM); 
+}
+
+\'\\n\' {
+    yylval.char_val = '\n';
+    return(CHARNUM); 
+}
+
+\'\\t\' {
+    yylval.char_val = '\t';
+    return(CHARNUM); 
+}
+
+\'\\r\' {
+    yylval.char_val = '\r';
+    return(CHARNUM); 
+}
+
+\'\\b\' {
+    yylval.char_val = '\b';
+    return(CHARNUM); 
+}
+
+\'\\f\' {
+    yylval.char_val = '\f';
+    return(CHARNUM); 
+}
+
+void {
+    strncpy(yylval.cval, yytext, 128);
+    return(VOID); 
+}
+
+inherit {
+    strncpy(yylval.cval, yytext, 128);
+    return(INHERIT); 
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {

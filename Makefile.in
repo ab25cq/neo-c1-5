@@ -92,6 +92,7 @@ clean:
 
 distclean: clean
 	rm -fR  config.h Makefile autom4te.cache 
+	(cd sevenstars2; make distclean)
 
 #########################################
 # test

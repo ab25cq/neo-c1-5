@@ -256,6 +256,10 @@ static sNodeType* parse_class_name(char** p, char** p2, char* buf)
             else if(buf[0] != '\0') {
                 node_type->mResultType = create_node_type_with_class_name(buf);
 
+                if(node_type->mResultType == NULL) {
+                    return NULL;
+                }
+
                 node_type->mResultType->mHeap = heap;
                 heap = FALSE;
                 node_type->mResultType->mNoHeap = no_heap;
