@@ -93,7 +93,7 @@ IRBuilder<> Builder(TheContext);
 Module* TheModule;
 std::unique_ptr<FunctionPassManager> TheFPM;
 FunctionAnalysisManager TheFAM(false);
-std::map<std::string, std::pair<Type*, sNodeType*>> gLLVMStructType;
+std::map<std::string, std::pair<Type*, sNodeType*>>  gLLVMStructType;
 
 struct DebugInfo {
     DICompileUnit* TheCU;
@@ -326,29 +326,6 @@ BOOL create_llvm_type_from_node_type(Type** result_type, sNodeType* node_type, s
 BOOL get_size_from_node_type(uint64_t* result, sNodeType* node_type, sNodeType* generics_type, sCompileInfo* info);
 void compile_err_msg(sCompileInfo* info, const char* msg, ...);
 
-static BOOL is_generics_type(sNodeType* node_type)
-{
-    sCLClass* klass = node_type->mClass;
-
-    if(klass->mFlags & CLASS_FLAGS_GENERICS)
-    {
-        return TRUE;
-    }
-    else {
-        int i;
-        for(i=0; i<node_type->mNumGenericsTypes; i++)
-        {
-            sNodeType* node_type2 = node_type->mGenericsTypes[i];
-
-            if(is_generics_type(node_type2))
-            {
-                return TRUE;
-            }
-        }
-    }
-
-    return FALSE;
-}
 
 static void create_real_struct_name(char* real_struct_name, int size_real_struct_name, int num_generics, sNodeType* generics_types[GENERICS_TYPES_MAX])
 {
@@ -7436,7 +7413,11 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
     xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
     unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
 
-    int num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
+    int num_fields = 0;
+    if(fields_node != 0) {
+        num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
+    }
+
     char type_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     char name_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     int i;
@@ -7462,7 +7443,7 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
             BOOL new_create = TRUE;
             (void)create_llvm_struct_type(node_type, node_type, new_create, info);
 */
-            
+
             create_undefined_llvm_struct_type(node_type);
         }
     }
@@ -7506,7 +7487,11 @@ BOOL compile_union(unsigned int node, sCompileInfo* info)
     xstrncpy(struct_name, gNodes[node].uValue.sStruct.mName, VAR_NAME_MAX);
     unsigned int fields_node = gNodes[node].uValue.sStruct.mFields;
 
-    int num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
+    int num_fields = 0;
+    if(fields_node != 0) {
+        num_fields = gNodes[fields_node].uValue.sFields.mNumFields;
+    }
+
     char type_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     char name_fields[STRUCT_FIELD_MAX][VAR_NAME_MAX];
     int i;

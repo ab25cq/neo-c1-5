@@ -116,7 +116,13 @@ sNodeType* clone_node_type(sNodeType* node_type)
 
 void show_type_core(sNodeType* type) 
 {
+    if(type == NULL || type->mClass == NULL) {
+        puts("Class is null");
+        return;
+    }
+
     printf("%s", type->mClass->mName);
+
     int i;
     for(i=0; i<type->mPointerNum; i++) {
         printf("*");
@@ -131,7 +137,7 @@ void show_type_core(sNodeType* type)
         printf("&");
     }
     if(type->mNumGenericsTypes > 0) {
-        printf("<");
+        printf(" %d <", type->mNumGenericsTypes);
         int i;
         for(i=0; i<type->mNumGenericsTypes; i++) {
             show_type_core(type->mGenericsTypes[i]);
@@ -754,12 +760,112 @@ BOOL type_identify_with_class_name(sNodeType* left, const char* right_class_name
     return type_identify(left, right);
 }
 
+static int gNumParentNodeType = 0;
+static sNodeType* gParentNodeType[128];
+
+BOOL is_generics_type_core(sNodeType* node_type)
+{
+    gParentNodeType[gNumParentNodeType] = node_type;
+    gNumParentNodeType++;
+
+    sCLClass* klass = node_type->mClass;
+
+    if(type_identify_with_class_name(node_type, "lambda")) 
+    {
+        sNodeType* node_type2 = node_type->mResultType;
+
+        int j;
+        for(j=0; j<gNumParentNodeType; j++) {
+            if(type_identify(gParentNodeType[j], node_type2)) {
+                return FALSE;
+            }
+        }
+
+        if(is_generics_type(node_type->mResultType))
+        {
+            return TRUE;
+        }
+
+        int i;
+        for(i=0; i<node_type->mNumParams; i++)
+        {
+            sNodeType* node_type2 = node_type->mParamTypes[i];
+
+            int j;
+            for(j=0; j<gNumParentNodeType; j++) {
+                if(type_identify(gParentNodeType[j], node_type2)) {
+                    return FALSE;
+                }
+            }
+
+            if(is_generics_type(node_type2)) {
+                return TRUE;
+            }
+        }
+    }
+    else if(klass->mFlags & CLASS_FLAGS_GENERICS) {
+        return TRUE;
+    }
+    else {
+        if(((klass->mFlags & CLASS_FLAGS_STRUCT) || (klass->mFlags & CLASS_FLAGS_UNION)) && (klass->mFlags & CLASS_FLAGS_ANONYMOUS))
+        {
+            int i;
+            for(i=0; i<klass->mNumFields; i++) {
+                sNodeType* node_type2 = klass->mFields[i];
+
+                int j;
+                for(j=0; j<gNumParentNodeType; j++) {
+                    if(type_identify(gParentNodeType[j], node_type2)) {
+                        return FALSE;
+                    }
+                }
+
+                if(is_generics_type(node_type2)) {
+                    return TRUE;
+                }
+            }
+        }
+
+        int i;
+        for(i=0; i<node_type->mNumGenericsTypes; i++)
+        {
+            sNodeType* node_type2 = node_type->mGenericsTypes[i];
+
+            int j;
+            for(j=0; j<gNumParentNodeType; j++) {
+                if(type_identify(gParentNodeType[j], node_type2)) {
+                    return FALSE;
+                }
+            }
+
+            if(is_generics_type(node_type->mGenericsTypes[i])) {
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+
+BOOL is_generics_type(sNodeType* node_type)
+{
+    gNumParentNodeType = 0;
+
+    return is_generics_type_core(node_type);
+}
+
 BOOL solve_generics(sNodeType** node_type, sNodeType* generics_type, BOOL* success_volve)
 {
-    if(generics_type == NULL) {
+    if(*node_type == NULL || generics_type == NULL) {
         return TRUE;
     }
     *success_volve = FALSE;
+
+    if(!is_generics_type(*node_type)) {
+        *success_volve = TRUE;
+        return TRUE;
+    }
 
     sCLClass* klass = (*node_type)->mClass;
 

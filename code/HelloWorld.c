@@ -343,30 +343,6 @@ typedef struct XXXX AAAAAAAAAAAAAAAA;
 
 int readdir_r() __attribute__((__deprecated__("readdir_r is deprecated; use readdir instead")));
 
-struct sCLType;
-
-struct sCLParam {
-    char mName[VAR_NAME_MAX];
-    sCLType* mType;
-};
-
-struct sCLType {
-    string mName;
-
-    //int mNumGenericsTypes;
-    //sCLType* mGenericsTypes[GENERICS_TYPES_MAX];
-
-    bool mNullable;
-
-    //sCLParam mParams[PARAMS_MAX];
-    int mNumParams;
-
-    //sCLType* mResultType;
-
-    //int mVarNum;
-    
-};
-
 int main() 
 {
     puts("HELLO WORLD");
@@ -1139,6 +1115,7 @@ int main()
     char* system_path = "LLLL";
     snprintf(path, PATH_MAX, "%s/share/sevenstars/sevenstars.ss", system_path);
 
+/*
     vector!<sCLType*%>*% types = new vector!<sCLType*%>.initialize();
 
     sCLType*% yyyyyyyyyyy = new sCLType;
@@ -1146,6 +1123,7 @@ int main()
     yyyyyyyyyyy.mName = string("ABC");
 
     types.push_back(yyyyyyyyyyy);
+*/
 
     return 0;
 }

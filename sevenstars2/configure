@@ -3754,7 +3754,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking Operating System" >&5
 $as_echo_n "checking Operating System... " >&6; }
 
-CFLAGS='-DPREFIX="\"\\\"${DESTDIR}/\\\"\""'
+CFLAGS='-DPREFIX="\\\""${DESTDIR}/"\\\""'
 CFLAGS="-fPIC -rdynamic $CFLAGS"
 
 AR_LIB=
