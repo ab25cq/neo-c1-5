@@ -553,6 +553,33 @@ static void create_undefined_llvm_struct_type(sNodeType* node_type)
     }
 }
 
+static void create_undefined_llvm_union_type(sNodeType* node_type)
+{
+    sCLClass* klass = node_type->mClass;
+
+    char* class_name = klass->mName;
+
+    char real_struct_name[REAL_STRUCT_NAME_MAX];
+    int size_real_struct_name = REAL_STRUCT_NAME_MAX;
+    xstrncpy(real_struct_name, class_name, size_real_struct_name);
+
+    create_real_struct_name(real_struct_name, size_real_struct_name, node_type->mNumGenericsTypes, node_type->mGenericsTypes);
+
+    if(gLLVMStructType[real_struct_name].first == nullptr) 
+    {
+        StructType* struct_type = StructType::create(TheContext, real_struct_name);
+
+        std::pair<Type*, sNodeType*> pair_value;
+        pair_value.first = struct_type;
+        pair_value.second = clone_node_type(node_type);
+        pair_value.second->mNumFields = node_type->mClass->mNumFields;
+
+        gLLVMStructType[real_struct_name] = pair_value;
+
+        klass->mUndefinedStructType = struct_type;
+    }
+}
+
 static BOOL solve_undefined_strcut_type(sNodeType* node_type, sNodeType* generics_type, char* real_struct_name, sCompileInfo* info)
 {
     sCLClass* klass = node_type->mClass;
@@ -7421,13 +7448,20 @@ BOOL compile_struct(unsigned int node, sCompileInfo* info)
     BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
     BOOL generics = gNodes[node].uValue.sStruct.mGenerics;
 
-    sCLClass* klass = alloc_struct(struct_name, anonymous);
+    sCLClass* klass = get_class(struct_name);
+
+    if(klass == NULL) {
+        klass = alloc_struct(struct_name, anonymous);
+    }
 
     if(num_fields == 0) {
         if(!generics) {
             sNodeType* node_type = create_node_type_with_class_pointer(klass);
+
+/*
             BOOL new_create = TRUE;
             (void)create_llvm_struct_type(node_type, node_type, new_create, info);
+*/
             
             create_undefined_llvm_struct_type(node_type);
         }
@@ -7483,20 +7517,30 @@ BOOL compile_union(unsigned int node, sCompileInfo* info)
 
     BOOL anonymous = gNodes[node].uValue.sStruct.mAnonymous;
     BOOL anonymous_var_name = FALSE;
+    BOOL generics = FALSE;
 
     sCLClass* klass = alloc_union(struct_name, anonymous, anonymous_var_name);
 
     sNodeType* fields[STRUCT_FIELD_MAX];
 
-    for(i=0; i<num_fields; i++) {
-        fields[i] = create_node_type_with_class_name(type_fields[i]);
-        add_field_to_union(klass, name_fields[i], fields[i]);
+    if(num_fields == 0) {
+        if(!generics) {
+            sNodeType* node_type = create_node_type_with_class_pointer(klass);
+
+            create_undefined_llvm_union_type(node_type);
+        }
     }
+    else {
+        for(i=0; i<num_fields; i++) {
+            fields[i] = create_node_type_with_class_name(type_fields[i]);
+            add_field_to_union(klass, name_fields[i], fields[i]);
+        }
 
-    sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
+        sNodeType* struct_type = create_node_type_with_class_name(klass->mName);
 
-    sNodeType* generics_type = struct_type;
-    (void)create_llvm_union_type(struct_type, generics_type, info);
+        sNodeType* generics_type = struct_type;
+        (void)create_llvm_union_type(struct_type, generics_type, info);
+    }
 
     return TRUE;
 }

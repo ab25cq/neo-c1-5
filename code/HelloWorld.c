@@ -304,14 +304,6 @@ printf("sCloneTest4::clone %d %d\n", self.a, self.b);
     return result;
 }
 
-enum __pid_type
-  {
-    F_OWNER_TID = 0,		/* Kernel thread.  */
-    F_OWNER_PID,		/* Process.  */
-    F_OWNER_PGRP,		/* Process group.  */
-    F_OWNER_GID = F_OWNER_PGRP	/* Alternative, obsolete name.  */
-  };
-
 struct sVarTable {
     int mVarNum;
     int mMaxBlockVarNum;
@@ -349,11 +341,38 @@ struct sigcontext
 
 typedef struct XXXX AAAAAAAAAAAAAAAA;
 
+int readdir_r() __attribute__((__deprecated__("readdir_r is deprecated; use readdir instead")));
+
+struct sCLType;
+
+struct sCLParam {
+    char mName[VAR_NAME_MAX];
+    sCLType* mType;
+};
+
+struct sCLType {
+    string mName;
+
+    //int mNumGenericsTypes;
+    //sCLType* mGenericsTypes[GENERICS_TYPES_MAX];
+
+    bool mNullable;
+
+    //sCLParam mParams[PARAMS_MAX];
+    int mNumParams;
+
+    //sCLType* mResultType;
+
+    //int mVarNum;
+    
+};
+
 int main() 
 {
     puts("HELLO WORLD");
 
     char*% start_str = string("AAA");
+
 
     int start_a = 111;
     printf("a %d\n", start_a);
@@ -1119,6 +1138,14 @@ int main()
 
     char* system_path = "LLLL";
     snprintf(path, PATH_MAX, "%s/share/sevenstars/sevenstars.ss", system_path);
+
+    vector!<sCLType*%>*% types = new vector!<sCLType*%>.initialize();
+
+    sCLType*% yyyyyyyyyyy = new sCLType;
+
+    yyyyyyyyyyy.mName = string("ABC");
+
+    types.push_back(yyyyyyyyyyy);
 
     return 0;
 }

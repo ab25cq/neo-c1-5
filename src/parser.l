@@ -164,7 +164,7 @@ BOOL is_type_name(char* name)
 <comment2>[^\n]*
 <comment2>\n { BEGIN(INITIAL); }
 
-[^_^a-z^A-Z^0-9]lambda {
+lambda {
     strncpy(yylval.cval, yytext, 128);
     return(LAMBDA); 
 }
@@ -225,6 +225,11 @@ strftime {
 }
 
 deprecated {
+    strncpy(yylval.cval, yytext, 128);
+    return(DEPRECATED); 
+}
+
+__deprecated__ {
     strncpy(yylval.cval, yytext, 128);
     return(DEPRECATED); 
 }
