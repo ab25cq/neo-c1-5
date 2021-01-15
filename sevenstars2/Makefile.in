@@ -37,86 +37,86 @@ core: core.ss
 	./sevenstars -core core.ss
 
 sevenstars: config.h src/*.h Makefile configure src/main.c src/compiler.o src/interpreter.o src/parser.o src/node.o src/type.o src/class.o src/native.o src/native2.o src/native3.o src/native4.o src/native5.o src/native6.o src/vm.o src/vtable.o src/heap.o src/object.o src/block.o src/macro.o
-	$(CC) -o sevenstars src/main.c src/compiler.o src/interpreter.o src/parser.o src/node.o src/type.o src/class.o src/native.o src/native2.o src/native3.o src/native4.o src/native5.o src/native6.o src/vm.o src/vtable.o src/heap.o src/object.o src/block.o src/macro.o $(CFLAGS) $(NCFLAGS) $(LIBS)
+	clang -o sevenstars src/main.c src/compiler.o src/interpreter.o src/parser.o src/node.o src/type.o src/class.o src/native.o src/native2.o src/native3.o src/native4.o src/native5.o src/native6.o src/vm.o src/vtable.o src/heap.o src/object.o src/block.o src/macro.o $(CFLAGS) $(NCFLAGS) $(LIBS)
 
 ##########################################################
 # objects
 ##########################################################
 src/compiler.o: config.h src/*.h Makefile configure src/compiler.c
 	neo-c2 src/compiler.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/compiler.o src/compiler.c.ll
+	clang -c -o src/compiler.o src/compiler.c.ll
 
 src/interpreter.o: config.h src/*.h Makefile configure src/interpreter.c
 	neo-c2 src/interpreter.c $(CFLAGS) $(NCFLAGS) -I/opt/local/include
-	clang -o src/interpreter.o src/interpreter.c.ll
+	clang -c -o src/interpreter.o src/interpreter.c.ll
 
 src/parser.o: config.h src/*.h Makefile configure src/parser.c
 	neo-c2 src/parser.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/parser.o src/parser.c.ll
+	clang -c -o src/parser.o src/parser.c.ll
 
 src/node.o: config.h src/*.h Makefile configure src/node.c
 	neo-c2 src/node.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/node.o src/node.c.ll
+	clang -c -o src/node.o src/node.c.ll
 
 src/type.o: config.h src/*.h Makefile configure src/type.c
 	neo-c2 src/type.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/type.o src/type.c.ll
+	clang -c -o src/type.o src/type.c.ll
 
 src/class.o: config.h src/*.h Makefile configure src/class.c
 	neo-c2 src/class.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/class.o src/class.c.ll
+	clang -c -o src/class.o src/class.c.ll
 
 src/native.o: config.h src/*.h Makefile configure src/native.c
 	neo-c2 src/native.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/neo-c2.o src/neo-c2.c.ll
+	clang -c -o src/neo-c2.o src/neo-c2.c.ll
 
 src/native2.o: config.h src/*.h Makefile configure src/native2.c
 	neo-c2 src/native2.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/native2.o src/native2.c.ll
+	clang -c -o src/native2.o src/native2.c.ll
 
 src/native3.o: config.h src/*.h Makefile configure src/native3.c
 	neo-c2 src/native3.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/native3.o src/native3.c.ll
+	clang -c -o src/native3.o src/native3.c.ll
 
 src/native4.o: config.h src/*.h Makefile configure src/native4.c
 	neo-c2 src/native4.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/native4.o src/native4.c.ll
+	clang -c -o src/native4.o src/native4.c.ll
 
 src/native5.o: config.h src/*.h Makefile configure src/native5.c
 	neo-c2 src/native5.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/native5.o src/native5.c.ll
+	clang -c -o src/native5.o src/native5.c.ll
 
 src/native6.o: config.h src/*.h Makefile configure src/native6.c
 	neo-c2 src/native6.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/native6.o src/native6.c.ll
+	clang -c -o src/native6.o src/native6.c.ll
 
 src/vm.o: config.h src/*.h Makefile configure src/vm.c
 	neo-c2 src/vm.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/vm.o src/vm.c.ll
+	clang -c -o src/vm.o src/vm.c.ll
 
 src/vtable.o: config.h src/*.h Makefile configure src/vtable.c
 	neo-c2 src/vtable.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/vtable.o src/vtable.c.ll
+	clang -c -o src/vtable.o src/vtable.c.ll
 
 src/objet.o: config.h src/*.h Makefile configure src/object.c
 	neo-c2 src/object.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/object.o src/object.c.ll
+	clang -c -o src/object.o src/object.c.ll
 
 src/heap.o: config.h src/*.h Makefile configure src/heap.c
 	neo-c2 src/heap.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/heap.o src/heap.c.ll
+	clang -c -o src/heap.o src/heap.c.ll
 
 src/object.o: config.h src/*.h Makefile configure src/object.c
 	neo-c2 src/object.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/object.o src/object.c.ll
+	clang -c -o src/object.o src/object.c.ll
 
 src/block.o: config.h src/*.h Makefile configure src/block.c
 	neo-c2 src/block.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/block.o src/block.c.ll
+	clang -c -o src/block.o src/block.c.ll
 
 src/macro.o: config.h src/*.h Makefile configure src/macro.c
 	neo-c2 src/macro.c $(CFLAGS) $(NCFLAGS)
-	clang -o src/macro.o src/macro.c.ll
+	clang -c -o src/macro.o src/macro.c.ll
 
 #########################################################
 # install

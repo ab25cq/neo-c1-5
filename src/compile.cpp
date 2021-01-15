@@ -1391,7 +1391,7 @@ void get_version(sFunction* fun, char* fun_name)
 }
 
 
-BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sVarTable* lv_table, sCompileInfo* info)
+BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, int num_params, char** param_types, char** param_names, BOOL var_arg, BOOL inline_, BOOL inherit_, BOOL static_, unsigned int node_block, BOOL generics, BOOL coroutine, BOOL method_generics, sVarTable* lv_table, BOOL external, sCompileInfo* info)
 {
     sFunction fun;
 
@@ -1417,6 +1417,8 @@ BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, i
     else {
         fun.mLVTable = NULL;
     }
+
+    fun.mExternal = external;
 
     int i;
     for(i=0; i<num_params; i++) {
@@ -1449,6 +1451,14 @@ BOOL add_function(char* fun_name, char* fun_base_name, char* result_type_name, i
 
             if(gFuncs[fun_name].size() == 0) {
                 gFuncs[fun_name].push_back(fun);
+            }
+            else {
+                if(!external) {
+                    sFunction fun2 = gFuncs[fun_name][gFuncs[fun_name].size()-1];
+                    if(fun2.mExternal) {
+                        gFuncs[fun_name][0] = fun;
+                    }
+                }
             }
         }
     }
@@ -1490,8 +1500,6 @@ BOOL call_function(const char* fun_name, Value** params, int num_params, const c
 
     sFunction fun;
     if(gFuncs[real_fun_name].size() == 0) {
-        //compile_err_msg(info, "Function not found(%s)\n", real_fun_name);
-        //info->err_num++;
         return TRUE;
     }
     else {
@@ -2640,8 +2648,9 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("llvm.va_start", "llvm.va_start", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("__builtin_va_start", "__builtin_va_list", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        BOOL external = TRUE;
+        add_function("llvm.va_start", "llvm.va_start", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
+        add_function("__builtin_va_start", "__builtin_va_list", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
     }
 
     {
@@ -2661,8 +2670,9 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("llvm.va_end", "llvm.va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("__builtin_va_end", "__builtin_va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        BOOL external = TRUE;
+        add_function("llvm.va_end", "llvm.va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
+        add_function("__builtin_va_end", "__builtin_va_end", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
     }
 
     {
@@ -2698,8 +2708,9 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        BOOL external = TRUE;
+        add_function("__builtin_memmove", "__builtin_memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
+        add_function("llvm.memmove.p0i8.p0i8.i64", "llvm.memmove", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
     }
     {
         char* param_types[PARAMS_MAX];
@@ -2734,8 +2745,9 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("__builtin_memcpy", "__builtin_memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("llvm.memcpy.p0i8.p0i8.i64", "llvm.memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        BOOL external = TRUE;
+        add_function("__builtin_memcpy", "__builtin_memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
+        add_function("llvm.memcpy.p0i8.p0i8.i64", "llvm.memcpy", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
     }
     {
         char* param_types[PARAMS_MAX];
@@ -2769,331 +2781,10 @@ void declare_builtin_functions()
         BOOL generics = FALSE;
         BOOL coroutine = FALSE;
         BOOL method_generics = FALSE;
-        add_function("__builtin_memset", "__builtin_memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
-        add_function("llvm.memset.p0i8.i64", "llvm.memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, &cinfo);
+        BOOL external = TRUE;
+        add_function("__builtin_memset", "__builtin_memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
+        add_function("llvm.memset.p0i8.i64", "llvm.memset", result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, 0, generics, coroutine, method_generics, NULL, external, &cinfo);
     }
-
-/*
-    sCLClass* va_list_struct = alloc_struct("__builtin_va_list", FALSE);
-
-    va_list_struct->setBody(fields, false);
-
-    //add_field_to_struct(va_list_struct, field_name, field_type);
-
-    sCLClass* klass = alloc_struct("__builtin_va_list", FALSE);
-
-    sNodeType* field = create_node_type_with_class_name("char*");
-
-    add_field_to_struct(klass, "a", field);
-
-    field = create_node_type_with_class_name("char*");
-
-    add_field_to_struct(klass, "b", field);
-
-    field = create_node_type_with_class_name("char*");
-
-    add_field_to_struct(klass, "c", field);
-
-    field = create_node_type_with_class_name("int");
-
-    add_field_to_struct(klass, "d", field);
-
-    field = create_node_type_with_class_name("int");
-
-    add_field_to_struct(klass, "e", field);
-*/
-
-
-/*
-
-    sNodeType* node_type = create_node_type_with_class_pointer(va_list_struct);
-
-    std::pair<Type*, sNodeType*> pair_value;
-
-    pair_value.first = struct_type;
-    pair_value.second = clone_node_type(node_type);
-
-    gLLVMStructType["__builtin_va_list"] = pair_value;
-
-    /// va_start ///
-    params.clear();
-
-    result_type = Type::getVoidTy(TheContext);
-
-    param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-    {
-        std::vector<Type *> llvm_param_types;
-        sNodeType* param_types[PARAMS_MAX];
-        char param_names[PARAMS_MAX][VAR_NAME_MAX];
-
-        sNodeType* result_type = create_node_type_with_class_name("void");
-
-        int num_params = 1;
-        xstrncpy(param_names[0], "p", VAR_NAME_MAX);
-        param_types[0] = create_node_type_with_class_name("char*");
-
-        BOOL var_arg = TRUE;
-
-        char method_generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(method_generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        char generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        Function* llvm_fun;
-        sFunction* neo_c_fun = NULL;
-
-        char* param_names2[PARAMS_MAX];
-        int i;
-        for(i=0; i<num_params; i++) {
-            param_names2[i] = param_names[i];
-        }
-        char* method_generics_type_names2[GENERICS_TYPES_MAX];
-        int num_method_generics = 0;
-        for(i=0; i<num_method_generics; i++) {
-            method_generics_type_names2[i] = method_generics_type_names[i];
-        }
-        char* generics_type_names2[GENERICS_TYPES_MAX];
-        int num_generics = 0;
-        for(i=0; i<num_generics; i++) {
-            generics_type_names2[i] = generics_type_names[i];
-        }
-        add_function("llvm.va_start", "llvm.va_start", "", param_names2, param_types, num_params, result_type, 0, method_generics_type_names2, TRUE, var_arg, NULL, 0, generics_type_names2, FALSE, FALSE, NULL, 0, TRUE, TRUE, 0, &llvm_fun, NULL, FALSE, NULL, -1, "llvm.va_start", &neo_c_fun);
-    }
-
-    /// va_end ///
-    params.clear();
-
-    result_type = Type::getVoidTy(TheContext);
-
-    param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-
-    {
-        std::vector<Type *> llvm_param_types;
-        sNodeType* param_types[PARAMS_MAX];
-        char param_names[PARAMS_MAX][VAR_NAME_MAX];
-
-        sNodeType* result_type = create_node_type_with_class_name("void");
-
-        int num_params = 1;
-        xstrncpy(param_names[0], "p", VAR_NAME_MAX);
-        param_types[0] = create_node_type_with_class_name("char*");
-
-        BOOL var_arg = FALSE;
-
-        char method_generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(method_generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        char generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        Function* llvm_fun;
-        sFunction* neo_c_fun = NULL;
-
-        char* param_names2[PARAMS_MAX];
-        int i;
-        for(i=0; i<num_params; i++) {
-            param_names2[i] = param_names[i];
-        }
-        char* method_generics_type_names2[GENERICS_TYPES_MAX];
-        int num_method_generics = 0;
-        for(i=0; i<num_method_generics; i++) {
-            method_generics_type_names2[i] = method_generics_type_names[i];
-        }
-        char* generics_type_names2[GENERICS_TYPES_MAX];
-        int num_generics = 0;
-        for(i=0; i<num_generics; i++) {
-            generics_type_names2[i] = generics_type_names[i];
-        }
-        add_function("llvm.va_end", "llvm.va_end", "", param_names2, param_types, num_params, result_type, 0, method_generics_type_names2, TRUE, var_arg, NULL, 0, generics_type_names2, FALSE, FALSE, NULL, 0, TRUE, TRUE, 0, &llvm_fun, NULL, FALSE, NULL, -1, "llvm.va_end", &neo_c_fun);
-    }
-
-    /// va_copy ///
-    params.clear();
-
-    result_type = Type::getVoidTy(TheContext);
-
-    param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-    param2_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-
-    {
-        std::vector<Type *> llvm_param_types;
-        sNodeType* param_types[PARAMS_MAX];
-        char param_names[PARAMS_MAX][VAR_NAME_MAX];
-
-        sNodeType* result_type = create_node_type_with_class_name("void");
-
-        int num_params = 2;
-        xstrncpy(param_names[0], "p", VAR_NAME_MAX);
-        xstrncpy(param_names[1], "p2", VAR_NAME_MAX);
-        param_types[0] = create_node_type_with_class_name("char*");
-        param_types[1] = create_node_type_with_class_name("char*");
-
-        BOOL var_arg = FALSE;
-
-        char method_generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(method_generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        char generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        Function* llvm_fun;
-        sFunction* neo_c_fun = NULL;
-
-        char* param_names2[PARAMS_MAX];
-        int i;
-        for(i=0; i<num_params; i++) {
-            param_names2[i] = param_names[i];
-        }
-        char* method_generics_type_names2[GENERICS_TYPES_MAX];
-        int num_method_generics = 0;
-        for(i=0; i<num_method_generics; i++) {
-            method_generics_type_names2[i] = method_generics_type_names[i];
-        }
-        char* generics_type_names2[GENERICS_TYPES_MAX];
-        int num_generics = 0;
-        for(i=0; i<num_generics; i++) {
-            generics_type_names2[i] = generics_type_names[i];
-        }
-        add_function("llvm.va_copy", "llvm.va_copy", "", param_names2, param_types, num_params, result_type, 0, method_generics_type_names2, TRUE, var_arg, NULL, 0, generics_type_names2, FALSE, FALSE, NULL, 0, TRUE, TRUE, 0, &llvm_fun, NULL, FALSE, NULL, -1, "llvm.va_copy", &neo_c_fun);
-    }
-
-    /// llvm.memset ///
-#ifdef __32BIT_CPU__
-    params.clear();
-
-    result_type = Type::getVoidTy(TheContext);
-
-    param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-    param2_type = IntegerType::get(TheContext,8);
-    params.push_back(param2_type);
-    param3_type = IntegerType::get(TheContext,32);
-    params.push_back(param3_type);
-    param4_type = IntegerType::get(TheContext,1);
-    params.push_back(param4_type);
-
-    {
-        std::vector<Type *> llvm_param_types;
-        sNodeType* param_types[PARAMS_MAX];
-        char param_names[PARAMS_MAX][VAR_NAME_MAX];
-
-        sNodeType* result_type = create_node_type_with_class_name("void");
-
-        int num_params = 4;
-        xstrncpy(param_names[0], "dest", VAR_NAME_MAX);
-        xstrncpy(param_names[1], "val", VAR_NAME_MAX);
-        xstrncpy(param_names[2], "len", VAR_NAME_MAX);
-        xstrncpy(param_names[3], "isvolatile", VAR_NAME_MAX);
-        param_types[0] = create_node_type_with_class_name("void*");
-        param_types[1] = create_node_type_with_class_name("char");
-        param_types[2] = create_node_type_with_class_name("int");
-        param_types[3] = create_node_type_with_class_name("bool");
-
-        BOOL var_arg = FALSE;
-
-        char method_generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(method_generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        char generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        Function* llvm_fun;
-        sFunction* neo_c_fun = NULL;
-
-        char* param_names2[PARAMS_MAX];
-        int i;
-        for(i=0; i<num_params; i++) {
-            param_names2[i] = param_names[i];
-        }
-        char* method_generics_type_names2[GENERICS_TYPES_MAX];
-        int num_method_generics = 0;
-        for(i=0; i<num_method_generics; i++) {
-            method_generics_type_names2[i] = method_generics_type_names[i];
-        }
-        char* generics_type_names2[GENERICS_TYPES_MAX];
-        int num_generics = 0;
-        for(i=0; i<num_generics; i++) {
-            generics_type_names2[i] = generics_type_names[i];
-        }
-        add_function("llvm.memset.p0i8.i32", "llvm.memset.p0i8.i32", "", param_names2, param_types, num_params, result_type, 0, method_generics_type_names2, TRUE, var_arg, NULL, 0, generics_type_names2, FALSE, FALSE, NULL, 0, TRUE, TRUE, 0, &llvm_fun, NULL, FALSE, NULL, -1, "llvm.va_copy", &neo_c_fun);
-    }
-#else
-    params.clear();
-
-    result_type = Type::getVoidTy(TheContext);
-
-    param1_type = PointerType::get(IntegerType::get(TheContext,8), 0);
-    params.push_back(param1_type);
-    param2_type = IntegerType::get(TheContext,8);
-    params.push_back(param2_type);
-    param3_type = IntegerType::get(TheContext,64);
-    params.push_back(param3_type);
-    param4_type = IntegerType::get(TheContext,1);
-    params.push_back(param4_type);
-
-    {
-        std::vector<Type *> llvm_param_types;
-        sNodeType* param_types[PARAMS_MAX];
-        char param_names[PARAMS_MAX][VAR_NAME_MAX];
-
-        sNodeType* result_type = create_node_type_with_class_name("void");
-
-        int num_params = 4;
-        xstrncpy(param_names[0], "dest", VAR_NAME_MAX);
-        xstrncpy(param_names[1], "val", VAR_NAME_MAX);
-        xstrncpy(param_names[2], "len", VAR_NAME_MAX);
-        xstrncpy(param_names[3], "isvolatile", VAR_NAME_MAX);
-        param_types[0] = create_node_type_with_class_name("void*");
-        param_types[1] = create_node_type_with_class_name("char");
-        param_types[2] = create_node_type_with_class_name("long");
-        param_types[3] = create_node_type_with_class_name("bool");
-
-        BOOL var_arg = FALSE;
-
-        char method_generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(method_generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        char generics_type_names[GENERICS_TYPES_MAX][VAR_NAME_MAX];
-
-        memset(generics_type_names, 0, sizeof(char)*GENERICS_TYPES_MAX*VAR_NAME_MAX);
-
-        Function* llvm_fun;
-        sFunction* neo_c_fun = NULL;
-
-        char* param_names2[PARAMS_MAX];
-        int i;
-        for(i=0; i<num_params; i++) {
-            param_names2[i] = param_names[i];
-        }
-        char* method_generics_type_names2[GENERICS_TYPES_MAX];
-        int num_method_generics = 0;
-        for(i=0; i<num_method_generics; i++) {
-            method_generics_type_names2[i] = method_generics_type_names[i];
-        }
-        char* generics_type_names2[GENERICS_TYPES_MAX];
-        int num_generics = 0;
-        for(i=0; i<num_generics; i++) {
-            generics_type_names2[i] = generics_type_names[i];
-        }
-        add_function("llvm.memset.p0i8.i64", "llvm.memset.p0i8.i64", "", param_names2, param_types, num_params, result_type, 0, method_generics_type_names2, TRUE, var_arg, NULL, 0, generics_type_names2, FALSE, FALSE, NULL, 0, TRUE, TRUE, 0, &llvm_fun, NULL, FALSE, NULL, -1, "llvm.va_copy", &neo_c_fun);
-    }
-
-#endif
-*/
 }
 
 void llvm_init()
@@ -5527,7 +5218,7 @@ BOOL compile_function(unsigned int node, sCompileInfo* info)
         param_names[i] = gNodes[node].uValue.sFunction.mParams[i].mName;
     }
 
-    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, info)) {
+    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, external, info)) {
         return FALSE;
     }
 
@@ -5652,7 +5343,7 @@ BOOL compile_coroutine(unsigned int node, sCompileInfo* info)
     snprintf(real_fun_name, VAR_NAME_MAX, "%s_%d", fun_name, n);
     snprintf(real_fun_base_name, VAR_NAME_MAX, "%s_%d", fun_base_name, n);
 
-    if(!add_function(real_fun_name, real_fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, info)) {
+    if(!add_function(real_fun_name, real_fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, inline_, inherit_, static_, node_block, generics, coroutine, method_generics, fun_lv_table, external, info)) {
         return FALSE;
     }
 
@@ -5817,8 +5508,9 @@ BOOL compile_external_function(unsigned int node, sCompileInfo* info)
         param_types[i] = param->mTypeName;
         param_names[i] = param->mName;
     }
+    BOOL external = TRUE;
 
-    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, inherit_, FALSE, 0, FALSE, FALSE, FALSE, NULL, info)) {
+    if(!add_function(fun_name, fun_base_name, result_type_name, num_params, param_types, param_names, var_arg, FALSE, inherit_, FALSE, 0, FALSE, FALSE, FALSE, NULL, external, info)) {
         return FALSE;
     }
 
@@ -6104,10 +5796,10 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 xstrncpy(real_fun_name, current_function->mID, VAR_NAME_MAX);
                 sCLClass* klass = param_types2[0]->mClass;
 
-                int current_version = current_function->mVersion;
+                int current_version = current_function->mVersion-1;
 
-                if(gFuncs[real_fun_name].size() == 0 || gFuncs[real_fun_name].size() < current_version-1) {
-                    compile_err_msg(info, "Function not found(inherit) %s\n", real_fun_name);
+                if(gFuncs[real_fun_name].size() == 0 || current_version >= gFuncs[real_fun_name].size()) {
+                    compile_err_msg(info, "Function not found(inherit) 1 %s\n", real_fun_name);
                     info->err_num++;
 
                     info->type = create_node_type_with_class_name("int"); // dummy
@@ -6262,11 +5954,12 @@ BOOL compile_function_call(unsigned int node, sCompileInfo* info)
                 char real_fun_name[VAR_NAME_MAX];
 
                 xstrncpy(real_fun_name, current_function->mName, VAR_NAME_MAX);
+
                 sCLClass* klass = param_types2[0]->mClass;
 
-                int current_version = current_function->mVersion;
-                if(gFuncs[fun_name].size() < current_version-1) {
-                    compile_err_msg(info, "Function not found(inherit) %s\n", fun_name);
+                int current_version = current_function->mVersion-1;
+                if(current_version >= gFuncs[real_fun_name].size()) {
+                    compile_err_msg(info, "Function not found(inherit) 2 %s\n", fun_name);
                     info->err_num++;
 
                     info->type = create_node_type_with_class_name("int"); // dummy

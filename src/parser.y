@@ -1462,6 +1462,30 @@ type_and_variable_name:
 
         multiple_init_values[num_multiple_variable_names-1] = 0;
     }
+    | type ':' INTNUM type_attribute2 {
+        char type_name[VAR_NAME_MAX];
+
+        xstrncpy(type_name, $1, VAR_NAME_MAX);
+        xstrncat(type_name, ":", VAR_NAME_MAX);
+
+        char buf[128];
+        snprintf(buf, 128, "%d", $3);
+
+        xstrncat(type_name, buf, VAR_NAME_MAX);
+
+        static int n = 0;
+        n++;
+
+        char variable_name[VAR_NAME_MAX];
+        snprintf(variable_names, VAR_NAME_MAX, "anonymous%d\n", n);
+    
+        xstrncpy($$, type_name, VAR_NAME_MAX);
+        xstrncpy(variable_names[num_variable_names++], variable_name, VAR_NAME_MAX);
+
+        num_multiple_variable_names  = 1;
+
+        multiple_init_values[num_multiple_variable_names-1] = 0;
+    }
     | type '(' '*' IDENTIFIER ')' '(' type_params ')' type_attribute2 {
         xstrncpy($$, $1, VAR_NAME_MAX);
         xstrncat($$, " lambda(", VAR_NAME_MAX);
