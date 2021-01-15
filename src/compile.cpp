@@ -7435,9 +7435,11 @@ static BOOL compile_define_variable(unsigned int node, sCompileInfo* info)
                 return TRUE;
             }
 
-            Value* value = Builder.CreateAlloca(llvm_element_type, index_value, "element_memory");
+            if(const_index_value == NULL) {
+                Value* value = Builder.CreateAlloca(llvm_element_type, index_value, "element_memory");
 
-            Builder.CreateAlignedStore(value, address, alignment);
+                Builder.CreateAlignedStore(value, address, alignment);
+            }
         }
     }
 /*

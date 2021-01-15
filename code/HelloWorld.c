@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <wchar.h>
 #include <limits.h>
+#include <ctype.h>
 #include <pcre.h>
 //#include <dirent.h>
 #include "neo-c2.h"
@@ -342,6 +343,18 @@ struct sigcontext
 typedef struct XXXX AAAAAAAAAAAAAAAA;
 
 int readdir_r() __attribute__((__deprecated__("readdir_r is deprecated; use readdir instead")));
+
+struct IncTest {
+    int n;
+};
+
+int match_index;
+list!<string>*% matches;
+
+char* str_result()
+{
+    return "ABC";
+}
 
 int main() 
 {
@@ -1123,6 +1136,21 @@ int main()
     yyyyyyyyyyy.mName = string("ABC");
 
     types.push_back(yyyyyyyyyyy);
+*/
+    IncTest*% inc_test = new IncTest;
+
+    inc_test->n = 0;
+    
+    inc_test->n++;
+
+    xassert("increment test", inc_test->n == 1);
+
+    xassert("array element test", str_result()[0] == 'A');
+
+/*
+    char c = '1';
+
+    xassert("isalnum test", isalnum(c));
 */
 
     return 0;

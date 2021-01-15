@@ -94,15 +94,16 @@ static bool get_number(bool minus, sCLNode** node, sParserInfo* info)
                 info->p++;
             }
             else {
-                *p2++ = *info->p;
+                *p2 = *info->p;
+                p2++;
                 info->p++;
             }
 
-            if(p2 - (char*)buf >= buf_size) {
+            if((p2 - (char*)buf) >= buf_size) {
                 parser_err_msg(info, xsprintf("overflow node of number %d", *info->p));
                 return false;
             }
-        };
+        }
         *p2 = 0;
         skip_spaces_and_lf(info);
         
@@ -129,7 +130,6 @@ string parse_word(sParserInfo* info)
     }
 
     skip_spaces_and_lf(info);
-
     
     return result.to_string();
 }

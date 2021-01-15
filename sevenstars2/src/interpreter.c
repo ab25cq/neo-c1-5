@@ -22,7 +22,7 @@ void sig_int_for_shell(int signal)
 }
 
 int match_index;
-list<string>*% matches;
+list!<string>*% matches;
 
 static string line_buffer_from_head_to_cursor_point()
 {
@@ -92,7 +92,7 @@ void get_command_completion_cadidates(char* inputing_method_name)
             *p = env[i];
             p++;
 
-            if(p - (char*)path >= PATH_MAX) {
+            if((p - (char*)path) >= PATH_MAX) {
                 break;
             }
         }
@@ -101,21 +101,25 @@ void get_command_completion_cadidates(char* inputing_method_name)
     sCLClass* system_class = gClasses.at("system", null);
 
     if(system_class) {
-        system_class.mMethods.each {
-            if(strstr(it, inputing_method_name) == it) {
-                matches.push_back(string(it));
+        system_class.mMethods.each (
+            void lambda(char* it, sCLMethod* it2, bool* it3) {
+                if(strstr(it, inputing_method_name) == it) {
+                    matches.push_back(string(it));
+                }
             }
-        }
+        );
     }
 
     sCLClass* command_class = gClasses.at("command", null);
 
     if(command_class) {
-        command_class.mMethods.each {
-            if(strstr(it, inputing_method_name) == it) {
-                matches.push_back(string(it));
+        command_class.mMethods.each(
+            void lambda(char* it, sCLMethod* it2, bool* it3) {
+                if(strstr(it, inputing_method_name) == it) {
+                    matches.push_back(string(it));
+                }
             }
-        }
+        );
     }
 }
 
@@ -153,7 +157,7 @@ char* completion_generator(char* text, int state)
                 *p = '\0';
                 break;
             }
-            else if(isalnum(*p) || *p == '_' || *p == '\0') {
+            else if((isalnum(*p)) || ((*p) == '_') || ((*p) == '\0')) {
                 p--;
             }
             else if(*p == '.') {
@@ -266,15 +270,17 @@ char* completion_generator(char* text, int state)
                 get_command_completion_cadidates(inputing_method_name)
             }
             else {
-                result_type.mClass.mMethods.each {
-                    sCLMethod* method = it2;
-                    char* method_name = method->mName;
-                    
-                    if(strstr(method_name, inputing_method_name) == method_name)
-                    {
-                        matches.push_back(string(method_name));
+                result_type.mClass.mMethods.each (
+                    void lambda(string& it, sCLMethod* it2, bool* it3) {
+                        sCLMethod* method = it2;
+                        char* method_name = method->mName;
+                        
+                        if(strstr(method_name, inputing_method_name) == method_name)
+                        {
+                            matches.push_back(string(method_name));
+                        }
                     }
-                }
+                );
             }
         }
 

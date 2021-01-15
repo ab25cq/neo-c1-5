@@ -4463,6 +4463,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name PLUS_PLUS {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno);
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' PLUS_PLUS { 
             unsigned int left = $2;
             unsigned int right = sNodeTree_create_int_value(1, gSName, yylineno);
@@ -4526,6 +4539,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name MINUS_MINUS {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = sNodeTree_create_int_value(1, gSName, yylineno); 
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | IDENTIFIER PLUS_EQ comma_exp { 
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
 
@@ -4539,6 +4565,32 @@ node:
             $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
 
             $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+        }
+        | exp '.' name PLUS_EQ comma_exp {
+            char* var_name = $3;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $5;
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
+        | exp '-' '>' name PLUS_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_add($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
         | exp '.' name PLUS_EQ comma_exp {
             char* var_name = $3;
@@ -4586,6 +4638,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name MINUS_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_sub($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' MINUS_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
@@ -4604,13 +4669,26 @@ node:
 
             $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
         }
-        | exp '.' name MINUS_EQ comma_exp {
+        | exp '.' name MULT_EQ comma_exp {
             char* var_name = $3;
             unsigned int obj = $1;
 
             $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
 
             unsigned int int_value = $5;
+
+            $$ = sNodeTree_create_mult($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
+        | exp '-' '>' name MULT_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
 
             $$ = sNodeTree_create_mult($$, int_value, gSName, yylineno);
 
@@ -4648,6 +4726,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name DIV_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_div($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' DIV_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
@@ -4673,6 +4764,19 @@ node:
             $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
 
             unsigned int int_value = $5;
+
+            $$ = sNodeTree_create_mod($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
+        | exp '-' '>' name MOD_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
 
             $$ = sNodeTree_create_mod($$, int_value, gSName, yylineno);
 
@@ -4710,6 +4814,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name AND_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_and($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' AND_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
@@ -4735,6 +4852,19 @@ node:
             $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
 
             unsigned int int_value = $5;
+
+            $$ = sNodeTree_create_xor($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
+        | exp '-' '>' name XOR_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
 
             $$ = sNodeTree_create_xor($$, int_value, gSName, yylineno);
 
@@ -4772,6 +4902,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name OR_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_or($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' OR_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
@@ -4803,6 +4946,19 @@ node:
             unsigned int exp = $$;
             $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
         }
+        | exp '-' '>' name LSHIFT_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
+
+            $$ = sNodeTree_create_lshift($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
         | '(' comma_exp ')' LSHIFT_EQ exp { 
             unsigned int left = $2;
             unsigned int right = $5;
@@ -4823,12 +4979,25 @@ node:
             $$ = sNodeTree_create_store_variable($1, "", $$, alloc, global, gSName, yylineno); 
         }
         | exp '.' name RSHIFT_EQ comma_exp {
-            char* var_name = $4;
+            char* var_name = $3;
             unsigned int obj = $1;
 
             $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
 
             unsigned int int_value = $5;
+
+            $$ = sNodeTree_create_rshift($$, int_value, gSName, yylineno);
+
+            unsigned int exp = $$;
+            $$ = sNodeTree_create_store_field(var_name, obj, exp, gSName, yylineno); 
+        }
+        | exp '-' '>' name RSHIFT_EQ comma_exp {
+            char* var_name = $4;
+            unsigned int obj = $1;
+
+            $$ = sNodeTree_create_load_field(var_name, obj, gSName, yylineno);
+
+            unsigned int int_value = $6;
 
             $$ = sNodeTree_create_rshift($$, int_value, gSName, yylineno);
 
