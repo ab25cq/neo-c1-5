@@ -41,7 +41,7 @@ int main()
 
 3. mixin-layers機能。関数をレイヤーを重ねるように上書きしていけます。
 
-4. string, regex, vector, list, map, tupleなどのコンテナライブラリや文字列ライブラリ。C言語に欠けたコンテナライブラリや正規表現による文字列操作などを提供します。この機能を提供するためにはneo-c2.hをincludeしてください。すべてinline展開するので、neo-c2.hをincludeしない場合は普通のCコンパイラとして機能します。neo-c2.hはシステム側にはインストールされません。言語本体からコピーして使ってください。そのためオリジナルのコレクションや文字列ライブラリを作ることも可能です。
+4. string, regex, vector, list, map, tupleなどのコンテナライブラリや文字列ライブラリ。C言語に欠けたコンテナライブラリや正規表現による文字列操作などを提供します。この機能を提供するためにはneo-c2.hをincludeしてください。すべてinlineで定義されているため、neo-c2.hをincludeしない場合は普通のCコンパイラとして機能します。neo-c2.hはシステム側にはインストールされません。言語本体からコピーして使ってください。そのためオリジナルのコレクションや文字列ライブラリを作ることも可能です。
 
 5. 簡易なオブジェクト指向機能。mixin-layersシステムがあるため継承やポリモフィズムは提供しませんが、メッセージパッシングは行えます。
 
@@ -827,7 +827,7 @@ int main() {
 
 ```
 vector!<string>*% fun(string str, bool flag) {
-    vector!<string>*% result = borrow new vector!<string>.initialize();
+    vector!<string>* result = borrow new vector!<string>.initialize();
 
     if(flag) {
         result.push_back(str);
@@ -954,3 +954,8 @@ main関数を含むmain.ncは以下のように定義すればいいでしょう
 ```
 
 まあ、あまりありがたみはありませんが。 neo-c1と違って、構造体へのフィールドの追加は認めていません。構造体はまとめて定義してください。関数だけ、レイヤーを重ねられます。またneo-c1と違って、GenericsやMethodGenericsの関数の上書きも多分動くはずです。一応テストしましたが。
+
+* inline関数
+
+neo-c2はinline展開しません。単なるstaticな関数です。申し訳ないですが手抜きさせてもらいました。コードの生成量は増えますが、特に問題ないはずです。
+
