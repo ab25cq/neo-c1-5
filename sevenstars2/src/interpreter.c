@@ -190,11 +190,11 @@ char* completion_generator(char* text, int state)
         
         info.err_num = 0;
         
-        info.nodes = borrow new vector<sCLNode*%>.initialize();
-        info.vtables = borrow new vector<sVarTable*%>.initialize();
-        info.blocks = borrow new vector<sCLNodeBlock*%>.initialize();
-        info.types = borrow new vector<sCLType*%>.initialize();
-        info.vars = borrow new vector<sVar*%>.initialize();
+        info.nodes = borrow new vector!<sCLNode*%>.initialize();
+        info.vtables = borrow new vector!<sVarTable*%>.initialize();
+        info.blocks = borrow new vector!<sCLNodeBlock*%>.initialize();
+        info.types = borrow new vector!<sCLType*%>.initialize();
+        info.vars = borrow new vector!<sVar*%>.initialize();
         
         init_var_table(&info);
 
@@ -264,6 +264,7 @@ char* completion_generator(char* text, int state)
             inputing_method = true;
         }
 
+/*
         if(result_type != null && inputing_method) {
             if(type_identify_with_class_name(result_type, "command", &info) || type_identify_with_class_name(result_type, "void", &info))
             {
@@ -283,6 +284,7 @@ char* completion_generator(char* text, int state)
                 );
             }
         }
+*/
 
         delete info.nodes;
         delete info.vtables;

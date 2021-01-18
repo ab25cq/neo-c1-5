@@ -1,6 +1,8 @@
 同名のstructの多重定義エラーとする。
 同名の変数の多重定義エラーとする。
 
+array initializer
+
 -----
 map invalid read
 finalize

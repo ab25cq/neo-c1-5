@@ -588,6 +588,7 @@ int main()
             break;
     }
 
+/*
     int aaaaaa = gArray4[0][1][2];
 
     xassert("global array initializer test", aaaaaa == 4);
@@ -603,7 +604,8 @@ int main()
 
     ay[0][1][2] = 123;
 
-    xassert("local array test", ay[0][1][2] == 123);
+    xassert("local array initializer test2", ay[0][1][2] == 123);
+*/
 
     char* aa[2] = { "AAA", "BBB" };
 
@@ -1128,15 +1130,6 @@ int main()
     char* system_path = "LLLL";
     snprintf(path, PATH_MAX, "%s/share/sevenstars/sevenstars.ss", system_path);
 
-/*
-    vector!<sCLType*%>*% types = new vector!<sCLType*%>.initialize();
-
-    sCLType*% yyyyyyyyyyy = new sCLType;
-
-    yyyyyyyyyyy.mName = string("ABC");
-
-    types.push_back(yyyyyyyyyyy);
-*/
     IncTest*% inc_test = new IncTest;
 
     inc_test->n = 0;
@@ -1147,11 +1140,18 @@ int main()
 
     xassert("array element test", str_result()[0] == 'A');
 
-/*
-    char c = '1';
+    char c = 'A';
 
     xassert("isalnum test", isalnum(c));
-*/
+
+    int azyz[2][2];
+
+    azyz[0][0] = 1;
+    azyz[0][1] = 2;
+    azyz[1][0] = 3;
+    azyz[1][1] = 4;
+
+    xassert("array test X", azyz[0][0] == 1 && azyz[0][1] == 2 && azyz[1][0] == 3 && azyz[1][1] == 4);
 
     return 0;
 }

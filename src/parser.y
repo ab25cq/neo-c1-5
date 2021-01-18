@@ -3722,7 +3722,9 @@ free_right_value_objects: {
     }
     ;
 
-statment: comma_exp free_right_value_objects ';'              { $$ = $1; }
+statment: comma_exp free_right_value_objects ';'              { 
+        $$ = $1; 
+    }
     | struct_  {
         compile($1, &cinfo);
         $$ = 0;
@@ -4076,10 +4078,10 @@ elif_statment:
     ;
 
 exp: 
-    | node {
+    | assign_node {
         $$ = $1;
     }
-    | assign_node {
+    | node {
         $$ = $1;
     }
     | exp '+' exp    { $$ = sNodeTree_create_add($1, $3, gSName, yylineno); }
@@ -4142,6 +4144,67 @@ exp:
             $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
         }
     }
+    | pointer IDENTIFIER '(' ')' {
+        BOOL existance = function_existance($2);
+
+        if(existance) {
+            $$ = sNodeTree_create_function_call($2, 0, FALSE, FALSE, gSName, yylineno);
+        }
+        else {
+            unsigned int node = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_lambda_call(node, 0, gSName, yylineno);
+        }
+        int i;
+        for(i=0; i<strlen($1); i++) {
+            $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+        }
+    }
+    | pointer IDENTIFIER '(' params ')' {
+        BOOL existance = function_existance($2);
+
+        if(existance) {
+            $$ = sNodeTree_create_function_call($2, $4, FALSE, FALSE, gSName, yylineno);
+        }
+        else {
+            unsigned int node = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_lambda_call(node, $4, gSName, yylineno);
+        }
+        int i;
+        for(i=0; i<strlen($1); i++) {
+            $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+        }
+    }
+
+    | pointer TYPE_NAME '(' ')' {
+        BOOL existance = function_existance($2);
+
+        if(existance) {
+            $$ = sNodeTree_create_function_call($2, 0, FALSE, FALSE, gSName, yylineno);
+        }
+        else {
+            unsigned int node = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_lambda_call(node, 0, gSName, yylineno);
+        }
+        int i;
+        for(i=0; i<strlen($1); i++) {
+            $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+        }
+    }
+    | pointer TYPE_NAME '(' params ')' {
+        BOOL existance = function_existance($2);
+
+        if(existance) {
+            $$ = sNodeTree_create_function_call($2, $4, FALSE, FALSE, gSName, yylineno);
+        }
+        else {
+            unsigned int node = sNodeTree_create_load_variable($2, gSName, yylineno);
+            $$ = sNodeTree_create_lambda_call(node, $4, gSName, yylineno);
+        }
+        int i;
+        for(i=0; i<strlen($1); i++) {
+            $$ = sNodeTree_create_derefference($$, gSName, yylineno); 
+        }
+    }
     ;
 
 comma_exp: exp {
@@ -4183,35 +4246,11 @@ assign_node:
 
         $$ = sNodeTree_create_store_variable(variable_names[--num_variable_names], $1, $3, alloc, global, gSName, yylineno); 
     }
-    | IDENTIFIER array_index '=' comma_exp {
-        unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
-
-        unsigned int* index_node = array_index_index_node[array_index_num];
-        int num_dimention = array_index_num_dimention[array_index_num];
-
-        array_index_num--;
-
-        unsigned int right_node = $4;
-
-        $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
-    }
     | exp '.' name '=' comma_exp  { 
         $$ = sNodeTree_create_store_field($3, $1, $5, gSName, yylineno); 
     }
     | exp '-' '>' name '=' comma_exp  { 
         $$ = sNodeTree_create_store_field($4, $1, $6, gSName, yylineno); 
-    }
-    | exp '.' name array_index '=' comma_exp {
-        unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
-
-        unsigned int* index_node = array_index_index_node[array_index_num];
-        int num_dimention = array_index_num_dimention[array_index_num];
-
-        array_index_num--;
-
-        unsigned int right_node = $6;
-
-        $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
     }
     | pointer IDENTIFIER '=' comma_exp { 
         $$ = sNodeTree_create_load_variable($2, gSName, yylineno);
@@ -4267,8 +4306,54 @@ node:
         | IDENTIFIER {
             $$ = sNodeTree_create_load_variable($1, gSName, yylineno);
         }
+        | IDENTIFIER array_index '=' comma_exp {
+            unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
+
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
+
+            unsigned int right_node = $4;
+
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
+        }
+        | exp array_index '=' comma_exp {
+            unsigned int array = $1;
+
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
+
+            unsigned int right_node = $4;
+
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
+        }
+        | exp '.' name array_index '=' comma_exp {
+            unsigned int array = sNodeTree_create_load_field($3, $1, gSName, yylineno);
+
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
+
+            unsigned int right_node = $6;
+
+            $$ = sNodeTree_create_store_element(array, index_node, num_dimention, right_node, gSName, yylineno);
+        }
         | IDENTIFIER array_index {
             unsigned int array = sNodeTree_create_load_variable($1, gSName, yylineno);
+
+            unsigned int* index_node = array_index_index_node[array_index_num];
+            int num_dimention = array_index_num_dimention[array_index_num];
+
+            array_index_num--;
+
+            $$ = sNodeTree_create_load_array_element(array, index_node, num_dimention, gSName, yylineno);
+        }
+        | exp array_index {
+            unsigned int array = $1;
 
             unsigned int* index_node = array_index_index_node[array_index_num];
             int num_dimention = array_index_num_dimention[array_index_num];
@@ -5057,8 +5142,8 @@ array_index: '[' exp ']' {
             exit(2);
         }
     }
-    | '[' exp ']' array_index {
-        array_index_index_node[array_index_num][array_index_num_dimention[array_index_num]] = $2;
+    | array_index '[' exp ']' {
+        array_index_index_node[array_index_num][array_index_num_dimention[array_index_num]] = $3;
         array_index_num_dimention[array_index_num]++;
 
         if(array_index_num_dimention[array_index_num] >= ARRAY_DIMENTION_MAX) {

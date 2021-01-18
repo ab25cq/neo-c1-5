@@ -363,6 +363,9 @@ unsigned int sNodeTree_create_block(BOOL create_lv_table, char* sname, int sline
 
 void append_node_to_node_block(unsigned int node_block, unsigned int node)
 {
+    if(node == 0) {
+        return;
+    }
     if(gNodes[node_block].uValue.sBlock.mSizeNodes <= gNodes[node_block].uValue.sBlock.mNumNodes) {
         unsigned int new_size = gNodes[node_block].uValue.sBlock.mSizeNodes * 2;
         gNodes[node_block].uValue.sBlock.mNodes = (unsigned int*)xrealloc(gNodes[node_block].uValue.sBlock.mNodes, sizeof(unsigned int)*new_size);
